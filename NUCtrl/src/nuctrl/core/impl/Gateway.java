@@ -9,14 +9,14 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import nuctrl.core.IF.IDispatcher;
 import nuctrl.core.IF.IGatewayListener;
@@ -25,6 +25,9 @@ import nuctrl.core.IF.IPacketListener;
 import nuctrl.protocol.CoreStatus;
 import nuctrl.protocol.EDispatchTarget;
 import nuctrl.protocol.GatewayMsg;
+
+import org.apache.log4j.Logger;
+
 
 public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	
@@ -43,44 +46,53 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	private SelectionKey keyForRight;
 	private SelectionKey keyForLeft;
 	
+	private ByteBuffer buf4L;
+	private ByteBuffer buf4R;
+	
 	// for center communication
 	private SocketChannel sockChanToCenter;
 	
-	private int PORT_LEFT;
-	private int PORT_RIGHT;
 	private String GATEWAY_ID;
 	private InetSocketAddress sockAdd4Left;
 	private InetSocketAddress sockAdd4Right;
+	private ReentrantLock lockOnLeftSel;
+	private ReentrantLock lockOnRightSel;
 
-	
 	// no use
 	private static Logger log;
 	
-	public Gateway(String IP4Left, String IP4Right, int port4Left, int port4Right) {
+	public Gateway(String gid,
+			String IP4Left, int portL,
+			String IP4Right, int portR) {
 		super();
-		this.GATEWAY_ID = "Haha";
+		this.GATEWAY_ID = gid;
 		InetAddress L,R;
 		try {
 			L = InetAddress.getByName(IP4Left);
 			R = InetAddress.getByName(IP4Right);
-			sockAdd4Left = new InetSocketAddress(L, port4Left);
-			sockAdd4Right = new InetSocketAddress(R, port4Right);
+			sockAdd4Left = new InetSocketAddress(L, portL);
+			sockAdd4Right = new InetSocketAddress(R, portR);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-		log = Logger.getLogger("Gateway");
-		log.setLevel(Level.INFO);
-		
-		log.info(String.format(
-				"L:%s(%d) -- R:%s(%d)", IP4Left, port4Left , IP4Right, port4Right));
-		
+		log = Logger.getLogger(Gateway.class.getName());
+		buf4L = ByteBuffer.allocate(256);
+		buf4R = ByteBuffer.allocate(256);
+}
+	
+	
+	public void init(){
+		// init connection
+		this.lockOnLeftSel = new ReentrantLock();
+		this.lockOnRightSel = new ReentrantLock();
 		
 		Thread startR = new Thread(new Runnable(){
 			@Override
 			public void run(){
 				log.info("Setting up Right connection...");
 				linkToRight();
-				log.info("Right Connection established");
+				log.info(GATEWAY_ID + ": Right Connection established" + 
+						sockChanToRight.socket().toString());
 			}
 		});
 		
@@ -88,32 +100,15 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			@Override
 			public void run(){
 				log.info("Setting up Left connection...");
-				try {
-					InetAddress L = sockAdd4Left.getAddress();
-					int i = 0;
-					log.info(String.format(
-							"%s: Waiting for server on left at %s:%d", 
-							GATEWAY_ID,
-							sockAdd4Left.getHostName(),
-							sockAdd4Left.getPort()));
-					while(!L.isReachable(1)){
-						i ++ ;
-						log.info("Round 1...");
-						Thread.sleep(10);
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
 				linkToLeft();
-				log.info("Left connection established");
+				log.info(GATEWAY_ID + ": Left connection established" + 
+						sockChanToLeft.socket().toString());
 			}
 		});
 		
 		startR.start();
 		startL.start();
-}
+	}
 
 	public Gateway(IGatewayListener gl){
 		this.coreCallback = gl;
@@ -169,53 +164,51 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		try {
 			sockChanAsServerForRight = ServerSocketChannel.open();
 			selectorForRight = Selector.open();
-			log.info(String.format("%s: Socket To Right open", GATEWAY_ID));
+			log.debug(this.GATEWAY_ID + ": Right Socket Open");
+			
 			ServerSocket ss = sockChanAsServerForRight.socket();
 			
 			ss.bind(this.sockAdd4Right); //blocking
-			log.info(String.format(
-					"%s: Socket To Right bind at %s:%d", 
-					GATEWAY_ID,
-					sockAdd4Right.getHostName(),
-					sockAdd4Right.getPort()));
+			log.debug(this.GATEWAY_ID+ ": Right Socket bind to" + sockAdd4Right.toString());
 			
 			sockChanAsServerForRight.configureBlocking(false);
 			sockChanAsServerForRight.register(
 					selectorForRight, SelectionKey.OP_ACCEPT);
 	
-			while (true){
-				selectorForRight.select();
-				
-				Set readyKeys = selectorForRight.selectedKeys();
-				Iterator iter = readyKeys.iterator();
-				
-				while (iter.hasNext()){
-					SelectionKey key = (SelectionKey) iter.next();
-					iter.remove();
-					if (key.isAcceptable()){
-						// the server socket receives clients
-						ServerSocketChannel server = (ServerSocketChannel) key.channel();
-						sockChanToRight = server.accept();
+
+			selectorForRight.select();
+			
+			Set readyKeys = selectorForRight.selectedKeys();
+			Iterator iter = readyKeys.iterator();
+			
+			while (iter.hasNext()){
+				SelectionKey key = (SelectionKey) iter.next();
+				iter.remove();
+				if (key.isAcceptable()){
+					// the server socket receives clients
+					ServerSocketChannel server = (ServerSocketChannel) key.channel();
+					sockChanToRight = server.accept();
+					
+					log.debug(this.GATEWAY_ID + ": Right Socket Accepted: "
+							+ sockChanToRight.socket().toString());
+					
+					if(sockChanToRight.finishConnect()){
 						sockChanToRight.configureBlocking(false);
-						keyForRight = sockChanToRight.register(
-								selectorForRight, SelectionKey.OP_WRITE | SelectionKey.OP_READ
-								);
+						keyForRight = sockChanToRight.register(selectorForRight, SelectionKey.OP_READ);
 						ByteBuffer buf = ByteBuffer.allocate(256);
-						keyForRight.attach(buf);
-						
+						keyForRight.attach(buf);						
 					}
+					
 				}
+			}
 				
-				break;//break the while(1)
-			} // end of while(true)
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		// setup listener
-		listenerForRight = new NeighborListener(this, keyForRight);
+		listenerForRight = new NeighborListener(this, selectorForRight, this.lockOnRightSel);
 		Thread lL = new Thread(new Runnable(){
-			
 			@Override
 			public void run() {
 				listenerForRight.listen();
@@ -223,42 +216,58 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			
 		});
 		lL.start();
+		log.trace("Leaving LinkToRight");
 	}
 
 	@Override
 	public void linkToLeft() {
-		try {
-			this.sockChanToLeft = SocketChannel.open(this.sockAdd4Left);
-			log.info(String.format(
-					"%s: Socket To Left open at %s", GATEWAY_ID, sockAdd4Left.getHostName()));
-			
-			this.sockChanToLeft.configureBlocking(false);
-			this.selectorForLeft = Selector.open();
-			this.keyForLeft = sockChanToLeft.register(
-					selectorForLeft, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-			
-			// XXX Will buffer got disappeared after this function's end?
-			ByteBuffer buf = ByteBuffer.allocate(256);
-			keyForLeft.attach(buf);
-			
-			listenerForLeft = new NeighborListener(this, keyForLeft);
-			Thread lL = new Thread(new Runnable(){
-
-				@Override
-				public void run() {
-					listenerForLeft.listen();
-				}
-				
-			});
-			lL.start();
+		while (true){
+			try {
+				sockChanToLeft = SocketChannel.open(this.sockAdd4Left);
+				break;
+			} catch (ConnectException ce){
+				log.info("Left Socket: No Server is on, retry in 5s...");
+				try {
+					Thread.sleep(5000);//miliseconds
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} 
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} // end of while(1)
 		
-		} catch (ConnectException ce){
-			ce.printStackTrace();
-		}
-		 catch (IOException e) {
+		log.debug(this.GATEWAY_ID + ": Left Socket connected: " + sockChanToLeft.toString());
+
+		try {
+			sockChanToLeft.configureBlocking(false);
+			selectorForLeft = Selector.open();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-					
+
+		try {
+			keyForLeft = sockChanToLeft.register(
+					selectorForLeft, SelectionKey.OP_READ);
+		} catch (ClosedChannelException e) {
+			e.printStackTrace();
+		}
+		
+		// XXX Will buffer got disappeared after this function's end? Y, it will
+		
+		keyForLeft.attach(buf4L);
+		debug_key(keyForLeft, log);
+		
+		listenerForLeft = new NeighborListener(this, selectorForLeft, lockOnRightSel);
+		
+		Thread lL = new Thread(new Runnable(){
+			@Override
+			public void run() {
+				listenerForLeft.listen();
+			}
+			
+		});
+		lL.start();
 	}
 
 	
@@ -269,18 +278,19 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	@Override
 	public void dispatchTo(EDispatchTarget target, GatewayMsg msg){
 		// FIXME dispatch is quite important
-		SelectionKey key = null;
 		SocketChannel sockChan = null;
+		Selector sl = null;
+		
 		switch(target){
 		case TO_CENTER:
 			break;
 			
 		case TO_LEFT:
-			key = this.keyForLeft;
+			sl = this.selectorForLeft;
 			sockChan = this.sockChanToLeft;
+			break;
 			
 		case TO_RIGHT:
-			key = this.keyForRight;
 			sockChan = this.sockChanToRight;
 			break;
 			
@@ -292,20 +302,92 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		}
 		
 		
-		while(true){
+		log.debug(this.GATEWAY_ID + ": Send Message to "+ sockChan.toString());
+		
+		this.lockOnLeftSel.lock();
+		try {
+			sl.wakeup();
+			log.debug("--------------");
+			debug_key(this.keyForLeft, log);
+			this.keyForLeft = sockChan.register(sl, SelectionKey.OP_WRITE);
+			this.keyForLeft.attach(this.buf4L);
+			debug_key(this.keyForLeft, log);
+			
+		} catch (ClosedChannelException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		
+//		log.debug("before change interest");
+//		sl.wakeup();
+//		this.keyForLeft.interestOps(SelectionKey.OP_WRITE);
+//		log.debug("after change interest");
+		
+		try {
+			sl.select();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		log.debug("Pass sl.select");
+		
+		Set keys = sl.selectedKeys();
+		Iterator iter = keys.iterator();
+		debug_sel(sl, log);
+		debug_key(this.keyForLeft, log);
+		log.trace(keys.toArray().length);
+		
+		while (iter.hasNext()){
+			SelectionKey key = (SelectionKey) iter.next();
+			iter.remove();
+			
 			if (key.isWritable()){
+				log.trace("key is writable");
+				
 				SocketChannel client = (SocketChannel) key.channel();
+				
+				debug_key(key, log);
 				ByteBuffer output = (ByteBuffer) key.attachment();
+				// FIXEME attachment can be null
 				synchronized (output){
-				output.flip();
-				try {
-					client.write(output);
-				} catch (IOException e) {
+					log.trace("lock on output got");
+					msg.writeTo(output);
+					output.flip();
+					try {
+						client.write(output);
+						log.trace("write over");
+					} catch (IOException e) {
 						e.printStackTrace();
-				}} // end of synchronize
-			}
-			break;//break the while(1)
+					}} // end of synchronize
+		}
+		}
+		
+		this.keyForLeft.interestOps(SelectionKey.OP_READ);
+		this.lockOnLeftSel.unlock();
+		log.debug("Unlock on sel");
+	}
+	
+	private void debug_sel(Selector sl, Logger log){
+		Iterator keys = sl.keys().iterator();
+		while(keys.hasNext()){
+			SelectionKey k = (SelectionKey) keys.next();
+			log.debug("Sel: " + k.channel().toString());
+			debug_key(k, log);
 		}
 	}
-}
+	
+	private void debug_key(SelectionKey key, Logger log){
+		log.debug("key: " + System.identityHashCode(key));
+		log.debug("key: " + key.channel().toString() + "-" + key.interestOps() + "/" + key.readyOps());
+		String s = "is";
+		if (!(key.attachment() == null))
+			s = "is not";
+			
+		log.debug("key: attachment " + s + " null");
+	}
+	 
+	
+}//end of class
+
+
 
