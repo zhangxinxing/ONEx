@@ -7,22 +7,29 @@ import nuctrl.protocol.GatewayMsg;
 public class TGateway {
 
 	public static void main(String[] args) {
-		String local = "127.0.0.1";
-		Gateway g1 = new Gateway("g1", local, 12345, local, 12346);
-		Gateway g2 = new Gateway("g2", local, 12346, local, 12345);
-		g1.init();
-		g2.init();
+		final String local = "127.0.0.1";
 		
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Thread m1 = new Thread(new Runnable(){
+			@Override
+			public void run() {
+				Thread.currentThread().setName("machine1");
+				Gateway g1 = new Gateway("g1", local, 12345, local, 12346);
+				g1.init();
+			}
+		});
 		
-		// XXX fot test only
-		GatewayMsg msg = new GatewayMsg('A', 'B');
-		g1.dispatchTo(EDispatchTarget.TO_LEFT, msg);
+		Thread m2 = new Thread(new Runnable(){
+
+			@Override
+			public void run() {
+				Thread.currentThread().setName("machine2");
+				Gateway g2 = new Gateway("g2", local, 12346, local, 12345);
+				g2.init();
+			}
+		});
+		
+		m1.start();
+		m2.start();
 	}
 
 }

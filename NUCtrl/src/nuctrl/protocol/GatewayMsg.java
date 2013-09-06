@@ -5,20 +5,27 @@ import java.nio.*;
 
 
 public class GatewayMsg {
-	char from;
-	char to;
+	String from;
+	String to;
+	String short_info;
 	//OFMessage msg;
 	
-	public GatewayMsg(char from, char to) {
+	public GatewayMsg(String from, String to) {
 		super();
 		this.from = from;
 		this.to = to;
 	}
 	
 	
+	public GatewayMsg(String from, String to, ByteBuffer buf){
+		// FIXME impl requires
+		super();
+		this.from = from;
+		this.to = to;
+	}
+
+
 	public void writeTo(ByteBuffer buf){
-		buf.putChar(from);
-		buf.putChar(to);
 //		TODO msg.writeTo(buf);
 	}
 }

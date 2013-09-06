@@ -1,12 +1,11 @@
 package nuctrl.core.IF;
 
-import nuctrl.protocol.EDispatchTarget;
-import nuctrl.protocol.GatewayMsg;
+import java.nio.ByteBuffer;
 
 public interface IDispatcher {
-	void dispatchTo(EDispatchTarget target, GatewayMsg msg);
 	
-	void linkToLeft();
+	void dispatchDaemon(ByteBuffer msg);
 	
-	void linkToRight();
+	void dispatch();
+	
 }
