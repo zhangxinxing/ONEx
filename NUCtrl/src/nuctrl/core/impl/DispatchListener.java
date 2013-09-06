@@ -10,7 +10,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -71,10 +70,11 @@ public class DispatchListener {
 					}
 				} // end of while(1)
 			}
+			Socket sock = sockChan_as_client.socket();
 
-			log.info("Left listener client opened");
-			this.sockChan_as_client.configureBlocking(false);
+			log.info("Left Connected: " + sockToString(sock));
 			
+			this.sockChan_as_client.configureBlocking(false);
 			this.sockChan_as_client.register(this.sl, SelectionKey.OP_READ);
 		
 		} catch (IOException e) {
@@ -93,29 +93,21 @@ public class DispatchListener {
 		// handling connection initialization
 		try {
 			this.sl = Selector.open();
-			
 			this.serverSockChan = ssc;
 			if (this.serverSockChan == null){
 				this.serverSockChan = ServerSocketChannel.open();
 				this.serverSockChan.configureBlocking(false);
 			}
-
-			//bind
 			this.serverSockChan.socket().bind(sockAddr);
-			log.debug("Listener binds to " + sockAddr.toString());
-		
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		try {
 			this.serverSockChan.register(this.sl, SelectionKey.OP_ACCEPT);
-			log.debug("Listener ServerSocketChannel registered Accept");
 		} catch (ClosedChannelException e) {
 			e.printStackTrace();
 		}
-		
-		
 	}
 	
 
@@ -195,39 +187,26 @@ public class DispatchListener {
 						SocketChannel sockChan = ssc.accept();
 						this.sockList_as_server.add(sockChan);
 						
-						Socket sock = sockChan.socket();
 						sockChan.configureBlocking(false);
-						
-						log.debug(ssc.socket().toString() 
-								+ " accepted: " 
-								+ sock.toString());
-						
 						sockChan.register(this.sl, SelectionKey.OP_READ);
+						Socket sock = sockChan.socket();
 					
-						log.info(ssc.socket().toString()
-								+ " now is connected to "
-								+ sock.toString());
+						log.info("Right Connected: " + this.sockToString(sock));
+						
 					}
 					else if (key.isReadable()){						
 						//read the key
-						
 						log.info(this.toString() + " is readable");
-						
 						SocketChannel sc = (SocketChannel) key.channel();
-						
 						this.readBuffer.clear();
-						
 						int numRead;
 						numRead = sc.read(this.readBuffer);
-						
 						if (numRead == -1){
 							key.channel().close();
 							key.cancel();
 						}
-						
-						//FIXME parseMsg
-						
-						this.readBuffer.flip();
+						// FIXME set limit before send out the readBuffer
+						// maybe more efficient after using GatewayMsg
 						cb.dispatchDaemon(this.readBuffer);
 						
 					}
@@ -246,7 +225,6 @@ public class DispatchListener {
 								if (buf.hasRemaining()){
 									break; // will be written in next turn
 								}
-								
 								queue.remove(0);
 							}
 							
@@ -290,5 +268,13 @@ public class DispatchListener {
 			return mode + this.sockChan_as_client.socket();
 		}
 
+	}
+	
+	
+	private String sockToString(Socket sock){
+		return 
+				sock.getLocalAddress().getHostAddress() + ":" + sock.getLocalPort()
+				+ " --> "
+				+ sock.getInetAddress().getHostAddress() + ":"	+ sock.getPort();
 	}
 }

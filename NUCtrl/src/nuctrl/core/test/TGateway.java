@@ -1,8 +1,6 @@
 package nuctrl.core.test;
 
 import nuctrl.core.impl.Gateway;
-import nuctrl.protocol.EDispatchTarget;
-import nuctrl.protocol.GatewayMsg;
 
 public class TGateway {
 
@@ -13,23 +11,32 @@ public class TGateway {
 			@Override
 			public void run() {
 				Thread.currentThread().setName("machine1");
-				Gateway g1 = new Gateway("g1", local, 12345, local, 12346);
+				Gateway g1 = new Gateway("g1", local, 12003, local, 12001);
 				g1.init();
 			}
 		});
 		
 		Thread m2 = new Thread(new Runnable(){
-
 			@Override
 			public void run() {
 				Thread.currentThread().setName("machine2");
-				Gateway g2 = new Gateway("g2", local, 12346, local, 12345);
+				Gateway g2 = new Gateway("g2", local, 12001, local, 12002);
 				g2.init();
+			}
+		});
+		
+		Thread m3 = new Thread(new Runnable(){
+			@Override
+			public void run(){
+				Thread.currentThread().setName("machine3");
+				Gateway g3 = new Gateway("g3", local, 12002, local, 12003);
+				g3.init();
 			}
 		});
 		
 		m1.start();
 		m2.start();
+		m3.start();
 	}
 
 }

@@ -19,9 +19,7 @@ import nuctrl.protocol.CoreStatus;
 
 import org.apache.log4j.Logger;
 
-
 public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
-	
 	
 	private Monitor mn;
 	private Gateway cb;
@@ -31,12 +29,11 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	private DispatchListener listenerForRight;
 	private DispatchListener listenerForLeft;
 	
-	
 	private String GATEWAY_ID;
 	private InetSocketAddress sockAdd4Left;
 	private InetSocketAddress sockAdd4Right;
 
-	private List dispatchQueue = new LinkedList();
+	private List dispatchMsgQueue = new LinkedList();
 	// logger
 	private static Logger log;
 	
@@ -59,7 +56,6 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		log = Logger.getLogger(Gateway.class.getName());
 }
 	
-	
 	public Gateway(IGatewayListener gl){
 		this.coreCallback = gl;
 	}
@@ -69,7 +65,6 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		return mn.getControllerInfo();
 	}
 
-	
 	@Override
 	public CoreStatus getStatus() {
 		return mn.getStatus();
@@ -84,12 +79,10 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		
 	}
 	
-
 	@Override
 	public void sendToMaster() {
 		// TODO Auto-generated method stub
 		// do sth using socket
-		
 	}
 
 	@Override
@@ -109,71 +102,27 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	}
 
 	public void init(){
-		
 		// init connection
-		
 		Thread startR = new Thread(new Runnable(){
 			@Override
 			public void run(){
-				Thread.currentThread().setName(GATEWAY_ID + " connects Right");
-				log.info("Setting up Right connection...");
-				
+				Thread.currentThread().setName(GATEWAY_ID + "'s right listener");
 				listenerForRight = new DispatchListener(sockAdd4Right, (ServerSocketChannel) null, cb);
-
-				log.info(listenerForRight.toString() + " ready");
-				log.debug(Thread.currentThread().getName() + " terminate");
+				listenerForRight.listen();
 			}
 		});
-		
-		
 		
 		Thread startL = new Thread(new Runnable(){
 			@Override
 			public void run(){
-				Thread.currentThread().setName(GATEWAY_ID + " connects Left");
-				log.info("Setting up Left connection...");
+				Thread.currentThread().setName(GATEWAY_ID + "'s left listener");
 				listenerForLeft = new DispatchListener(sockAdd4Left, (SocketChannel)null, cb);
-				
-				log.debug(Thread.currentThread().getName() + "terminate");
+				listenerForLeft.listen();
 			}
 		});
 		
 		startR.start();
 		startL.start();
-		
-		try {
-			startR.join();
-			startL.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-		// setup listener
-		Thread lR = new Thread(new Runnable(){
-			@Override
-			public void run() {
-				Thread.currentThread().setName(GATEWAY_ID + " Right Listener");
-				listenerForRight.listen();
-				log.debug(Thread.currentThread().getName() + "terminate");
-			}
-		});
-		
-		lR.start();
-		
-		Thread lL = new Thread(new Runnable(){
-			@Override
-			public void run() {
-				Thread.currentThread().setName(GATEWAY_ID + " Left listener");
-				listenerForLeft.listen();
-				log.debug(Thread.currentThread().getName() + "terminate");
-			}
-			
-		});
-		log.info(this.listenerForLeft.toString() + " ready");
-		lL.start();
-		
 		
 		
 		Thread dispatcher = new Thread(new Runnable(){
@@ -181,11 +130,10 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			public void run(){
 				Thread.currentThread().setName(GATEWAY_ID + " dispatcher");
 				dispatch();
-				log.debug(Thread.currentThread().getName() + " terminates");
 			}
 		});
 		dispatcher.start();
-		
+		log.info(this.toString() + " ready");
 	}
 
 	
@@ -193,37 +141,33 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	public void dispatchDaemon(ByteBuffer msg){
 		// FIXME copy requires
 		ByteBuffer m = msg;
-		synchronized (this.dispatchQueue){
-			this.dispatchQueue.add(m);
-			this.dispatchQueue.notify();
+		synchronized (this.dispatchMsgQueue){
+			this.dispatchMsgQueue.add(m);
+			this.dispatchMsgQueue.notify();
 		}
 	}
 	
-	
 	@Override
 	public void dispatch(){
-		log.info("dispatcher ready");
 		ByteBuffer buf;
 		while(true){
-			synchronized(this.dispatchQueue){
-				while(this.dispatchQueue.isEmpty()){
+			synchronized(this.dispatchMsgQueue){
+				while(this.dispatchMsgQueue.isEmpty()){
 					// very important skill to avoid thread-safe issue
 					try {
-						this.dispatchQueue.wait();
+						this.dispatchMsgQueue.wait();
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
-				buf = (ByteBuffer)this.dispatchQueue.remove(0);
+				buf = (ByteBuffer)this.dispatchMsgQueue.remove(0);
 			} // end of sync
-			
-			byte[] arr = buf.array();
-			for (int i = 0; i < 4; i++){
-				System.out.println(arr[i]);
-			}
-		
-
 		}
+	}
+	
+	@Override
+	public String toString(){
+		return this.GATEWAY_ID + "'s dispatcher";
 	}
 
 	
