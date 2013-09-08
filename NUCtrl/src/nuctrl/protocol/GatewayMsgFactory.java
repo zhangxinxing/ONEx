@@ -32,7 +32,7 @@ public class GatewayMsgFactory {
 			
 			byte type = buf.get();
 			int length = buf.getInt();
-			byte[] ofm = new byte[length - GatewayMsg.l_header];
+			byte[] ofm = new byte[length - GatewayMsg.LEN_header];
 			
 			short from = buf.getShort();
 			short to = buf.getShort();
@@ -42,7 +42,7 @@ public class GatewayMsgFactory {
 			msg.attachOFMessage(ofm);
 			
 			list.add(msg);
-		} //FIXME buf.compact() or not?
+		}
 				
 		return list;
 	}

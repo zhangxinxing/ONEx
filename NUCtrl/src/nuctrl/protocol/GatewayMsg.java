@@ -7,7 +7,8 @@ import java.nio.*;
 public class GatewayMsg {
 	
 	// basic information for each
-	public static final int l_header = 9;
+	public static final int LEN_header = 9;
+	public static final int OFF_LENGTH = 1;
 	
 	// field of Msg
 	/* header */
@@ -24,7 +25,7 @@ public class GatewayMsg {
 		this.type = type;
 		this.from = from;
 		this.to = to;
-		this.length = GatewayMsg.l_header;
+		this.length = GatewayMsg.LEN_header;
 		this.ofm = null;
 		
 	}
@@ -36,7 +37,7 @@ public class GatewayMsg {
 		this.type = type;
 		this.from = from;
 		this.to= to;
-		this.length = GatewayMsg.l_header;
+		this.length = GatewayMsg.LEN_header;
 		
 		this.attachOFMessage(ofm);
 	}

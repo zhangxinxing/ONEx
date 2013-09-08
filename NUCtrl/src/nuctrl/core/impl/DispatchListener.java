@@ -139,12 +139,10 @@ public class DispatchListener {
 //			}
 //			//XXX
 			
-			
-			
 			try {
 				//TODO simplify ?
 				synchronized(dispatchRequests){
-					Iterator changes = this.dispatchRequests.iterator();
+					Iterator<DispatchRequest> changes = this.dispatchRequests.iterator();
 					while (changes.hasNext()){
 						DispatchRequest change = (DispatchRequest) changes.next();
 						switch(change.type){
@@ -157,7 +155,7 @@ public class DispatchListener {
 				
 				sl.select();
 				
-				Iterator keys = this.sl.selectedKeys().iterator();
+				Iterator<SelectionKey> keys = this.sl.selectedKeys().iterator();
 				while(keys.hasNext()){
 					SelectionKey key = (SelectionKey) keys.next();
 					keys.remove();
@@ -181,23 +179,27 @@ public class DispatchListener {
 						log.info("Right Connected: " + this.sockToString(sock));
 						
 					}
-					else if (key.isReadable()){						
+					else if (key.isReadable()){
 						//read the key
 						SocketChannel sc = (SocketChannel) key.channel();
-						this.readBuffer.clear();
+
 						int numRead;
 						numRead = sc.read(this.readBuffer);
+						this.readBuffer.flip();
+						
 						if (numRead == -1){
 							key.channel().close();
 							key.cancel();
 						}
+						
+						ByteBuffer buf2go = Buffer.safeClone(this.readBuffer);
+						this.readBuffer.compact();
+						
 						log.info(this.sockToString(sc.socket()) + " got " + numRead);
 						
-						this.readBuffer.flip();
-						
 						if(!helloSent){
-							List<GatewayMsg> msgs = GatewayMsgFactory.parseGatewayMsg(readBuffer);
-							Iterator iter = msgs.iterator();
+							List<GatewayMsg> msgs = GatewayMsgFactory.parseGatewayMsg(buf2go);
+							Iterator<GatewayMsg> iter = msgs.iterator();
 							while (iter.hasNext()){
 								GatewayMsg msg = (GatewayMsg) iter.next();
 								log.info(msg.toString());
@@ -214,17 +216,15 @@ public class DispatchListener {
 							}
 						}
 						else{
-							ByteBuffer buf = Buffer.clone(this.readBuffer);
-							//deep clone is required
-							cb.dispatchDaemon(buf);
+							log.info("dispatcher");
+							cb.dispatchDaemon(buf2go);
 						}
 					}
 					
 					else if (key.isWritable()){
 						log.debug(key.channel().toString() + " is writable");
 						SocketChannel sockChan = (SocketChannel) key.channel();
-						
-						List queue = this.peningMsg.get(sockChan);
+						List<ByteBuffer> queue = this.peningMsg.get(sockChan);
 						
 						synchronized (this.peningMsg){
 							int numWrite = -1;
@@ -237,13 +237,11 @@ public class DispatchListener {
 								}
 								queue.remove(0);
 							}
-							
 							if (queue.isEmpty()){
 								log.info(numWrite + " bytes has been written to " + sockToString(sockChan.socket()));
 								key.interestOps(SelectionKey.OP_READ);
 							}
 						}
-						
 					}
 				}
 			} catch (IOException e) {

@@ -16,6 +16,7 @@ import nuctrl.core.IF.IDispatcher;
 import nuctrl.core.IF.IGatewayListener;
 import nuctrl.core.IF.IMasterDup;
 import nuctrl.core.IF.IPacketListener;
+import nuctrl.core.datastruct.Buffer;
 import nuctrl.protocol.CoreStatus;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
@@ -24,6 +25,9 @@ import nuctrl.protocol.GatewayMsgType;
 import org.apache.log4j.Logger;
 
 public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
+	/* Configuration */
+	private static final boolean isRingTest = true;
+	
 	
 	private Monitor mn;
 	private Gateway cb;
@@ -46,7 +50,7 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	private ByteBuffer buf4Right;
 
 	private List<ByteBuffer> dispatchMsgQueue = new LinkedList<ByteBuffer>();
-	private static final boolean isRingTest = true;
+	
 	// logger
 	private static Logger log;
 	
@@ -189,19 +193,14 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 				log.info("gen");
 			}
 		}
-		
-		
-		
-		
 	}
 
 	
 	@Override
 	public void dispatchDaemon(ByteBuffer msg){
-		// FIXME copy requires
-		ByteBuffer m = msg;
+		// msg has been Safely copied
 		synchronized (this.dispatchMsgQueue){
-			this.dispatchMsgQueue.add(m);
+			this.dispatchMsgQueue.add(msg);
 			this.dispatchMsgQueue.notify();
 		}
 	}

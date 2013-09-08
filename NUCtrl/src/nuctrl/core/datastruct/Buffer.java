@@ -2,6 +2,8 @@ package nuctrl.core.datastruct;
 
 import java.nio.ByteBuffer;
 
+import nuctrl.protocol.GatewayMsg;
+
 public class Buffer {
 	public static ByteBuffer clone(ByteBuffer original_buf){
 		ByteBuffer buf = ByteBuffer.allocate(original_buf.capacity());
@@ -24,5 +26,26 @@ public class Buffer {
 			to.limit(from.limit());
 			return true;
 		}
+	}
+	
+	/*
+	 * original buffer will be extracted out as many as possible GatewayMsg, uncompleted Msg will be left
+	 * But original_buf.compact() is left to call thread(!!)
+	 * return Bytebuffer, integrated guaranteed
+	 */
+	public static ByteBuffer safeClone(ByteBuffer original_buf){
+		int offset = original_buf.position();
+		int max = original_buf.limit();
+		while(offset + GatewayMsg.OFF_LENGTH < max){
+			int len = original_buf.getInt(offset + GatewayMsg.OFF_LENGTH);
+			if (offset + len > max + 1)
+				break;
+			offset += len;
+		}
+		byte[] temp = new byte[offset];
+		original_buf.get(temp);
+		original_buf.position(offset);
+		ByteBuffer out = ByteBuffer.wrap(temp);
+		return out;
 	}
 }
