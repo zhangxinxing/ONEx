@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,6 +17,9 @@ import nuctrl.core.IF.IGatewayListener;
 import nuctrl.core.IF.IMasterDup;
 import nuctrl.core.IF.IPacketListener;
 import nuctrl.protocol.CoreStatus;
+import nuctrl.protocol.GatewayMsg;
+import nuctrl.protocol.GatewayMsgFactory;
+import nuctrl.protocol.GatewayMsgType;
 
 import org.apache.log4j.Logger;
 
@@ -28,12 +32,21 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	// for neighborhood communication
 	private DispatchListener listenerForRight;
 	private DispatchListener listenerForLeft;
+	private boolean leftReady;
+	private boolean rightReady;
 	
 	private String GATEWAY_ID;
 	private InetSocketAddress sockAdd4Left;
 	private InetSocketAddress sockAdd4Right;
+	
+	
+	
+	
+	private ByteBuffer buf4Left;
+	private ByteBuffer buf4Right;
 
-	private List dispatchMsgQueue = new LinkedList();
+	private List<ByteBuffer> dispatchMsgQueue = new LinkedList<ByteBuffer>();
+	private static final boolean isRingTest = true;
 	// logger
 	private static Logger log;
 	
@@ -44,6 +57,11 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		
 		this.cb = this;
 		this.GATEWAY_ID = gid;
+		this.buf4Left = ByteBuffer.allocate(1024);
+		this.buf4Right = ByteBuffer.allocate(1024);
+		this.leftReady = false;
+		this.rightReady = false;
+		
 		InetAddress L,R;
 		try {
 			L = InetAddress.getByName(IP4Left);
@@ -108,6 +126,7 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			public void run(){
 				Thread.currentThread().setName(GATEWAY_ID + "'s right listener");
 				listenerForRight = new DispatchListener(sockAdd4Right, (ServerSocketChannel) null, cb);
+				rightReady = true;
 				listenerForRight.listen();
 			}
 		});
@@ -117,6 +136,7 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			public void run(){
 				Thread.currentThread().setName(GATEWAY_ID + "'s left listener");
 				listenerForLeft = new DispatchListener(sockAdd4Left, (SocketChannel)null, cb);
+				leftReady = true;
 				listenerForLeft.listen();
 			}
 		});
@@ -134,6 +154,45 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		});
 		dispatcher.start();
 		log.info(this.toString() + " ready");
+		
+		while(!this.leftReady){
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		GatewayMsg hello = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO, (short)1, (short)2);
+		synchronized(this.buf4Left){
+			hello.writeTo(this.buf4Left);
+			this.buf4Left.flip();
+			this.listenerForLeft.sendToOnePeer(this.buf4Left);
+		}
+		
+		
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if(this.GATEWAY_ID == "g1"){
+			log.info("Before gen");
+			this.buf4Left.clear();
+			GatewayMsg msg = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO_ACK, (short)0, (short)0);
+			synchronized(this.buf4Left){
+				msg.writeTo(this.buf4Left);
+				this.buf4Left.flip();
+				this.listenerForLeft.sendToOnePeer(this.buf4Left);
+				log.info("gen");
+			}
+		}
+		
+		
+		
+		
 	}
 
 	
@@ -162,8 +221,28 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 				}
 				buf = (ByteBuffer)this.dispatchMsgQueue.remove(0);
 			} // end of sync
+			
+			// XXX ring test
+			if(isRingTest){
+				this.listenerForLeft.sendToOnePeer(buf);
+			} else{
+				List<GatewayMsg> msgs = GatewayMsgFactory.parseGatewayMsg(buf);
+				Iterator<GatewayMsg> iter = msgs.iterator();
+				while(iter.hasNext()){
+					GatewayMsg msg = iter.next();
+					// process every single msg
+				}
+			}
 		}
 	}
+	
+	
+	public void genLeftPkg(){
+		GatewayMsg msg = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO, (short)0, (short)0);
+		this.listenerForLeft.sendToOnePeer(msg.toBuffer());
+	}
+	
+	
 	
 	@Override
 	public String toString(){

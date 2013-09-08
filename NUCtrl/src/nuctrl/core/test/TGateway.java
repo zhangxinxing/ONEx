@@ -37,6 +37,8 @@ public class TGateway {
 		m1.start();
 		m2.start();
 		m3.start();
+		
+		
 	}
 
 }

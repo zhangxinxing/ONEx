@@ -17,13 +17,21 @@ import java.util.List;
 import java.util.Map;
 
 import nuctrl.core.IF.IDispatcher;
+import nuctrl.core.datastruct.Buffer;
+import nuctrl.core.debug.Dump;
 import nuctrl.protocol.DispatchRequest;
 import nuctrl.protocol.EDispatchTarget;
 import nuctrl.protocol.GatewayMsg;
+import nuctrl.protocol.GatewayMsgFactory;
+import nuctrl.protocol.GatewayMsgType;
 
 import org.apache.log4j.Logger;
 
 public class DispatchListener {
+	
+	
+	// only for LEFT
+	private static final int RETRY_INTERVAL = 1000;
 	
 	private ServerSocketChannel serverSockChan;
 	private SocketChannel sockChan_as_client; // used when isRight is false
@@ -35,8 +43,10 @@ public class DispatchListener {
 	
 	private static Logger log;
 	private boolean isRight;
+	private boolean helloSent;
 	
 	private ByteBuffer readBuffer = ByteBuffer.allocate(8192);
+	private ByteBuffer writeBuffer = ByteBuffer.allocate(8192);
 	
 	private List<DispatchRequest> dispatchRequests = new LinkedList<DispatchRequest>();
 	private Map<SocketChannel, List<ByteBuffer>> peningMsg = 
@@ -59,9 +69,9 @@ public class DispatchListener {
 						this.sockChan_as_client = SocketChannel.open(sockAddr);
 						break;
 					} catch (ConnectException ce){
-						log.info("Left Socket: No Server is on, retry in 5s...");
+						log.info(String.format("Left Socket: No Server is on, retry in %ds...", this.RETRY_INTERVAL/1000));
 						try {
-							Thread.sleep(5000);//5 second
+							Thread.sleep(this.RETRY_INTERVAL);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						} 
@@ -112,50 +122,27 @@ public class DispatchListener {
 	
 
 
-	public int sentToOne(ByteBuffer msg){
-		log.debug("SendToOne " + this.toString());
-		SocketChannel sockChan;
-		if(isRight){
-			if (this.sockList_as_server.size() != 1){
-				// TODO use exception
-				return -1;
-			}
-			sockChan = this.sockList_as_server.get(0);
-		}
-		else {
-			sockChan = this.sockChan_as_client;
-		}
-		this.send(sockChan, msg);
-		return 0;
-	}
-	
-	public void send(SocketChannel sock, ByteBuffer msg){
-		log.debug("Seng " + this.toString());
-		// NOTE asynchronized method from selecting thread
-		synchronized (dispatchRequests){
-			DispatchRequest dr = new DispatchRequest(sock, 
-					DispatchRequest.CHANGEOPS, SelectionKey.OP_WRITE);
-			this.dispatchRequests.add(dr);
-			
-			synchronized (this.peningMsg){
-				List<ByteBuffer> queue = this.peningMsg.get(sock);
-				if (queue == null){
-					queue = new LinkedList<ByteBuffer>();
-					this.peningMsg.put(sock, queue);
-				}
-				
-				queue.add(msg);
-			}
-		}
-		// wake up selector
-		this.sl.wakeup();
-	}
-	
-	
 	public void listen(){
 		while(true){
+//			//XXX DEBUG ONLY
+//			SocketChannel debug_sock = null;
+//			if (this.isRight)
+//				if (!this.sockList_as_server.isEmpty())
+//					debug_sock = this.sockList_as_server.get(0);
+//				else
+//					if (this.sockChan_as_client != null)
+//						debug_sock = this.sockChan_as_client;
+//
+//			if (debug_sock != null){
+//				SelectionKey debug_key= debug_sock.keyFor(this.sl);
+//				log.info(Dump.key(debug_key));
+//			}
+//			//XXX
+			
+			
+			
 			try {
-				
+				//TODO simplify ?
 				synchronized(dispatchRequests){
 					Iterator changes = this.dispatchRequests.iterator();
 					while (changes.hasNext()){
@@ -165,7 +152,7 @@ public class DispatchListener {
 							change.sockChan.keyFor(this.sl).interestOps(change.ops);
 						}
 					}
-					dispatchRequests.clear();
+					dispatchRequests.clear(); //No any problem
 				}
 				
 				sl.select();
@@ -196,7 +183,6 @@ public class DispatchListener {
 					}
 					else if (key.isReadable()){						
 						//read the key
-						log.info(this.toString() + " is readable");
 						SocketChannel sc = (SocketChannel) key.channel();
 						this.readBuffer.clear();
 						int numRead;
@@ -205,10 +191,33 @@ public class DispatchListener {
 							key.channel().close();
 							key.cancel();
 						}
-						// FIXME set limit before send out the readBuffer
-						// maybe more efficient after using GatewayMsg
-						cb.dispatchDaemon(this.readBuffer);
+						log.info(this.sockToString(sc.socket()) + " got " + numRead);
 						
+						this.readBuffer.flip();
+						
+						if(!helloSent){
+							List<GatewayMsg> msgs = GatewayMsgFactory.parseGatewayMsg(readBuffer);
+							Iterator iter = msgs.iterator();
+							while (iter.hasNext()){
+								GatewayMsg msg = (GatewayMsg) iter.next();
+								log.info(msg.toString());
+								if (msg.getType() == GatewayMsgType.HELLO.getType()){
+									//send HELLO_ACK
+									GatewayMsg hello_ack = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO_ACK, (short)2, (short)1);
+									ByteBuffer buf = hello_ack.toBuffer();
+									buf.flip();
+									this.sendToOnePeer(buf);
+									this.helloSent = true;
+								}
+								else
+									break;
+							}
+						}
+						else{
+							ByteBuffer buf = Buffer.clone(this.readBuffer);
+							//deep clone is required
+							cb.dispatchDaemon(buf);
+						}
 					}
 					
 					else if (key.isWritable()){
@@ -218,25 +227,24 @@ public class DispatchListener {
 						List queue = this.peningMsg.get(sockChan);
 						
 						synchronized (this.peningMsg){
+							int numWrite = -1;
 							while(!queue.isEmpty()){
 								ByteBuffer buf = (ByteBuffer) queue.get(0);
-								sockChan.write(buf);
+								numWrite = sockChan.write(buf);
 								
 								if (buf.hasRemaining()){
-									break; // will be written in next turn
+									break; // will be written in next turn, this is a queue!
 								}
 								queue.remove(0);
 							}
 							
 							if (queue.isEmpty()){
-								log.debug("All data in queue has been written to socket");
+								log.info(numWrite + " bytes has been written to " + sockToString(sockChan.socket()));
 								key.interestOps(SelectionKey.OP_READ);
 							}
 						}
 						
 					}
-					
-					
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -245,10 +253,47 @@ public class DispatchListener {
 		}
 	}
 
-	
-	EDispatchTarget readMsg(GatewayMsg msg){
-		return EDispatchTarget.TO_CENTER;
+
+	public int sendToOnePeer(ByteBuffer msg){
+		log.debug("SendToOne " + this.toString());
+		SocketChannel sockChan;
+		if(isRight){
+			if (this.sockList_as_server.size() != 1){
+				// TODO use exception
+				return -1;
+			}
+			sockChan = this.sockList_as_server.get(0);
+		}
+		else {
+			sockChan = this.sockChan_as_client;
+		}
+		this.sendToPeer(sockChan, msg);
+		return 0;
 	}
+	
+	public void sendToPeer(SocketChannel sock, ByteBuffer msg){
+		log.debug("Seng " + this.toString());
+		// NOTE asynchronized method from selecting thread
+		synchronized (dispatchRequests){
+			DispatchRequest dr = new DispatchRequest(sock, 
+					DispatchRequest.CHANGEOPS, SelectionKey.OP_WRITE);
+			this.dispatchRequests.add(dr);
+			
+			synchronized (this.peningMsg){
+				List<ByteBuffer> queue = this.peningMsg.get(sock);
+				if (queue == null){
+					queue = new LinkedList<ByteBuffer>();
+					this.peningMsg.put(sock, queue);
+				}
+				// FIXME not thread-safe msg, might be modified while processing by listen
+				// better do a copy before adding to list
+				queue.add(msg);
+			}
+		}
+		// wake up selector
+		this.sl.wakeup();
+	}
+	
 	
 	GatewayMsg parseMsg(ByteBuffer buf){
 		//TODO: translate from buffer to GatewayMsg

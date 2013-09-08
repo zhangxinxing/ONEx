@@ -5,31 +5,80 @@ import java.nio.*;
 
 
 public class GatewayMsg {
-	String from;
-	String to;
-	String short_info;
-	//OFMessage msg;
 	
-	public GatewayMsg(String from, String to) {
+	// basic information for each
+	public static final int l_header = 9;
+	
+	// field of Msg
+	/* header */
+	private byte type;
+	private short from;
+	private short to;
+	private int	length;
+	/* attach */
+	private byte[] ofm;
+	
+	//Raw 
+	public GatewayMsg(byte type, short from, short to){
 		super();
+		this.type = type;
 		this.from = from;
 		this.to = to;
+		this.length = GatewayMsg.l_header;
+		this.ofm = null;
+		
 	}
 	
-	
-	public GatewayMsg(String from, String to, ByteBuffer buf){
-		// FIXME impl requires
+	//With OFM
+	public GatewayMsg(byte type, short from, short to, byte[] ofm){
 		super();
+		
+		this.type = type;
 		this.from = from;
-		this.to = to;
+		this.to= to;
+		this.length = GatewayMsg.l_header;
+		
+		this.attachOFMessage(ofm);
 	}
 
-
+	// basic write to
 	public void writeTo(ByteBuffer buf){
-//		TODO msg.writeTo(buf);
+		buf.put(this.type);
+		buf.putInt(this.length);
+		buf.putShort(this.from);
+		buf.putShort(this.to);
+		if (this.ofm != null)
+			buf.put(this.ofm);
 	}
-}
-
-class OFMessage {
+	
+	public void attachOFMessage(byte[] ofMsg){
+		if (ofMsg != null){
+			this.ofm = ofMsg;
+			this.length += ofMsg.length;
+		}
+	}
+	
+	
+	public byte getType(){
+		return this.type;
+	}
+	
+	public short getTo(){
+		return this.to;
+	}
+	
+	public ByteBuffer toBuffer(){
+		ByteBuffer buf = ByteBuffer.allocate(this.length);
+		this.writeTo(buf);
+		return buf;
+	}
+	
+	public String toString(){
+		return String.format(
+				"GatewayMsg: %d: %d --> %d",
+				this.type,
+				this.from, this.to);
+	}
 	
 }
+
