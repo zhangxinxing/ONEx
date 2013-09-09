@@ -18,16 +18,14 @@ import java.util.Map;
 
 import nuctrl.core.IF.IDispatcher;
 import nuctrl.core.datastruct.Buffer;
-import nuctrl.core.debug.Dump;
 import nuctrl.protocol.DispatchRequest;
-import nuctrl.protocol.EDispatchTarget;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
 import nuctrl.protocol.GatewayMsgType;
 
 import org.apache.log4j.Logger;
 
-public class DispatchListener {
+public class DispatchInterface {
 	
 	
 	// only for LEFT
@@ -52,7 +50,7 @@ public class DispatchListener {
 	private Map<SocketChannel, List<ByteBuffer>> peningMsg = 
 			new HashMap<SocketChannel, List<ByteBuffer>>();
 
-	public DispatchListener(InetSocketAddress sockAddr, SocketChannel sockChan, IDispatcher cb){
+	public DispatchInterface(InetSocketAddress sockAddr, SocketChannel sockChan, IDispatcher cb){
 		// init as client end
 		this.isRight = false;
 		log = Logger.getLogger(Gateway.class.getName());
@@ -94,7 +92,7 @@ public class DispatchListener {
 	}
 
 
-	public DispatchListener(InetSocketAddress sockAddr, ServerSocketChannel ssc, IDispatcher cb){
+	public DispatchInterface(InetSocketAddress sockAddr, ServerSocketChannel ssc, IDispatcher cb){
 		// init as server end
 		this.isRight = true;
 		log = Logger.getLogger(Gateway.class.getName());

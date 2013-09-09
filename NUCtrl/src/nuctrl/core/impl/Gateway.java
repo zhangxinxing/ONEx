@@ -16,7 +16,6 @@ import nuctrl.core.IF.IDispatcher;
 import nuctrl.core.IF.IGatewayListener;
 import nuctrl.core.IF.IMasterDup;
 import nuctrl.core.IF.IPacketListener;
-import nuctrl.core.datastruct.Buffer;
 import nuctrl.protocol.CoreStatus;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
@@ -26,7 +25,7 @@ import org.apache.log4j.Logger;
 
 public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	/* Configuration */
-	private static final boolean isRingTest = true;
+	private static final boolean isRingTest = false;
 	
 	
 	private Monitor mn;
@@ -34,29 +33,29 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	private IGatewayListener coreCallback;
 	
 	// for neighborhood communication
-	private DispatchListener listenerForRight;
-	private DispatchListener listenerForLeft;
+	private DispatchInterface interfaceToRight;
+	private DispatchInterface interfaceToLeft;
+	private DispatchInterface interfaceToCenter;
 	private boolean leftReady;
 	private boolean rightReady;
+	private boolean centerReady;
 	
 	private String GATEWAY_ID;
 	private InetSocketAddress sockAdd4Left;
 	private InetSocketAddress sockAdd4Right;
-	
-	
-	
+	private InetSocketAddress sockAdd4Center;
 	
 	private ByteBuffer buf4Left;
 	private ByteBuffer buf4Right;
 
 	private List<ByteBuffer> dispatchMsgQueue = new LinkedList<ByteBuffer>();
+
+
 	
 	// logger
 	private static Logger log;
 	
-	public Gateway(String gid,
-			String IP4Left, int portL,
-			String IP4Right, int portR) {
+	public Gateway(String gid){
 		super();
 		
 		this.cb = this;
@@ -65,16 +64,8 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		this.buf4Right = ByteBuffer.allocate(1024);
 		this.leftReady = false;
 		this.rightReady = false;
+		this.centerReady = false;
 		
-		InetAddress L,R;
-		try {
-			L = InetAddress.getByName(IP4Left);
-			R = InetAddress.getByName(IP4Right);
-			sockAdd4Left = new InetSocketAddress(L, portL);
-			sockAdd4Right = new InetSocketAddress(R, portR);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
 		log = Logger.getLogger(Gateway.class.getName());
 }
 	
@@ -82,56 +73,30 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		this.coreCallback = gl;
 	}
 
-	@Override
-	public String getControllerInfo() {
-		return mn.getControllerInfo();
-	}
-
-	@Override
-	public CoreStatus getStatus() {
-		return mn.getStatus();
-		
-	}
-
-	@Override
-	public void onMsgFromMaster() {
-		// TODO Auto-generated method stub
-		// behave something
-		coreCallback.handleMessageg();
-		
+	public void setLeft(String ip, int port) 
+			throws UnknownHostException{
+		this.sockAdd4Left = new InetSocketAddress(InetAddress.getByName(ip), port);
 	}
 	
-	@Override
-	public void sendToMaster() {
-		// TODO Auto-generated method stub
-		// do sth using socket
+	public void setRight(String ip, int port) 
+			throws UnknownHostException{
+		this.sockAdd4Right = new InetSocketAddress(InetAddress.getByName(ip), port);
 	}
-
-	@Override
-	public void onPktFromSw() {
-		// TODO Auto-generated method stub
-		/*
-		 * if not busy:
-		 * 		callback.handle()
-		 * 
-		 * else if star:
-		 * 		sendToMaster()
-		 * 
-		 * else if ring:
-		 * 		sendToFriends();
-		 */
-		
+	
+	public void setCenter(String ip, int port) 
+			throws UnknownHostException{
+		this.sockAdd4Center = new InetSocketAddress(InetAddress.getByName(ip), port);
 	}
-
+	
 	public void init(){
 		// init connection
 		Thread startR = new Thread(new Runnable(){
 			@Override
 			public void run(){
 				Thread.currentThread().setName(GATEWAY_ID + "'s right listener");
-				listenerForRight = new DispatchListener(sockAdd4Right, (ServerSocketChannel) null, cb);
+				interfaceToRight = new DispatchInterface(sockAdd4Right, (ServerSocketChannel) null, cb);
 				rightReady = true;
-				listenerForRight.listen();
+				interfaceToRight.listen();
 			}
 		});
 		
@@ -139,14 +104,26 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			@Override
 			public void run(){
 				Thread.currentThread().setName(GATEWAY_ID + "'s left listener");
-				listenerForLeft = new DispatchListener(sockAdd4Left, (SocketChannel)null, cb);
+				interfaceToLeft = new DispatchInterface(sockAdd4Left, (SocketChannel)null, cb);
 				leftReady = true;
-				listenerForLeft.listen();
+				interfaceToLeft.listen();
 			}
+		});
+		
+		Thread startC = new Thread(new Runnable(){
+			@Override
+			public void run() {
+				Thread.currentThread().setName(GATEWAY_ID + " 's central listener");
+				interfaceToCenter = new DispatchInterface(sockAdd4Center, (SocketChannel) null, cb);
+				centerReady = true;
+				interfaceToCenter.listen();
+			}
+			
 		});
 		
 		startR.start();
 		startL.start();
+		startC.start();
 		
 		
 		Thread dispatcher = new Thread(new Runnable(){
@@ -159,7 +136,7 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		dispatcher.start();
 		log.info(this.toString() + " ready");
 		
-		while(!this.leftReady){
+		while(!this.leftReady || !this.centerReady){
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -168,31 +145,15 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			}
 		}
 		GatewayMsg hello = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO, (short)1, (short)2);
-		synchronized(this.buf4Left){
-			hello.writeTo(this.buf4Left);
-			this.buf4Left.flip();
-			this.listenerForLeft.sendToOnePeer(this.buf4Left);
-		}
-		
+		this.interfaceToLeft.sendToOnePeer((ByteBuffer) hello.toBuffer().flip());
+		this.interfaceToCenter.sendToOnePeer((ByteBuffer) hello.toBuffer().flip());
 		
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		if(this.GATEWAY_ID == "g1"){
-			log.info("Before gen");
-			this.buf4Left.clear();
-			GatewayMsg msg = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO_ACK, (short)0, (short)0);
-			synchronized(this.buf4Left){
-				msg.writeTo(this.buf4Left);
-				this.buf4Left.flip();
-				this.listenerForLeft.sendToOnePeer(this.buf4Left);
-				log.info("gen");
-			}
-		}
 	}
 
 	
@@ -223,7 +184,7 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			
 			// XXX ring test
 			if(isRingTest){
-				this.listenerForLeft.sendToOnePeer(buf);
+				this.interfaceToLeft.sendToOnePeer(buf);
 			} else{
 				List<GatewayMsg> msgs = GatewayMsgFactory.parseGatewayMsg(buf);
 				Iterator<GatewayMsg> iter = msgs.iterator();
@@ -235,14 +196,47 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		}
 	}
 	
-	
-	public void genLeftPkg(){
-		GatewayMsg msg = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO, (short)0, (short)0);
-		this.listenerForLeft.sendToOnePeer(msg.toBuffer());
+	@Override
+	public String getControllerInfo() {
+		return mn.getControllerInfo();
 	}
-	
-	
-	
+
+	@Override
+	public CoreStatus getStatus() {
+		return mn.getStatus();
+		
+	}
+
+	@Override
+	public void onMsgFromMaster() {
+		// TODO Auto-generated method stub
+		// behave something
+		coreCallback.handleMessageg();
+		
+	}
+
+	@Override
+	public void sendToMaster() {
+		// TODO Auto-generated method stub
+		// do sth using socket
+	}
+
+	@Override
+	public void onPktFromSw() {
+		// TODO Auto-generated method stub
+		/*
+		 * if not busy:
+		 * 		callback.handle()
+		 * 
+		 * else if star:
+		 * 		sendToMaster()
+		 * 
+		 * else if ring:
+		 * 		sendToFriends();
+		 */
+		
+	}
+
 	@Override
 	public String toString(){
 		return this.GATEWAY_ID + "'s dispatcher";
