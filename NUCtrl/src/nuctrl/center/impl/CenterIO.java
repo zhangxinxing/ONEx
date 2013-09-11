@@ -1,4 +1,4 @@
-package nuctrl.core.impl;
+package nuctrl.center.impl;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import nuctrl.core.datastruct.Buffer;
+import nuctrl.core.impl.Gateway;
 import nuctrl.protocol.DispatchRequest;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
@@ -34,6 +35,7 @@ public class CenterIO {
 	/*used when isRight is true, designed for multiple connections  */
 
 	private Selector sl;
+	private CenterDispatcher cb;
 
 	private static Logger log;
 	private Map<SocketChannel, Integer> helloSent;
@@ -53,7 +55,7 @@ public class CenterIO {
 		} catch (UnknownHostException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		log = Logger.getLogger(Gateway.class.getName());
 
 		// handling connection initialization
@@ -75,21 +77,6 @@ public class CenterIO {
 
 	public void listen(){
 		while(true){
-			//				//XXX DEBUG ONLY
-			//				SocketChannel debug_sock = null;
-			//				if (this.isRight)
-			//					if (!this.sockList_as_server.isEmpty())
-			//						debug_sock = this.sockList_as_server.get(0);
-			//					else
-			//						if (this.sockChan_as_client != null)
-			//							debug_sock = this.sockChan_as_client;
-			//
-			//				if (debug_sock != null){
-			//					SelectionKey debug_key= debug_sock.keyFor(this.sl);
-			//					log.info(Dump.key(debug_key));
-			//				}
-			//				//XXX
-
 			try {
 				//TODO simplify ?
 				synchronized(dispatchRequests){
@@ -118,84 +105,16 @@ public class CenterIO {
 
 					else if (key.isAcceptable()){
 						// accept connection
-						ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
-
-						SocketChannel sockChan = ssc.accept();
-						this.sockList_as_server.add(sockChan);
-						this.helloSent.put(sockChan, 0);
-
-						sockChan.configureBlocking(false);
-						sockChan.register(this.sl, SelectionKey.OP_READ);
-						Socket sock = sockChan.socket();
-
-						log.info("Client connected: " + this.sockToString(sock));
+						this.accept(key);
 
 					}
 					else if (key.isReadable()){
 						//read the key
-						SocketChannel sc = (SocketChannel) key.channel();
-
-						int numRead;
-						numRead = sc.read(this.readBuffer);
-						this.readBuffer.flip();
-
-						if (numRead == -1){
-							key.channel().close();
-							key.cancel();
-						}
-
-						ByteBuffer buf2go = Buffer.safeClone(this.readBuffer);
-						this.readBuffer.compact();
-
-						log.info(this.sockToString(sc.socket()) + " got " + numRead);
-						
-						 boolean hello = helloSent.get(sc) == 1 ? true:false;
-						
-						if(!hello){
-							List<GatewayMsg> msgs = GatewayMsgFactory.parseGatewayMsg(buf2go);
-							Iterator<GatewayMsg> iter = msgs.iterator();
-							while (iter.hasNext()){
-								GatewayMsg msg = (GatewayMsg) iter.next();
-								log.info(msg.toString());
-								if (msg.getType() == GatewayMsgType.HELLO.getType()){
-									//send HELLO_ACK
-									GatewayMsg hello_ack = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO_ACK, (short)2, (short)1);
-									ByteBuffer buf = hello_ack.toBuffer();
-									buf.flip();
-									this.sendToPeer(sc, buf);
-									
-									this.helloSent.put(sc, 1);
-								}
-								else
-									break;
-							}
-						}
-						else{
-							log.info("dispatcher");
-						}
+						this.read(key);
 					}
 
 					else if (key.isWritable()){
-						log.debug(key.channel().toString() + " is writable");
-						SocketChannel sockChan = (SocketChannel) key.channel();
-						List<ByteBuffer> queue = this.peningMsg.get(sockChan);
-
-						synchronized (this.peningMsg){
-							int numWrite = -1;
-							while(!queue.isEmpty()){
-								ByteBuffer buf = (ByteBuffer) queue.get(0);
-								numWrite = sockChan.write(buf);
-
-								if (buf.hasRemaining()){
-									break; // will be written in next turn, this is a queue!
-								}
-								queue.remove(0);
-							}
-							if (queue.isEmpty()){
-								log.info(numWrite + " bytes has been written to " + sockToString(sockChan.socket()));
-								key.interestOps(SelectionKey.OP_READ);
-							}
-						}
+						this.write(key);
 					}
 				}
 			} catch (IOException e) {
@@ -206,8 +125,8 @@ public class CenterIO {
 	}
 
 	public void sendToPeer(SocketChannel sock, ByteBuffer msg){
-		log.debug("Seng " + this.toString());
-		// NOTE asynchronized method from selecting thread
+		log.debug("Send " + this.toString());
+		// NOTE unsynchronized method from selecting thread
 		synchronized (dispatchRequests){
 			DispatchRequest dr = new DispatchRequest(sock, 
 					DispatchRequest.CHANGEOPS, SelectionKey.OP_WRITE);
@@ -228,10 +147,92 @@ public class CenterIO {
 		this.sl.wakeup();
 	}
 
+	private void read(SelectionKey key) throws IOException{
+		SocketChannel sc = (SocketChannel) key.channel();
+
+		int numRead;
+		numRead = sc.read(this.readBuffer);
+		this.readBuffer.flip();
+
+		if (numRead == -1){
+			key.channel().close();
+			key.cancel();
+		}
+
+		ByteBuffer buf2go = Buffer.safeClone(this.readBuffer);
+		this.readBuffer.compact();
+
+		log.debug(this.sockToString(sc.socket()) + " got " + numRead);
+
+		boolean hello = helloSent.get(sc) == 1 ? true:false;
+
+		if(!hello){
+			List<GatewayMsg> msgs = GatewayMsgFactory.parseGatewayMsg(buf2go);
+			Iterator<GatewayMsg> iter = msgs.iterator();
+			while (iter.hasNext()){
+				GatewayMsg msg = (GatewayMsg) iter.next();
+				log.info(msg.toString());
+				if (msg.getType() == GatewayMsgType.HELLO.getType()){
+
+					//send HELLO_ACK
+					GatewayMsg hello_ack = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO_ACK, (short)2, (short)1);
+					this.sendToPeer(sc, (ByteBuffer) hello_ack.toBuffer().flip());
+					this.helloSent.put(sc, 1);
+				}
+				else
+					// TODO
+					break;
+			}
+		}
+		else{
+			// TODO add dispatcher
+			log.info("dispatcher");
+		}
+	}
+
+	private void write(SelectionKey key) throws IOException{
+		log.debug(key.channel().toString() + " is writable");
+		SocketChannel sockChan = (SocketChannel) key.channel();
+		List<ByteBuffer> queue = this.peningMsg.get(sockChan);
+
+		synchronized (this.peningMsg){
+			int numWrite = -1;
+			while(!queue.isEmpty()){
+				ByteBuffer buf = (ByteBuffer) queue.get(0);
+				numWrite = sockChan.write(buf);
+
+				if (buf.hasRemaining()){
+					break; // will be written in next turn, this is a queue!
+				}
+				queue.remove(0);
+			}
+			if (queue.isEmpty()){
+				log.debug(numWrite + " bytes has been written to " + sockToString(sockChan.socket()));
+				key.interestOps(SelectionKey.OP_READ);
+			}
+		}
+	}
+
+
+
+	private void accept (SelectionKey key) throws IOException{
+		ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
+
+		SocketChannel sockChan = ssc.accept();
+		this.sockList_as_server.add(sockChan);
+		this.helloSent.put(sockChan, 0);
+
+		sockChan.configureBlocking(false);
+		sockChan.register(this.sl, SelectionKey.OP_READ);
+		Socket sock = sockChan.socket();
+
+		log.info("Client connected: " + this.sockToString(sock));
+	}
+
 	@Override
 	public String toString(){
 		String mode;
-		mode = "Right listener ";
+		mode = "Center I/O Server ";
 		return mode  
 				+ this.serverSockChan.socket();
 	}

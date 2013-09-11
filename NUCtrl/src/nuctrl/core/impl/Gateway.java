@@ -2,12 +2,11 @@ package nuctrl.core.impl;
 
 // STEP build Gateway module first to get familiar with socket as well as Java
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +24,7 @@ import org.apache.log4j.Logger;
 
 public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	/* Configuration */
-	private static final boolean isRingTest = false;
+	private static final boolean isRingTest = true;
 	
 	
 	private Monitor mn;
@@ -33,9 +32,9 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	private IGatewayListener coreCallback;
 	
 	// for neighborhood communication
-	private DispatchInterface interfaceToRight;
-	private DispatchInterface interfaceToLeft;
-	private DispatchInterface interfaceToCenter;
+	private IOPortServer rightPort;
+	private IOPortClient leftPort;
+	private IOPortClient portToCenter;
 	private boolean leftReady;
 	private boolean rightReady;
 	private boolean centerReady;
@@ -45,10 +44,11 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	private InetSocketAddress sockAdd4Right;
 	private InetSocketAddress sockAdd4Center;
 	
-	private ByteBuffer buf4Left;
-	private ByteBuffer buf4Right;
 
 	private List<ByteBuffer> dispatchMsgQueue = new LinkedList<ByteBuffer>();
+
+
+	private boolean center_alive;
 
 
 	
@@ -60,8 +60,6 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		
 		this.cb = this;
 		this.GATEWAY_ID = gid;
-		this.buf4Left = ByteBuffer.allocate(1024);
-		this.buf4Right = ByteBuffer.allocate(1024);
 		this.leftReady = false;
 		this.rightReady = false;
 		this.centerReady = false;
@@ -94,9 +92,13 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			@Override
 			public void run(){
 				Thread.currentThread().setName(GATEWAY_ID + "'s right listener");
-				interfaceToRight = new DispatchInterface(sockAdd4Right, (ServerSocketChannel) null, cb);
+				rightPort = new IOPortServer(sockAdd4Right, cb);
 				rightReady = true;
-				interfaceToRight.listen();
+				try {
+					rightPort.listen();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 		
@@ -104,9 +106,13 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			@Override
 			public void run(){
 				Thread.currentThread().setName(GATEWAY_ID + "'s left listener");
-				interfaceToLeft = new DispatchInterface(sockAdd4Left, (SocketChannel)null, cb);
+				leftPort = new IOPortClient(sockAdd4Left, cb);
 				leftReady = true;
-				interfaceToLeft.listen();
+				try {
+					leftPort.listen();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 		
@@ -114,9 +120,13 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 			@Override
 			public void run() {
 				Thread.currentThread().setName(GATEWAY_ID + " 's central listener");
-				interfaceToCenter = new DispatchInterface(sockAdd4Center, (SocketChannel) null, cb);
+				portToCenter = new IOPortClient(sockAdd4Center, cb);
 				centerReady = true;
-				interfaceToCenter.listen();
+				try {
+					portToCenter.listen();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 			
 		});
@@ -136,7 +146,9 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 		dispatcher.start();
 		log.info(this.toString() + " ready");
 		
-		while(!this.leftReady || !this.centerReady){
+		
+		// FIXME think of the bad status
+		while(!this.leftReady || !this.centerReady || !this.rightReady){
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -144,20 +156,29 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 				e.printStackTrace();
 			}
 		}
-		GatewayMsg hello = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO, (short)1, (short)2);
-		this.interfaceToLeft.sendToOnePeer((ByteBuffer) hello.toBuffer().flip());
-		this.interfaceToCenter.sendToOnePeer((ByteBuffer) hello.toBuffer().flip());
+		GatewayMsg hello = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO, (short)8, (short)8);
+		this.leftPort.sendToOnePeer((ByteBuffer) hello.toBuffer().flip());
+		this.portToCenter.sendToOnePeer((ByteBuffer) hello.toBuffer().flip());
 		
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
+	
+		if (Gateway.isRingTest){
+			if(this.GATEWAY_ID == "g1"){
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				log.info("DEBUG::TOKEN GEN");
+				GatewayMsg msg = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO_ACK, (short)0, (short)0);
+				this.leftPort.sendToOnePeer((ByteBuffer) msg.toBuffer().flip());
+				log.info("DEBUG::TOKEN GOT");
+				}
+			}
 	}
 
 	
-	@Override
+	@Override //OPT dispatch directly
 	public void dispatchDaemon(ByteBuffer msg){
 		// msg has been Safely copied
 		synchronized (this.dispatchMsgQueue){
@@ -182,15 +203,21 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 				buf = (ByteBuffer)this.dispatchMsgQueue.remove(0);
 			} // end of sync
 			
-			// XXX ring test
-			if(isRingTest){
-				this.interfaceToLeft.sendToOnePeer(buf);
-			} else{
-				List<GatewayMsg> msgs = GatewayMsgFactory.parseGatewayMsg(buf);
-				Iterator<GatewayMsg> iter = msgs.iterator();
-				while(iter.hasNext()){
-					GatewayMsg msg = iter.next();
-					// process every single msg
+			List<GatewayMsg> msgs = GatewayMsgFactory.parseGatewayMsg(buf);
+			Iterator<GatewayMsg> iter = msgs.iterator();
+			while(iter.hasNext()){
+				GatewayMsg msg = iter.next();
+				
+				if(isRingTest){
+					this.leftPort.sendToOnePeer((ByteBuffer) msg.toBuffer().flip());
+				} else if (!mn.isCpuBusy()){
+					// do it
+					// this.coreCallback(msg);
+				} else if (this.center_alive){
+					// sendToCenter
+					this.portToCenter.sendToOnePeer((ByteBuffer) msg.toBuffer().flip());
+				} else {
+					// send To Neighbor
 				}
 			}
 		}

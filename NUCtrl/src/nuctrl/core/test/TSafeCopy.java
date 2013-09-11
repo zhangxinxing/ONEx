@@ -1,12 +1,12 @@
 package nuctrl.core.test;
 
-import java.nio.ByteBuffer;
-
 import nuctrl.core.datastruct.Buffer;
 import nuctrl.core.debug.Dump;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
 import nuctrl.protocol.GatewayMsgType;
+
+import java.nio.ByteBuffer;
 
 public class TSafeCopy {
 

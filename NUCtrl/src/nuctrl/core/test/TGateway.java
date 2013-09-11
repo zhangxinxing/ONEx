@@ -1,12 +1,9 @@
 package nuctrl.core.test;
 
-import java.net.UnknownHostException;
-
-import nuctrl.core.impl.CenterIO;
+import nuctrl.center.impl.CenterIO;
 import nuctrl.core.impl.Gateway;
-import nuctrl.protocol.GatewayMsg;
-import nuctrl.protocol.GatewayMsgFactory;
-import nuctrl.protocol.GatewayMsgType;
+
+import java.net.UnknownHostException;
 
 public class TGateway {
 
@@ -26,17 +23,7 @@ public class TGateway {
 					e.printStackTrace();
 				}
 				g1.init();
-//				if(this.GATEWAY_ID == "g1"){
-//					log.info("Before gen");
-//					this.buf4Left.clear();
-//					GatewayMsg msg = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO_ACK, (short)0, (short)0);
-//					synchronized(this.buf4Left){
-//						msg.writeTo(this.buf4Left);
-//						this.buf4Left.flip();
-//						this.interfaceToLeft.sendToOnePeer(this.buf4Left);
-//						log.info("gen");
-//					}
-//				}
+
 			}
 		});
 		

@@ -1,16 +1,13 @@
 package nuctrl.core.test;
 
-import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
-import com.apple.crypto.provider.Debug;
-
 import nuctrl.core.debug.Dump;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
 import nuctrl.protocol.GatewayMsgType;
+
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.List;
 
 public class TGatewayMsg {
 
@@ -23,10 +20,10 @@ public class TGatewayMsg {
 		GatewayMsg msg2 = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO, (short)8, (short)9);
 
 		
-		System.out.println(Dump.dumpBuf(buf));
-		msg1.writeTo(buf);  System.out.println(Dump.dumpBuf(buf));
-		msg2.writeTo(buf);  System.out.println(Dump.dumpBuf(buf));
-		buf.flip();			System.out.println(Dump.dumpBuf(buf));
+		System.out.println(Dump.buf(buf));
+		msg1.writeTo(buf);  System.out.println(Dump.buf(buf));
+		msg2.writeTo(buf);  System.out.println(Dump.buf(buf));
+		buf.flip();			System.out.println(Dump.buf(buf));
 		
 		List list = GatewayMsgFactory.parseGatewayMsg(buf);
 		
