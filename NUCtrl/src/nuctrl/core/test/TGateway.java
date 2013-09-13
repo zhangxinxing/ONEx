@@ -1,8 +1,9 @@
 package nuctrl.core.test;
 
-import nuctrl.center.impl.CenterIO;
+import nuctrl.center.impl.CenterIOPort;
 import nuctrl.core.impl.Gateway;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 
 public class TGateway {
@@ -64,8 +65,13 @@ public class TGateway {
 			@Override
 			public void run() {
 				Thread.currentThread().setName("Center");
-				CenterIO cen = new CenterIO(local, 20000);
-				cen.listen();
+				CenterIOPort cen = new CenterIOPort(local, 20000, null);
+				try {
+					cen.listen();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 		});
