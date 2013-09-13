@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component inherit-compiler-output="true" jdk="1.6" jdk_type="JavaSDK">
+	<output-test url="file://$MODULE_DIR$/../out/test/NUCtrl"/>
+	<exclude-output/>
+	<contentEntry url="file://$MODULE_DIR$"/>
+	<lib name="$MODULE_DIR$" scope="COMPILE">
+		<srcroot url="file://$MODULE_DIR$/src"/>
+		<relative-module-src project-related="file://$PROJECT_DIR$/NUCtrl/src"/>
+		<relative-module-cls project-related="file://$PROJECT_DIR$/NUCtrl"/>
+	</lib>
+	<levels>
+		<level name="log4j-1.2.17" value="project"/>
+	</levels>
+</component>

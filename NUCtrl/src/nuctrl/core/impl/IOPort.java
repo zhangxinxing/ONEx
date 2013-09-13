@@ -36,7 +36,7 @@ public class IOPort {
 	protected Map<SocketChannel, List<ByteBuffer>> peningMsg = new HashMap<SocketChannel, List<ByteBuffer>>();
 	
 	
-	protected void listen() throws IOException{
+	public void listen() throws IOException{
 		while(true){
 			//TODO simplify ?
 			synchronized(dispatchRequests){
