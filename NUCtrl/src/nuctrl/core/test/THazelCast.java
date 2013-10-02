@@ -1,6 +1,7 @@
 package nuctrl.core.test;
 
 import com.hazelcast.config.NetworkConfig;
+import com.hazelcast.core.EntryView;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
@@ -19,23 +20,21 @@ public class THazelCast {
     public static void main(String[] args){
         Config cfg = new Config();
 
-        //cfg.setNetworkConfig(new NetworkConfig().setPort(12345));
-        HazelcastInstance instance = Hazelcast.newHazelcastInstance(cfg);
+        HazelcastInstance hz = Hazelcast.newHazelcastInstance(cfg);
 
-        Map<Integer, String> mapCustomers = instance.getMap("customers");
+        Map<Integer, String> mapCustomers = hz.getMap("customers");
         mapCustomers.put(1, "Joe");
         mapCustomers.put(2, "Ali");
         mapCustomers.put(3, "Avi");
-
-        System.out.println("Customer with key 1: "+ mapCustomers.get(1));
-        System.out.println("Map Size:" + mapCustomers.size());
-
-        Queue<String> queueCustomers = instance.getQueue("customers");
-        queueCustomers.offer("Tom");
-        queueCustomers.offer("Mary");
-        queueCustomers.offer("Jane");
-        System.out.println("First customer: " + queueCustomers.poll());
-        System.out.println("Second customer: "+ queueCustomers.peek());
-        System.out.println("Queue size: " + queueCustomers.size());
+        EntryView entry = hz.getMap("customers").getEntryView(1);
+        System.out.println ("size in memory : " + entry.getCost());
+        System.out.println ("creationTime : " + entry.getCreationTime());
+        System.out.println ("expirationTime : " + entry.getExpirationTime());
+        System.out.println ("number of hits : " + entry.getHits());
+        System.out.println ("lastAccessedTime: " + entry.getLastAccessTime());
+        System.out.println ("lastUpdateTime : " + entry.getLastUpdateTime());
+        System.out.println ("version: " + entry.getVersion());
+        System.out.println ("key: " + entry.getKey());
+        System.out.println ("value: " + entry.getValue());
     }
 }
