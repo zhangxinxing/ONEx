@@ -6,23 +6,23 @@ public class Monitor {
 	// get Status from
 	private CoreStatus status;
 	
-	CoreStatus getStatus() {
+	public CoreStatus getStatus() {
 		return status;
 	}
 	
-	CoreStatus getNetworkIO() {
+	public CoreStatus getNetworkIO() {
 		return null;
 	}
 	
-	CoreStatus getCpuResource() {
+	public CoreStatus getCpuResource() {
 		return null;
 	}
 	
-	String getControllerInfo(){
+	public String getControllerInfo(){
 		return "This is controller";
 	}
 	
-	boolean isCpuBusy(){
+	public boolean isCpuBusy(){
 		return false;
 	}
 	

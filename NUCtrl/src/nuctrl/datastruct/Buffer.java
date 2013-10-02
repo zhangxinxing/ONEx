@@ -1,4 +1,4 @@
-package nuctrl.core.datastruct;
+package nuctrl.datastruct;
 
 import java.nio.ByteBuffer;
 

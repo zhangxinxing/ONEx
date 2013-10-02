@@ -1,12 +1,12 @@
 package nuctrl.core.impl;
 
-import nuctrl.core.IF.IBeaconProvider;
-import nuctrl.core.IF.IGViewListener;
-import nuctrl.core.IF.IGatewayListener;
+import nuctrl.interfaces.IGViewListener;
+import nuctrl.interfaces.IGatewayListener;
+import nuctrl.gateway.Gateway;
 import nuctrl.protocol.GlobalView;
 import nuctrl.protocol.LocalView;
 
-public class Core implements IGatewayListener, IBeaconProvider, IGViewListener{
+public class Core implements IGatewayListener, IGViewListener{
 	private NDB networkDB;
 	private LocalView localView;
 	private GlobalView globalView;

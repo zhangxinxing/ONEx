@@ -1,7 +1,7 @@
-package nuctrl.core.test;
+package nuctrl.test;
 
-import nuctrl.core.datastruct.Buffer;
-import nuctrl.core.debug.Dump;
+import nuctrl.datastruct.Buffer;
+import nuctrl.debug.Dump;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
 import nuctrl.protocol.GatewayMsgType;

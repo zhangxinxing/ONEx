@@ -1,4 +1,4 @@
-package nuctrl.core.impl;
+package nuctrl.gateway;
 
 // STEP build Gateway module first to get familiar with socket as well as Java
 
@@ -11,10 +11,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import nuctrl.core.IF.IDispatcher;
-import nuctrl.core.IF.IGatewayListener;
-import nuctrl.core.IF.IMasterDup;
-import nuctrl.core.IF.IPacketListener;
+import nuctrl.interfaces.IDispatcher;
+import nuctrl.interfaces.IGatewayListener;
+import nuctrl.interfaces.IMasterDup;
+import nuctrl.interfaces.IPacketListener;
+import nuctrl.core.impl.Monitor;
 import nuctrl.protocol.CoreStatus;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;

@@ -1,4 +1,4 @@
-package nuctrl.core.debug;
+package nuctrl.debug;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;

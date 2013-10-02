@@ -1,4 +1,4 @@
-package nuctrl.core.impl;
+package nuctrl.gateway;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -13,7 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import nuctrl.core.datastruct.Buffer;
+import nuctrl.datastruct.Buffer;
 import nuctrl.protocol.DispatchRequest;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;

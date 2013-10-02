@@ -1,4 +1,4 @@
-package nuctrl.core.IF;
+package nuctrl.interfaces;
 
 import nuctrl.protocol.CoreStatus;
 

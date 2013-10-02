@@ -1,7 +1,7 @@
-package nuctrl.core.test;
+package nuctrl.test;
 
 import nuctrl.center.impl.CenterIOPort;
-import nuctrl.core.impl.Gateway;
+import nuctrl.gateway.Gateway;
 
 import java.io.IOException;
 import java.net.UnknownHostException;

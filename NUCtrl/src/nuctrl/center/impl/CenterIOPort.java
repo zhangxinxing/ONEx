@@ -13,9 +13,9 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.List;
 
-import nuctrl.core.IF.IDispatcher;
-import nuctrl.core.datastruct.Buffer;
-import nuctrl.core.impl.IOPort;
+import nuctrl.interfaces.IDispatcher;
+import nuctrl.datastruct.Buffer;
+import nuctrl.gateway.IOPort;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
 import nuctrl.protocol.GatewayMsgType;

@@ -1,6 +1,6 @@
-package nuctrl.core.test;
+package nuctrl.test;
 
-import nuctrl.core.debug.Dump;
+import nuctrl.debug.Dump;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
 import nuctrl.protocol.GatewayMsgType;
