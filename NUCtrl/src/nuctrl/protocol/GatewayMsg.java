@@ -1,7 +1,7 @@
 package nuctrl.protocol;
 
 
-import java.nio.*;
+import java.nio.ByteBuffer;
 
 
 public class GatewayMsg {

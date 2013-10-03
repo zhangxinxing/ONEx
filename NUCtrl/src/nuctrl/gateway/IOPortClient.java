@@ -1,5 +1,12 @@
 package nuctrl.gateway;
 
+import nuctrl.datastruct.Buffer;
+import nuctrl.interfaces.IDispatcher;
+import nuctrl.protocol.GatewayMsg;
+import nuctrl.protocol.GatewayMsgFactory;
+import nuctrl.protocol.GatewayMsgType;
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
@@ -10,14 +17,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.List;
-
-import nuctrl.interfaces.IDispatcher;
-import nuctrl.datastruct.Buffer;
-import nuctrl.protocol.GatewayMsg;
-import nuctrl.protocol.GatewayMsgFactory;
-import nuctrl.protocol.GatewayMsgType;
-
-import org.apache.log4j.Logger;
 
 public class IOPortClient extends IOPort{
 	// only for LEFT

@@ -1,5 +1,12 @@
 package nuctrl.gateway;
 
+import nuctrl.datastruct.Buffer;
+import nuctrl.protocol.DispatchRequest;
+import nuctrl.protocol.GatewayMsg;
+import nuctrl.protocol.GatewayMsgFactory;
+import nuctrl.protocol.GatewayMsgType;
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -7,19 +14,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import nuctrl.datastruct.Buffer;
-import nuctrl.protocol.DispatchRequest;
-import nuctrl.protocol.GatewayMsg;
-import nuctrl.protocol.GatewayMsgFactory;
-import nuctrl.protocol.GatewayMsgType;
-
-import org.apache.log4j.Logger;
+import java.util.*;
 
 public class IOPort {
 

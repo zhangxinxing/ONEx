@@ -2,6 +2,17 @@ package nuctrl.gateway;
 
 // STEP build Gateway module first to get familiar with socket as well as Java
 
+import nuctrl.core.impl.Monitor;
+import nuctrl.interfaces.IDispatcher;
+import nuctrl.interfaces.IGatewayListener;
+import nuctrl.interfaces.IMasterDup;
+import nuctrl.interfaces.IPacketListener;
+import nuctrl.protocol.CoreStatus;
+import nuctrl.protocol.GatewayMsg;
+import nuctrl.protocol.GatewayMsgFactory;
+import nuctrl.protocol.GatewayMsgType;
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -10,18 +21,6 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import nuctrl.interfaces.IDispatcher;
-import nuctrl.interfaces.IGatewayListener;
-import nuctrl.interfaces.IMasterDup;
-import nuctrl.interfaces.IPacketListener;
-import nuctrl.core.impl.Monitor;
-import nuctrl.protocol.CoreStatus;
-import nuctrl.protocol.GatewayMsg;
-import nuctrl.protocol.GatewayMsgFactory;
-import nuctrl.protocol.GatewayMsgType;
-
-import org.apache.log4j.Logger;
 
 public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	/* Configuration */

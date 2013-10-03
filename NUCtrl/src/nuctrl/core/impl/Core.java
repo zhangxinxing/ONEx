@@ -1,12 +1,11 @@
 package nuctrl.core.impl;
 
-import nuctrl.interfaces.IGViewListener;
-import nuctrl.interfaces.IGatewayListener;
 import nuctrl.gateway.Gateway;
+import nuctrl.interfaces.IGatewayListener;
 import nuctrl.protocol.GlobalView;
 import nuctrl.protocol.LocalView;
 
-public class Core implements IGatewayListener, IGViewListener{
+public class Core implements IGatewayListener{
 	private NDB networkDB;
 	private LocalView localView;
 	private GlobalView globalView;
@@ -25,18 +24,6 @@ public class Core implements IGatewayListener, IGViewListener{
 		
 	}
 
-	@Override
-	public void onGVupdate(GlobalView newGV) {
-		this.globalView.update(newGV);
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void uploadGV() {
-		// TODO Auto-generated method stub
-		
-	}
 
 	
 	

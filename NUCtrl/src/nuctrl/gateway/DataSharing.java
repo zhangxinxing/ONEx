@@ -1,11 +1,12 @@
 package nuctrl.gateway;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import nuctrl.Settings;
 import nuctrl.core.impl.Monitor;
+import nuctrl.interfaces.BusyChangeCallback;
+import nuctrl.interfaces.TopologyChangeCallback;
 import nuctrl.protocol.BusyTable;
 
 import java.util.concurrent.ConcurrentMap;
@@ -15,7 +16,7 @@ import java.util.concurrent.ConcurrentMap;
  * Date: 13-10-3
  * Time: PM8:19
  */
-public class DataSharing implements Runnable {
+public class DataSharing implements Runnable, BusyChangeCallback, TopologyChangeCallback{
     private HazelcastInstance hz;
     private int myID;
     private BusyTable localBt;
@@ -36,6 +37,7 @@ public class DataSharing implements Runnable {
         return (bt != null);
     }
 
+    @Override
     public boolean updateLocalBusyTable(){
         ConcurrentMap<Integer, BusyTable> map = hz.getMap(Settings.BUSYTABLE_MAP);
         localBt.setCpuAccountPerApp("App1", Monitor.getCpuAccount());
@@ -53,17 +55,22 @@ public class DataSharing implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("myId = " + this.myID);
         try {
+            Thread.sleep(1000);
+            this.updateLocalBusyTable();
+
             while(true){
                 Thread.sleep(500);
                 this.getBusyTable(myID);
-
-                Thread.sleep(1000);
-                this.updateLocalBusyTable();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean updateTopology() {
+        // TODO
+        return false;
     }
 }

@@ -1,23 +1,18 @@
 package nuctrl.gateway;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.Iterator;
-import java.util.List;
-
-import nuctrl.interfaces.IDispatcher;
 import nuctrl.datastruct.Buffer;
+import nuctrl.interfaces.IDispatcher;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
 import nuctrl.protocol.GatewayMsgType;
-
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.*;
+import java.util.Iterator;
+import java.util.List;
 
 public class IOPortServer extends IOPort{
 

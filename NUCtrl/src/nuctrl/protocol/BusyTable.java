@@ -1,11 +1,7 @@
 package nuctrl.protocol;
 
-import com.hazelcast.nio.ObjectDataInput;
-import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.nio.serialization.DataSerializable;
 import nuctrl.Settings;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -21,7 +17,7 @@ public class BusyTable implements Serializable {
     // per controller
     private int ID;
     private String nodeName;
-    private InetAddress addr;
+    private InetAddress addr;//TODO change it to InetSocketAddr
     private int sizeOfQueueIn;
     private Map<String, Integer> cpuAccountPerApp;
 

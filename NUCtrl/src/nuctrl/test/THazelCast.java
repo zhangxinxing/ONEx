@@ -1,8 +1,8 @@
 package nuctrl.test;
 
+import com.hazelcast.config.Config;
 import com.hazelcast.core.EntryView;
 import com.hazelcast.core.Hazelcast;
-import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
 
 import java.util.Map;

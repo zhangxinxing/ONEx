@@ -1,8 +1,8 @@
 package nuctrl.datastruct;
 
-import java.nio.ByteBuffer;
-
 import nuctrl.protocol.GatewayMsg;
+
+import java.nio.ByteBuffer;
 
 public class Buffer {
 	public static ByteBuffer clone(ByteBuffer original_buf){
