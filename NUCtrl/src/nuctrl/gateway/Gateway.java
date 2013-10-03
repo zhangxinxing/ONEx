@@ -7,7 +7,6 @@ import nuctrl.interfaces.IDispatcher;
 import nuctrl.interfaces.IGatewayListener;
 import nuctrl.interfaces.IMasterDup;
 import nuctrl.interfaces.IPacketListener;
-import nuctrl.protocol.CoreStatus;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
 import nuctrl.protocol.GatewayMsgType;
@@ -226,12 +225,6 @@ public class Gateway implements IMasterDup, IPacketListener, IDispatcher{
 	@Override
 	public String getControllerInfo() {
 		return mn.getControllerInfo();
-	}
-
-	@Override
-	public CoreStatus getStatus() {
-		return mn.getStatus();
-		
 	}
 
 	@Override

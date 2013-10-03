@@ -13,40 +13,16 @@ import java.util.Map;
  * Date: 13-10-3
  * Time: PM8:25
  */
-public class BusyTable implements Serializable {
+public class BusyTableEntry implements Serializable {
     // per controller
     private int ID;
-    private String nodeName;
-    private InetAddress addr;//TODO change it to InetSocketAddr
     private int sizeOfQueueIn;
     private Map<String, Integer> cpuAccountPerApp;
 
-    public BusyTable(int id) {
+    public BusyTableEntry(int id) {
         this.ID = id;
-        try {
-            this.addr = Settings.getAddrByID(id);
-        } catch (UnknownHostException e) {
-            this.addr = null;
-        }
-        this.nodeName = Integer.toString(id);
         this.sizeOfQueueIn = 0;
         this.cpuAccountPerApp = new HashMap<String, Integer>();
-    }
-
-    public String getNodeName() {
-        return nodeName;
-    }
-
-    public void setNodeName(String nodeName) {
-        this.nodeName = nodeName;
-    }
-
-    public InetAddress getAddr() {
-        return addr;
-    }
-
-    public void setAddr(InetAddress addr) {
-        this.addr = addr;
     }
 
     public int getSizeOfQueueIn() {
@@ -73,9 +49,8 @@ public class BusyTable implements Serializable {
     @Override
     public String toString(){
         return String.format(
-                "%d: Addr=%s, sizeOfQ=%d, sizeOfA=%d",
+                "ID:%d, sizeOfQ=%d, sizeOfA=%d",
                 this.ID,
-                this.addr.toString(),
                 this.sizeOfQueueIn,
                 this.cpuAccountPerApp.size()
         );

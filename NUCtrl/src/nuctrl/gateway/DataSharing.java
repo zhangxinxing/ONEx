@@ -7,7 +7,7 @@ import nuctrl.Settings;
 import nuctrl.core.impl.Monitor;
 import nuctrl.interfaces.BusyChangeCallback;
 import nuctrl.interfaces.TopologyChangeCallback;
-import nuctrl.protocol.BusyTable;
+import nuctrl.protocol.BusyTableEntry;
 
 import java.util.concurrent.ConcurrentMap;
 
@@ -19,18 +19,18 @@ import java.util.concurrent.ConcurrentMap;
 public class DataSharing implements Runnable, BusyChangeCallback, TopologyChangeCallback{
     private HazelcastInstance hz;
     private int myID;
-    private BusyTable localBt;
+    private BusyTableEntry localBt;
 
     public DataSharing(){
         myID = Settings.getLocalID();
         Config cfg = new Config();
         this.hz = Hazelcast.newHazelcastInstance(cfg);
-        this.localBt = new BusyTable(myID);
+        this.localBt = new BusyTableEntry(myID);
     }
 
     private boolean getBusyTable(int id){
-        ConcurrentMap<Integer, BusyTable> map = hz.getMap(Settings.BUSYTABLE_MAP);
-        BusyTable bt = map.get(id);
+        ConcurrentMap<Integer, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
+        BusyTableEntry bt = map.get(id);
         if (bt != null){
             System.out.println(bt.toString());
         }
@@ -39,7 +39,7 @@ public class DataSharing implements Runnable, BusyChangeCallback, TopologyChange
 
     @Override
     public boolean updateLocalBusyTable(){
-        ConcurrentMap<Integer, BusyTable> map = hz.getMap(Settings.BUSYTABLE_MAP);
+        ConcurrentMap<Integer, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
         localBt.setCpuAccountPerApp("App1", Monitor.getCpuAccount());
         localBt.setSizeOfQueueIn(Monitor.getSizeOfQueueIn());
 
