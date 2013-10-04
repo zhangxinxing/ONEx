@@ -4,6 +4,7 @@ import nuctrl.Settings;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,12 +16,12 @@ import java.util.Map;
  */
 public class BusyTableEntry implements Serializable {
     // per controller
-    private int ID;
+    private InetSocketAddress addr;
     private int sizeOfQueueIn;
     private Map<String, Integer> cpuAccountPerApp;
 
-    public BusyTableEntry(int id) {
-        this.ID = id;
+    public BusyTableEntry(InetSocketAddress addr) {
+        this.addr = addr;
         this.sizeOfQueueIn = 0;
         this.cpuAccountPerApp = new HashMap<String, Integer>();
     }
@@ -50,7 +51,7 @@ public class BusyTableEntry implements Serializable {
     public String toString(){
         return String.format(
                 "ID:%d, sizeOfQ=%d, sizeOfA=%d",
-                this.ID,
+                this.addr.toString(),
                 this.sizeOfQueueIn,
                 this.cpuAccountPerApp.size()
         );

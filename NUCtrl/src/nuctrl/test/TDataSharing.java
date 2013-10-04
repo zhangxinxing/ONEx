@@ -1,5 +1,6 @@
 package nuctrl.test;
 
+import nuctrl.Settings;
 import nuctrl.gateway.DataSharing;
 
 /**
@@ -10,11 +11,13 @@ import nuctrl.gateway.DataSharing;
 public class TDataSharing{
 
     public static void main(String[] args){
+        Settings set = new Settings();
         DataSharing ds = new DataSharing();
+        ds.updateBusyTable();
+        ds.getWhoIsIdle();
 
+        ds.updateBusyTable(); // update again
 
-        Thread t = new Thread(ds);
-        t.start();
+        ds.updateTopology();
     }
-
 }
