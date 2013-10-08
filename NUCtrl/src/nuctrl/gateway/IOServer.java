@@ -15,14 +15,17 @@
  */
 package nuctrl.gateway;
 
+import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.*;
+import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.codec.serialization.ClassResolvers;
+import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
+import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
+
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.apache.log4j.Logger;
 
 /**
  * Echoes back any received data from a client.
@@ -30,12 +33,13 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 public class IOServer {
 
     private final int port;
+    private Logger log = Logger.getLogger(IOServer.class);
 
     public IOServer(int port) {
         this.port = port;
     }
 
-    public void run() {
+    public void init() {
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
@@ -45,13 +49,25 @@ public class IOServer {
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             public ChannelPipeline getPipeline() throws Exception {
-                return Channels.pipeline(new IOServerHandler());
+                ChannelPipeline p = Channels.pipeline();
+
+                // upward
+                p.addLast("Decoder", new ObjectDecoder(
+                        ClassResolvers.cacheDisabled(
+                                getClass().getClassLoader())
+                ));
+                p.addLast("UpHandler", new ServerUpHandler());
+
+                // downward
+                p.addLast("DownHandler", new ServerDownHandler());
+                p.addLast("Encoder", new ObjectEncoder());
+
+                return p;
             }
         });
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
     }
-
 
 }

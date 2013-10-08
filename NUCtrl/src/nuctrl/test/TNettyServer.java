@@ -15,6 +15,8 @@ public class TNettyServer {
         } else {
             port = 8080;
         }
-        new IOServer(port).run();
+        IOServer ioServer = new IOServer(port);
+
+        ioServer.init();
     }
 }

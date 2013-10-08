@@ -15,31 +15,31 @@
  */
 package nuctrl.gateway;
 
+import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.channel.*;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.handler.codec.serialization.ClassResolvers;
+import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
+import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
+
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
-
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
 public class IOClient {
 
     private final String host;
     private final int port;
-    private final int firstMessageSize;
+    private Channel channel;
+    private ClientBootstrap bootstrap;
 
-    public IOClient(String host, int port, int firstMessageSize) {
+    public IOClient(String host, int port) {
         this.host = host;
         this.port = port;
-        this.firstMessageSize = firstMessageSize;
     }
 
-    public void run() {
+    public void init() {
         // Configure the client.
-        ClientBootstrap bootstrap = new ClientBootstrap(
+        bootstrap = new ClientBootstrap(
                 new NioClientSocketChannelFactory(
                         Executors.newCachedThreadPool(),
                         Executors.newCachedThreadPool()));
@@ -47,18 +47,39 @@ public class IOClient {
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             public ChannelPipeline getPipeline() throws Exception {
-                return Channels.pipeline(
-                        new IOClientHandler());
+                ChannelPipeline p = Channels.pipeline();
+
+                // upward
+                p.addLast("ObjectDecoder", new ObjectDecoder(
+                        ClassResolvers.cacheDisabled(
+                                getClass().getClassLoader())
+                ));
+                p.addLast("UpHandler", new ClientUpHandler());
+
+                // downward
+                p.addLast("DownHander", new ClientDownHandler());
+                p.addLast("ObjectEncoder", new ObjectEncoder());
+                return p;
             }
         });
 
-        // Start the connection attempt.
         ChannelFuture future = bootstrap.connect(new InetSocketAddress(host, port));
+        channel = future.awaitUninterruptibly().getChannel();
 
-        // Wait until the connection is closed or the connection attempt fails.
-        future.getChannel().getCloseFuture().awaitUninterruptibly();
+        if (!future.isSuccess()) {
+            future.getCause().printStackTrace();
+            bootstrap.releaseExternalResources();
+            return;
+        }
+    }
 
-        // Shut down thread pools to exit.
+    public void send(Object obj){
+        ChannelFuture future = channel.write(obj);
+        future.awaitUninterruptibly();
+    }
+
+    private void destroy(){
+        channel.close().awaitUninterruptibly();
         bootstrap.releaseExternalResources();
     }
 }

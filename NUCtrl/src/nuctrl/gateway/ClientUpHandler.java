@@ -15,36 +15,39 @@
  */
 package nuctrl.gateway;
 
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-
 import org.apache.log4j.Logger;
+import org.jboss.netty.channel.*;
 
 /**
- * Handler implementation for the echo server.
+ * Handler implementation for the echo client.  It initiates the ping-pong
+ * traffic between the echo client and server by sending the first message to
+ * the server.
  */
-public class IOServerHandler extends SimpleChannelUpstreamHandler {
+public class ClientUpHandler extends SimpleChannelUpstreamHandler {
+    private Logger log = Logger.getLogger(ClientUpHandler.class);
 
-    private Logger log = Logger.getLogger(IOServerHandler.class);
+    public ClientUpHandler() {
+    }
 
-    private final AtomicLong transferredBytes = new AtomicLong();
+    @Override
+    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
+        if (e instanceof ChannelStateEvent) {
+            log.info(e.toString());
+        }
+        super.handleUpstream(ctx, e);
+    }
 
-    public long getTransferredBytes() {
-        return transferredBytes.get();
+    @Override
+    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
+        Channel chan = ctx.getChannel();
+        log.info("[client] connected with " + chan.toString());
     }
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
-        log.info("[server]Got message " + e.getMessage().toString());
-        transferredBytes.addAndGet(((ChannelBuffer) e.getMessage()).readableBytes());
-        e.getChannel().write(e.getMessage());
+        log.info("[client] Get message" + e.getMessage().toString());
+        //e.getChannel().write(e.getMessage());
     }
 
     @Override

@@ -2,6 +2,8 @@ package nuctrl.test;
 
 import nuctrl.gateway.IOClient;
 
+import java.util.Date;
+
 /**
  * User: fan
  * Date: 13-10-8
@@ -13,8 +15,18 @@ public class TNettyClient {
         // Parse options.
         final String host = "127.0.0.1";
         final int port = 8080;
-        final int firstMessageSize = 256;
 
-        new IOClient(host, port, firstMessageSize).run();
+        IOClient ioClient = new IOClient(host, port);
+
+        ioClient.init();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ioClient.send(new Date());
+
     }
 }

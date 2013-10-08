@@ -1,0 +1,84 @@
+/*
+ * Copyright 2012 The Netty Project
+ *
+ * The Netty Project licenses this file to you under the Apache License,
+ * version 2.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+package nuctrl.gateway;
+
+import org.apache.log4j.Logger;
+import org.jboss.netty.channel.*;
+
+import java.util.Date;
+
+public class ServerUpHandler extends SimpleChannelHandler {
+
+    private Logger log = Logger.getLogger(ServerUpHandler.class);
+
+    @Override
+    public void handleUpstream(
+            ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
+        if (e instanceof ChannelStateEvent &&
+                ((ChannelStateEvent) e).getState() != ChannelState.INTEREST_OPS) {
+            log.info(e.toString());
+        }
+        super.handleUpstream(ctx, e);
+    }
+
+    @Override
+    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
+        // Send back the received message to the remote peer.
+        log.info("[server]Got message " + e.getMessage().toString());
+
+        // dispatch with event
+
+        log.info("Message send to dispatcher");
+        new DummyDispatcher().dispatcher(e);
+
+        try {
+            super.messageReceived(ctx, e);
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
+        // Close the connection when an exception is raised.
+        log.error("Unexpected exception from downstream.", e.getCause());
+        e.getChannel().close();
+    }
+}
+
+class DummyDispatcher{
+    public void dispatcher(final MessageEvent e){
+        final Channel channel = e.getChannel();
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("DispatcherFunc sleeps");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+                System.out.println("DispatcherFunc wakes up");
+                channel.write(new Date());
+            }
+
+        });
+
+        t.run();
+
+    }
+}
