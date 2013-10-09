@@ -48,6 +48,9 @@ public class OutHandler implements Handler{
 
     @Override
     public void insert(GatewayMsg msg) {
+        if (msg == null){
+            System.out.println("[OutHandler] null");
+        }
         PacketOutBuffer.add(msg);
     }
 

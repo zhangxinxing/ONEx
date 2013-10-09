@@ -1,28 +1,34 @@
 package nuctrl.protocol;
 
+import org.jboss.netty.channel.MessageEvent;
+
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
-public class GatewayMsgFactory {
+public class MessageFactory {
 
 	static public GatewayMsg getGatewatMsg(MessageType type, short from, short to){
 		GatewayMsg msg = null;
-		switch(type){
-		case HELLO:
-			msg = new GatewayMsg(type.getType(), from, to);
-			return msg;
-			
-		case HELLO_ACK:
-			msg = new GatewayMsg(type.getType(), from, to);
-			break;
-		
-		default:
-		}
-		
+//		switch(type){
+//		case HELLO:
+//			msg = new GatewayMsg(type.getType(), from, to);
+//			return msg;
+//
+//		case HELLO_ACK:
+//			msg = new GatewayMsg(type.getType(), from, to);
+//			break;
+
+//		default:
+//		}
+//
 		return msg;
-		
 	}
+
+    static public GatewayMsg getMessage(MessageEvent event){
+        return null;
+    }
+
 	
 	static public List<GatewayMsg> parseGatewayMsg(ByteBuffer buf){
 		

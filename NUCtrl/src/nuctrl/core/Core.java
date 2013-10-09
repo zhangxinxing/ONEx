@@ -74,6 +74,6 @@ class CoreDispatcher implements dispatcherCallback {
     }
 
     private void onPacketOut(GatewayMsg msg) {
-        outHandler.insert();
+        outHandler.insert(msg);
     }
 }

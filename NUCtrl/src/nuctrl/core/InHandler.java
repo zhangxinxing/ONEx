@@ -49,6 +49,9 @@ public class InHandler implements Handler {
 
     @Override
     public void insert(GatewayMsg msg) {
+        if (msg == null){
+            System.out.println("[InHandler] null");
+        }
         PacketInBuffer.add(msg);
     }
 }

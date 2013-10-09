@@ -3,6 +3,7 @@ package nuctrl;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -24,6 +25,8 @@ public class Settings {
             myAddr = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), Settings.PORT);
         } catch (UnknownHostException e) {
         }
+
+        appList = new LinkedList<String>();
 
         // TODO read in config file to fill ID, port and so on
         parseConfig();
