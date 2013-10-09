@@ -18,11 +18,14 @@ package nuctrl.gateway.Port;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;
 
-import java.util.Date;
-
 public class ServerUpHandler extends SimpleChannelHandler {
 
     private Logger log = Logger.getLogger(ServerUpHandler.class);
+    private gatewayDispatcher dispatcher;
+
+    public ServerUpHandler() {
+        dispatcher = new gatewayDispatcher();
+    }
 
     @Override
     public void handleUpstream(
@@ -40,9 +43,9 @@ public class ServerUpHandler extends SimpleChannelHandler {
         log.info("[server]Got message " + e.getMessage().toString());
 
         // dispatch with event
-
         log.info("Message send to dispatcher");
-        new DummyDispatcher().dispatcher(e);
+        dispatcher.dispatchFunc(e);
+
 
         try {
             super.messageReceived(ctx, e);
@@ -57,28 +60,5 @@ public class ServerUpHandler extends SimpleChannelHandler {
         // Close the connection when an exception is raised.
         log.error("Unexpected exception from downstream.", e.getCause());
         e.getChannel().close();
-    }
-}
-
-class DummyDispatcher{
-    public void dispatcher(final MessageEvent e){
-        final Channel channel = e.getChannel();
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("DispatcherFunc sleeps");
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-                System.out.println("DispatcherFunc wakes up");
-                channel.write(new Date());
-            }
-
-        });
-
-        t.run();
-
     }
 }

@@ -6,7 +6,7 @@ import java.util.List;
 
 public class GatewayMsgFactory {
 
-	static public GatewayMsg getGatewatMsg(GatewayMsgType type, short from, short to){
+	static public GatewayMsg getGatewatMsg(MessageType type, short from, short to){
 		GatewayMsg msg = null;
 		switch(type){
 		case HELLO:

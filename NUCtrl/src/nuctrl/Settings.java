@@ -3,7 +3,7 @@ package nuctrl;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Map;
+import java.util.List;
 
 /**
  * User: fan
@@ -11,10 +11,13 @@ import java.util.Map;
  * Time: PM8:33
  */
 public class Settings {
+    public static boolean RANDOM_TEST = true;
     public static String BUSYTABLE_MAP = "busyTable";
     public static String TOPO_MAP = "topoTable";
     public static int PORT = 12345;
     public static InetSocketAddress myAddr;
+    public static int BUSY_UPDATE_INT = 1000;// ms
+    public static List<String> appList;
 
     public Settings(){
         try {
@@ -23,6 +26,13 @@ public class Settings {
         }
 
         // TODO read in config file to fill ID, port and so on
+        parseConfig();
 
+    }
+
+    public void parseConfig(){
+        if (Settings.RANDOM_TEST){
+            appList.add("App1");
+        }
     }
 }

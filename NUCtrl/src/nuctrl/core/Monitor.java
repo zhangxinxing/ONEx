@@ -1,13 +1,15 @@
 package nuctrl.core;
 
-interface IMonitor{
-    public boolean isCpuBusy();
+import java.util.Map;
 
-}
 
-public class Monitor implements IMonitor{
+public class Monitor {
 	// get Status from
-    public static int getCpuAccount(){
+    public static Map getCpuAccount(){
+        return null;
+    }
+
+    public static int getCpuAccountByApp(String appName){
         return -1;
     }
 
@@ -15,8 +17,7 @@ public class Monitor implements IMonitor{
         return -1;
     }
 
-    @Override
-	public boolean isCpuBusy(){
+	public static boolean isCpuBusy(){
 		return false;
 	}
 	

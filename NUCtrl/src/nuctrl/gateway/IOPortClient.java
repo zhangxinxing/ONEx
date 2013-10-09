@@ -4,7 +4,7 @@ import nuctrl.datastruct.Buffer;
 import nuctrl.interfaces.IDispatcher;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
-import nuctrl.protocol.GatewayMsgType;
+import nuctrl.protocol.MessageType;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -90,7 +90,7 @@ public class IOPortClient extends IOPort{
 			while (iter.hasNext()){
 				GatewayMsg msg = (GatewayMsg) iter.next();
 				log.info(msg.toString());
-				if (msg.getType() == GatewayMsgType.HELLO_ACK.getType()){
+				if (msg.getType() == MessageType.HELLO_ACK.getType()){
 					this.helloSent.put(sc, 1);
 				}
 				else

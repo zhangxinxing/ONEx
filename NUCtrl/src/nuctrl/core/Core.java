@@ -1,80 +1,79 @@
 package nuctrl.core;
 
-import nuctrl.interfaces.IGatewayListener;
+import nuctrl.gateway.Gateway;
+import nuctrl.protocol.GatewayMsg;
+import nuctrl.protocol.MessageType;
+import org.apache.log4j.Logger;
 
-public class Core{
+import java.net.InetSocketAddress;
+import java.util.List;
 
-	public Core() {
-		System.out.println("In Core()");
+
+public class Core {
+    private CoreDispatcher dispatcher;
+    private static Logger log;
+    private Gateway gateway;
+
+	public Core(Gateway gateway) {
+        log = Logger.getLogger(Core.class);
+        this.gateway = gateway;
 	}
 
-    public void run(){
-        Monitor mn = new Monitor();
-        CoreDispatcher dispatcher = new CoreDispatcher(mn);
-        PacketInListener pktInListener = new Alerter(dispatcher);
+    public void init(){
+        dispatcher = new CoreDispatcher(gateway);
 
-        pktInListener.await();    // running as a thread
+    }
+
+    public void dispatchFunc(GatewayMsg msg){
+        log.debug("[core] dispatching");
+        dispatcher.dispatchFunc(msg);
     }
 
 }
 
-interface PacketInListener {
-    public void await();
-}
 
 interface dispatcherCallback {
-    public void dispatchFunc();
+    public void dispatchFunc(GatewayMsg msg);
 }
 
-class Alerter implements PacketInListener {
-    private dispatcherCallback dispatcher;
-
-    Alerter(dispatcherCallback cb) {
-        this.dispatcher = cb;
-    }
-
-    @Override
-    public void await() {
-        while(true){
-            // wait
-
-            // until pkt comes
-            dispatcher.dispatchFunc();
-        }
-    }
-}
 
 class CoreDispatcher implements dispatcherCallback {
-    private Monitor mn;
     private InHandler inHandler;
     private OutHandler outHandler;
+    private Gateway gateway;
 
-    public CoreDispatcher(Monitor mn) {
-        this.mn = mn;
+    public CoreDispatcher(Gateway gateway) {
+        this.gateway = gateway;
     }
 
     @Override
-    public void dispatchFunc(){
+    public void dispatchFunc(GatewayMsg msg){
         // if pkt-in comes
-        onPacketIn();
+        if (msg.getType() == MessageType.PACKET_IN.getType()){
+            onPacketIn(msg);
+        }
 
         // if pkt-out comes
-        onPacketOut();
-
+        else if (msg.getType() == MessageType.PACKET_OUT.getType()){
+            onPacketOut(msg);
+        }
     }
 
-    private void onPacketIn() {
-        if (mn.isCpuBusy()){
+    private void onPacketIn(GatewayMsg msg) {
+        if (Monitor.isCpuBusy()){
             // dispatcher to gateway
+            List<InetSocketAddress> idleLit =
+                    gateway.getDataSharing().getWhoIsIdle();
+            gateway.send(idleLit.get(0), msg);
         }
 
         else{
             // handle it
-            inHandler.insert();
+            inHandler.insert(msg);
         }
     }
 
-    private void onPacketOut() {
+    private void onPacketOut(GatewayMsg msg) {
         outHandler.insert();
     }
 }

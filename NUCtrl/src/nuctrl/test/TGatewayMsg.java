@@ -3,7 +3,7 @@ package nuctrl.test;
 import nuctrl.debug.Dump;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
-import nuctrl.protocol.GatewayMsgType;
+import nuctrl.protocol.MessageType;
 
 import java.nio.ByteBuffer;
 import java.util.Iterator;
@@ -16,8 +16,8 @@ public class TGatewayMsg {
 		
 		ByteBuffer buf = ByteBuffer.allocate(1024);
 		
-		GatewayMsg msg1 = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO, (short)1, (short)2);
-		GatewayMsg msg2 = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO, (short)8, (short)9);
+		GatewayMsg msg1 = GatewayMsgFactory.getGatewatMsg(MessageType.HELLO, (short)1, (short)2);
+		GatewayMsg msg2 = GatewayMsgFactory.getGatewatMsg(MessageType.HELLO, (short)8, (short)9);
 
 		
 		System.out.println(Dump.buf(buf));

@@ -1,11 +1,7 @@
 package nuctrl.protocol;
 
-import nuctrl.Settings;
-
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +41,10 @@ public class BusyTableEntry implements Serializable {
         else{
             cpuAccountPerApp.put(id, time);
         }
+    }
+
+    public void setCpuAccount(Map<String, Integer> account){
+        this.cpuAccountPerApp = account;
     }
 
     @Override

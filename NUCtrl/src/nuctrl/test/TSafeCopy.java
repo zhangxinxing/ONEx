@@ -4,7 +4,7 @@ import nuctrl.datastruct.Buffer;
 import nuctrl.debug.Dump;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.GatewayMsgFactory;
-import nuctrl.protocol.GatewayMsgType;
+import nuctrl.protocol.MessageType;
 
 import java.nio.ByteBuffer;
 
@@ -15,7 +15,7 @@ public class TSafeCopy {
 		
 		ByteBuffer buf = ByteBuffer.allocate(33);
 		
-		GatewayMsg msg = GatewayMsgFactory.getGatewatMsg(GatewayMsgType.HELLO, (short)1, (short)1);
+		GatewayMsg msg = GatewayMsgFactory.getGatewatMsg(MessageType.HELLO, (short)1, (short)1);
 		
 		msg.writeTo(buf);
 		

@@ -5,7 +5,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import nuctrl.Settings;
-import nuctrl.core.impl.Monitor;
+import nuctrl.core.Monitor;
 import nuctrl.protocol.BusyTableEntry;
 import nuctrl.protocol.TopologyTableEntry;
 import org.apache.log4j.Logger;
@@ -35,7 +35,7 @@ public class DataSharing {
     public DataSharing(){
         Config cfg = new Config();
         this.hz = Hazelcast.newHazelcastInstance(cfg);
-        this.log = Logger.getLogger(DataSharing.class.getName());
+        log = Logger.getLogger(DataSharing.class.getName());
 
         // initialization
         this.localBt = new BusyTableEntry(Settings.myAddr);
@@ -44,7 +44,7 @@ public class DataSharing {
     }
 
     /* Busy Table */
-    private boolean getBusyTable(InetSocketAddress addr){
+    private boolean getBusyTableByAddr(InetSocketAddress addr){
         log.info("getting busyTable of " + addr.toString());
         ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
         BusyTableEntry bt = map.get(addr);
@@ -76,7 +76,7 @@ public class DataSharing {
     }
 
     public boolean updateBusyTable(){
-        localBt.setCpuAccountPerApp("App1", Monitor.getCpuAccount());
+        localBt.setCpuAccountPerApp("App1", Monitor.getCpuAccountByApp("App1"));
         localBt.setSizeOfQueueIn(Monitor.getSizeOfQueueIn());
 
         updateRemoteBusyTable();

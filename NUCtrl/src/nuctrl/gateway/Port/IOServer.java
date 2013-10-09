@@ -15,8 +15,12 @@
  */
 package nuctrl.gateway.Port;
 
+import nuctrl.Settings;
+import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.*;
+import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.serialization.ClassResolvers;
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
@@ -25,8 +29,6 @@ import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-import org.apache.log4j.Logger;
-
 /**
  * Echoes back any received data from a client.
  */
@@ -34,6 +36,10 @@ public class IOServer {
 
     private final int port;
     private Logger log = Logger.getLogger(IOServer.class);
+
+    public IOServer(){
+        this.port = Settings.PORT;
+    }
 
     public IOServer(int port) {
         this.port = port;

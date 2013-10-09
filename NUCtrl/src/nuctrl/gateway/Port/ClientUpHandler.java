@@ -24,9 +24,12 @@ import org.jboss.netty.channel.*;
  * the server.
  */
 public class ClientUpHandler extends SimpleChannelUpstreamHandler {
-    private Logger log = Logger.getLogger(ClientUpHandler.class);
+    private Logger log;
+    private gatewayDispatcher dispatcher;
 
     public ClientUpHandler() {
+        log = Logger.getLogger(ClientUpHandler.class);
+        this.dispatcher = new gatewayDispatcher();
     }
 
     @Override
@@ -47,7 +50,10 @@ public class ClientUpHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
         log.info("[client] Get message" + e.getMessage().toString());
-        //e.getChannel().write(e.getMessage());
+
+        dispatcher.dispatchFunc(e);
+
+
     }
 
     @Override
