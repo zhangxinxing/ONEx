@@ -20,10 +20,13 @@ public class Settings {
     public static int BUSY_UPDATE_INT = 1000;// ms
     public static List<String> appList;
 
-    public Settings(){
+    // singleton
+    private static Settings instance = new Settings();
+    private Settings() {
         try {
             myAddr = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), Settings.PORT);
         } catch (UnknownHostException e) {
+            e.printStackTrace();
         }
 
         appList = new LinkedList<String>();
@@ -32,10 +35,18 @@ public class Settings {
         parseConfig();
 
     }
+    public static Settings getInstance(){
+        return instance;
+    }
 
-    public void parseConfig(){
-        if (Settings.RANDOM_TEST){
+    public void parseConfig() {
+        if (Settings.RANDOM_TEST) {
             appList.add("App1");
         }
     }
+
+    public void init(){
+
+    }
+
 }

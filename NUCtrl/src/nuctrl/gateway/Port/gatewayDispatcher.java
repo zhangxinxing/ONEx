@@ -4,6 +4,7 @@ import nuctrl.core.InHandler;
 import nuctrl.core.OutHandler;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.MessageFactory;
+import nuctrl.protocol.MessageType;
 import org.jboss.netty.channel.MessageEvent;
 
 /**
@@ -22,10 +23,15 @@ class gatewayDispatcher {
     }
 
     public void dispatchFunc(MessageEvent event) {
-        // if in
-        inHandler.insert(MessageFactory.getMessage(event));
 
-        // if out
-        outHandler.insert(MessageFactory.getMessage(event));
+        GatewayMsg msg = MessageFactory.getMessage(event);
+
+        if (msg.getType() == MessageType.PACKET_IN.getType()){
+            inHandler.insert(msg);
+        }
+        else if (msg.getType() == MessageType.PACKET_OUT.getType()){
+            outHandler.insert(msg);
+        }
+
     }
 }

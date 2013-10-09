@@ -27,15 +27,20 @@ public class DataSharing {
     /* */
     private HazelcastInstance hz;
     private static Logger log;
+    private Monitor mn;
 
     // local Data
     private BusyTableEntry localBt;
     private List<TopologyTableEntry> localTopo;
 
     public DataSharing(){
+        /* static field */
+        log = Logger.getLogger(DataSharing.class.getName());
+        mn = Monitor.getInstance();
+
+        /* hazelcast */
         Config cfg = new Config();
         this.hz = Hazelcast.newHazelcastInstance(cfg);
-        log = Logger.getLogger(DataSharing.class.getName());
 
         // initialization
         this.localBt = new BusyTableEntry(Settings.myAddr);
@@ -55,30 +60,47 @@ public class DataSharing {
     }
 
     public Map getBusyTableOnline(){
-        ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
-        return map;
+        return hz.getMap(Settings.BUSYTABLE_MAP);
     }
 
     public List<InetSocketAddress> getWhoIsIdle(){
         ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
         List<InetSocketAddress> idle = new LinkedList<InetSocketAddress>();
 
-        Set<InetSocketAddress> keyset = map.keySet();
-        for (InetSocketAddress key : keyset){
+        log.debug("[getWhoIsIdle]");
+
+        Set<InetSocketAddress> keySet = map.keySet();
+
+        InetSocketAddress maybeKey = null;
+
+        for (InetSocketAddress key : keySet){
+
+            if (maybeKey == null)
+                maybeKey = key;
+
             BusyTableEntry bt = map.get(key);
+
             // TODO add more complex logic
+            log.debug("SizeOfQueue" + key.toString() + ":" + bt.getSizeOfQueueIn());
+
             if(bt.getSizeOfQueueIn() < 5){
                 idle.add(key);
             }
+
+            if(bt.getSizeOfQueueIn() < map.get(maybeKey).getSizeOfQueueIn())
+                maybeKey = key;
         }
-        log.info("#idles " + idle.size());
+
+        if (idle.size() == 0){
+            idle.add(maybeKey);
+            log.debug("#idles " + idle.size());
+        }
         return idle;
     }
 
     public boolean updateBusyTable(){
-        localBt.setCpuAccountPerApp("App1", Monitor.getCpuAccountByApp("App1"));
-        localBt.setSizeOfQueueIn(Monitor.getSizeOfQueueIn());
-
+        localBt.setSizeOfQueueIn(mn.getSizeOfQueueIn());
+        localBt.setCpuAccount(mn.getCpuAccount());
         updateRemoteBusyTable();
         return true;
     }

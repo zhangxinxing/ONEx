@@ -5,14 +5,20 @@ package nuctrl.gateway;
 import nuctrl.gateway.Port.IOClient;
 import nuctrl.gateway.Port.IOServer;
 import nuctrl.protocol.GatewayMsg;
+import org.apache.log4j.Logger;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Gateway {
+    private static Logger log = Logger.getLogger(Gateway.class);
     private DataSharing dataSharing;
+    private Map<InetSocketAddress, IOClient> clientPool;
 
     public Gateway() {
-        this.dataSharing = new DataSharing();
+        dataSharing = new DataSharing();
+        clientPool = new HashMap<InetSocketAddress, IOClient>();
     }
 
     public DataSharing getDataSharing(){
@@ -26,20 +32,24 @@ public class Gateway {
     }
 
     public void send(InetSocketAddress addr, GatewayMsg msg){
-        this.send(addr.getAddress().getHostAddress(), addr.getPort(), msg);
+        IOClient client;
+        if (clientPool.containsKey(addr)){
+            client = clientPool.get(addr);
+        }
+        else{
+            client = new IOClient(addr);
+            client.init();
+            clientPool.put(addr, client);
+        }
+
+        client.send(msg);
+
     }
 
 
-    public void send(String host, int port, Object obj){
-        IOClient client = new IOClient(host, port);
+    public void setup(){
 
-        client.init();
-
-        client.send(obj);
-
-    }
-
-    public void run(){
+        log.info("setup server ...");
         IOServer server = new IOServer();
 
         // initialize server thread

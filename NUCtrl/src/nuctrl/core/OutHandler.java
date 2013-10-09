@@ -2,6 +2,7 @@ package nuctrl.core;
 
 import nuctrl.interfaces.PacketOutWorker;
 import nuctrl.protocol.GatewayMsg;
+import org.apache.log4j.Logger;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -11,47 +12,53 @@ import java.util.List;
  * Date: 13-10-9
  * Time: AM10:52
  */
-public class OutHandler implements Handler{
-    private List<GatewayMsg> PacketOutBuffer;
-    private PacketOutWorker packetOutWorker;
+public class OutHandler implements Handler, Runnable{
+    private static Logger log =
+            Logger.getLogger(OutHandler.class);
+    private static final List<GatewayMsg> PacketOutBuffer
+            = new LinkedList<GatewayMsg>();
+    private static PacketOutWorker packetOutWorker;
 
     public OutHandler() {
-        PacketOutBuffer = new LinkedList<GatewayMsg>();
         packetOutWorker = new PacketOutWorker() {
             @Override
             public void handlePacketOut(GatewayMsg msg) {
+                log.debug("[Out-worker] " + msg.toString());
                 // hello here
             }
         };
 
-        // a thread warping the worker
-        Thread handler = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while(true){
-                    try {
-                        PacketOutBuffer.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        break;
-                    }
-
-                    // after wake up
-                    packetOutWorker.handlePacketOut(PacketOutBuffer.get(0));
-                    PacketOutBuffer.remove(0);
-                }
-            }
-        });
-
-        handler.run();
     }
 
     @Override
     public void insert(GatewayMsg msg) {
         if (msg == null){
-            System.out.println("[OutHandler] null");
+            log.error("[OutHandler] null");
         }
-        PacketOutBuffer.add(msg);
+        synchronized (PacketOutBuffer){
+            PacketOutBuffer.add(msg);
+            PacketOutBuffer.notify();
+        }
     }
 
+    // thread of worker
+    @Override
+    public void run() {
+        // TODO add packet out handler here
+        while(true){
+            synchronized (PacketOutBuffer){
+                try {
+                    PacketOutBuffer.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    break;
+                }
+            }
+
+            // after wake up
+            log.debug("[Out-worker] wake up");
+            packetOutWorker.handlePacketOut(PacketOutBuffer.get(0));
+            PacketOutBuffer.remove(0);
+        }
+    }
 }

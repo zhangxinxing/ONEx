@@ -15,6 +15,7 @@
  */
 package nuctrl.gateway.Port;
 
+import nuctrl.protocol.GatewayMsg;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -27,14 +28,12 @@ import java.util.concurrent.Executors;
 
 public class IOClient {
 
-    private final String host;
-    private final int port;
+    private InetSocketAddress address;
     private Channel channel;
     private ClientBootstrap bootstrap;
 
-    public IOClient(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public IOClient(InetSocketAddress address) {
+        this.address = address;
     }
 
     public void init() {
@@ -63,18 +62,17 @@ public class IOClient {
             }
         });
 
-        ChannelFuture future = bootstrap.connect(new InetSocketAddress(host, port));
+        ChannelFuture future = bootstrap.connect(address);
         channel = future.awaitUninterruptibly().getChannel();
 
         if (!future.isSuccess()) {
             future.getCause().printStackTrace();
             bootstrap.releaseExternalResources();
-            return;
         }
     }
 
-    public void send(Object obj){
-        ChannelFuture future = channel.write(obj);
+    public void send(GatewayMsg msg){
+        ChannelFuture future = channel.write(msg);
         future.awaitUninterruptibly();
     }
 

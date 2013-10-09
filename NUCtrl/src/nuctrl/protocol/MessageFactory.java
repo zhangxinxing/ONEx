@@ -2,62 +2,12 @@ package nuctrl.protocol;
 
 import org.jboss.netty.channel.MessageEvent;
 
-import java.nio.ByteBuffer;
-import java.util.LinkedList;
-import java.util.List;
-
 public class MessageFactory {
 
-	static public GatewayMsg getGatewatMsg(MessageType type, short from, short to){
-		GatewayMsg msg = null;
-//		switch(type){
-//		case HELLO:
-//			msg = new GatewayMsg(type.getType(), from, to);
-//			return msg;
-//
-//		case HELLO_ACK:
-//			msg = new GatewayMsg(type.getType(), from, to);
-//			break;
-
-//		default:
-//		}
-//
-		return msg;
-	}
-
     static public GatewayMsg getMessage(MessageEvent event){
-        return null;
+        GatewayMsg msg =  (GatewayMsg)event.getMessage();
+        msg.setEvent(event);
+        return msg;
     }
 
-	
-	static public List<GatewayMsg> parseGatewayMsg(ByteBuffer buf){
-		
-		List<GatewayMsg> list = new LinkedList<GatewayMsg>();
-		
-		while(buf.hasRemaining()){
-			
-			byte type = buf.get();
-			int length = buf.getInt();
-			byte[] ofm = new byte[length - GatewayMsg.LEN_header];
-			
-			short from = buf.getShort();
-			short to = buf.getShort();
-			buf.get(ofm);
-			
-			GatewayMsg msg = new GatewayMsg(type,from, to);
-			msg.attachOFMessage(ofm);
-			
-			list.add(msg);
-		}
-				
-		return list;
-	}
-	
-	
-	private boolean isValidate(ByteBuffer buf){
-		int len_should_be = buf.limit() - buf.position();
-		int length = buf.getInt(1);
-		
-		return (len_should_be == length);
-	}
 }

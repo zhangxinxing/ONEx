@@ -15,18 +15,16 @@ public class NUCtrldaemon implements API {
 
     private Core core;
     private Gateway gateway;
-    private Settings settings;
 
     public NUCtrldaemon() {
-        core = new Core(gateway);
         gateway = new Gateway();
-        settings = new Settings();
+        core = new Core(gateway);
+        Settings.getInstance().init();
     }
 
-    // init
-    public void init(){
-        core.init();
-        gateway.run();
+    // setup
+    public void run(){
+        gateway.setup();
         initUpdateGlobalInfo();
     }
 
@@ -58,6 +56,22 @@ public class NUCtrldaemon implements API {
 
     public static void main(String[] args){
         NUCtrldaemon daemon = new NUCtrldaemon();
-        daemon.init();
+        daemon.run();
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        GatewayMsg msg = new GatewayMsg((byte)0, Settings.myAddr);
+        for (;;){
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                break;
+            }
+            daemon.onPacketIn(msg);
+        }
     }
 }

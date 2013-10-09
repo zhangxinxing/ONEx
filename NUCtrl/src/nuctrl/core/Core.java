@@ -11,21 +11,14 @@ import java.util.List;
 
 public class Core {
     private CoreDispatcher dispatcher;
-    private static Logger log;
-    private Gateway gateway;
+    private static Logger log = Logger.getLogger(Core.class);
 
 	public Core(Gateway gateway) {
-        log = Logger.getLogger(Core.class);
-        this.gateway = gateway;
+        dispatcher = new CoreDispatcher(gateway);
 	}
 
-    public void init(){
-        dispatcher = new CoreDispatcher(gateway);
-
-    }
 
     public void dispatchFunc(GatewayMsg msg){
-        log.debug("[core] dispatching");
         dispatcher.dispatchFunc(msg);
     }
 
@@ -41,20 +34,30 @@ class CoreDispatcher implements dispatcherCallback {
     private InHandler inHandler;
     private OutHandler outHandler;
     private Gateway gateway;
+    private static Logger log = Logger.getLogger(CoreDispatcher.class);
 
     public CoreDispatcher(Gateway gateway) {
         this.gateway = gateway;
+        this.inHandler = new InHandler();
+        this.outHandler = new OutHandler();
+
+        // start the worker thread
+        new Thread(inHandler).start();
+        new Thread(outHandler).start();
     }
 
     @Override
     public void dispatchFunc(GatewayMsg msg){
+
         // if pkt-in comes
         if (msg.getType() == MessageType.PACKET_IN.getType()){
+            log.debug("[Core] dispatch to PktIn");
             onPacketIn(msg);
         }
 
         // if pkt-out comes
         else if (msg.getType() == MessageType.PACKET_OUT.getType()){
+            log.debug("[Core] dispatch to PktOut");
             onPacketOut(msg);
         }
     }

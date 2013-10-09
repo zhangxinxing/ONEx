@@ -1,6 +1,5 @@
 package nuctrl.test;
 
-import nuctrl.Settings;
 import nuctrl.gateway.DataSharing;
 
 /**
@@ -11,7 +10,6 @@ import nuctrl.gateway.DataSharing;
 public class TDataSharing{
 
     public static void main(String[] args){
-        Settings set = new Settings();
         DataSharing ds = new DataSharing();
         ds.updateBusyTable();
         ds.getWhoIsIdle();
