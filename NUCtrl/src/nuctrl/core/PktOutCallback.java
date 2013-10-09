@@ -1,4 +1,4 @@
-package nuctrl.core.impl;
+package nuctrl.core;
 
 /**
  * User: fan

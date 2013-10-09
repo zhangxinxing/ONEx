@@ -1,6 +1,6 @@
 package nuctrl.test;
 
-import nuctrl.gateway.IOClient;
+import nuctrl.gateway.Port.IOClient;
 
 import java.util.Date;
 

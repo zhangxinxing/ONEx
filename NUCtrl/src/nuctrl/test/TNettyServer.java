@@ -1,6 +1,6 @@
 package nuctrl.test;
 
-import nuctrl.gateway.IOServer;
+import nuctrl.gateway.Port.IOServer;
 
 /**
  * User: fan

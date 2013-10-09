@@ -1,4 +1,4 @@
-package nuctrl.core.impl;
+package nuctrl.core;
 
 public class Monitor {
 	// get Status from

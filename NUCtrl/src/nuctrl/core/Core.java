@@ -1,4 +1,4 @@
-package nuctrl.core.impl;
+package nuctrl.core;
 
 import nuctrl.gateway.Gateway;
 import nuctrl.interfaces.IGatewayListener;
