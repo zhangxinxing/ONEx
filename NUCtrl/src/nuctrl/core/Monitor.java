@@ -1,6 +1,11 @@
 package nuctrl.core;
 
-public class Monitor {
+interface IMonitor{
+    public boolean isCpuBusy();
+
+}
+
+public class Monitor implements IMonitor{
 	// get Status from
     public static int getCpuAccount(){
         return -1;
@@ -10,11 +15,7 @@ public class Monitor {
         return -1;
     }
 
-
-	public String getControllerInfo(){
-		return "This is controller";
-	}
-
+    @Override
 	public boolean isCpuBusy(){
 		return false;
 	}
