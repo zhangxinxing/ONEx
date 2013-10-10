@@ -23,7 +23,7 @@ public class OutHandler implements Handler, Runnable{
         packetOutWorker = new PacketOutWorker() {
             @Override
             public void handlePacketOut(GatewayMsg msg) {
-                log.debug("[Out-worker] " + msg.toString());
+                log.debug("[Out-worker] handle " + msg.toString());
                 // hello here
             }
         };

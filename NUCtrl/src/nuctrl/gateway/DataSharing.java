@@ -67,7 +67,7 @@ public class DataSharing {
         ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
         List<InetSocketAddress> idle = new LinkedList<InetSocketAddress>();
 
-        log.debug("[getWhoIsIdle]");
+        log.debug(">>>begin [getWhoIsIdle]");
 
         Set<InetSocketAddress> keySet = map.keySet();
 
@@ -81,7 +81,7 @@ public class DataSharing {
             BusyTableEntry bt = map.get(key);
 
             // TODO add more complex logic
-            log.debug("SizeOfQueue" + key.toString() + ":" + bt.getSizeOfQueueIn());
+            log.debug("SizeOfQueue " + key.toString() + ": " + bt.getSizeOfQueueIn());
 
             if(bt.getSizeOfQueueIn() < 5){
                 idle.add(key);
@@ -93,9 +93,10 @@ public class DataSharing {
 
         if (idle.size() == 0){
             idle.add(maybeKey);
-            log.debug("#idles " + idle.size());
         }
+        log.debug(">>>end #idles " + idle.size());
         return idle;
+
     }
 
     public boolean updateBusyTable(){

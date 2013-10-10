@@ -50,7 +50,8 @@ public class GatewayMsg implements Serializable{
     }
 
 	public String toString(){
-		return String.format("GatewayMsg: %d", this.type);
+		return String.format("GatewayMsg<Type=%d, From=%s>",
+                this.type, this.from.toString());
 	}
 	
 }
