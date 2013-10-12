@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
  * Date: 13-10-3
  * Time: PM8:19
  */
-public class DataSharing {
+public class GlobalShare {
     /* */
     private HazelcastInstance hz;
     private static Logger log;
@@ -33,19 +33,18 @@ public class DataSharing {
     private BusyTableEntry localBt;
     private List<TopologyTableEntry> localTopo;
 
-    public DataSharing(){
-        /* static field */
-        log = Logger.getLogger(DataSharing.class.getName());
+    public GlobalShare(){
+        log = Logger.getLogger(GlobalShare.class.getName());
         mn = Monitor.getInstance();
 
-        /* hazelcast */
+        /* HazelCast */
         Config cfg = new Config();
         this.hz = Hazelcast.newHazelcastInstance(cfg);
 
         // initialization
         this.localBt = new BusyTableEntry(Settings.socketAddr);
         this.localTopo = new LinkedList<TopologyTableEntry>();
-
+        this.initUpdatingThread();
     }
 
     /* Busy Table */
@@ -126,7 +125,6 @@ public class DataSharing {
         return true;
     }
 
-
     /* TOPOLOGY */
     public boolean updateTopology(){
         // TODO do sth
@@ -142,5 +140,27 @@ public class DataSharing {
             map.put(entry.getSrc(), entry);
         }
         return true;
+    }
+
+    // updateGlobalInfo
+    private void initUpdatingThread(){
+        // a thread for updating busy table regularly
+        Thread updateBusyTable = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    try {
+                        Thread.sleep(Settings.BUSY_UPDATE_INT);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                    // every 1s
+                    updateBusyTable();
+                }
+            }
+        });
+
+        updateBusyTable.start();
     }
 }
