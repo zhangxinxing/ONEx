@@ -6,7 +6,7 @@ package nuctrl.core;
  * Date: 13-10-10
  * Time: AM11:53
  */
-public class PacketHandler {
+public class MessageHandler {
 
     public void onPacket(){
 
