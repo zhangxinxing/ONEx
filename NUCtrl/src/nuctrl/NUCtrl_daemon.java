@@ -29,7 +29,7 @@ public class NUCtrl_daemon implements API {
         }
         gateway = new Gateway(msgHandler);
         core = new Core(gateway, msgHandler);
-        Settings.getInstance().init();
+        Settings.getInstance();
     }
 
     // setup
@@ -79,7 +79,7 @@ public class NUCtrl_daemon implements API {
 
                         // TODO handling business here
 
-                        GatewayMsg res = new GatewayMsg((byte)1, Settings.myAddr);
+                        GatewayMsg res = new GatewayMsg((byte)1, Settings.socketAddr);
 
                         ChannelFuture write = event.getChannel().write(res);
                         write.awaitUninterruptibly();
@@ -103,7 +103,7 @@ public class NUCtrl_daemon implements API {
             e.printStackTrace();
         }
 
-        GatewayMsg msg = new GatewayMsg((byte)0, Settings.myAddr);
+        GatewayMsg msg = new GatewayMsg((byte)0, Settings.socketAddr);
         int TEST = 1;
         for (int i = 0; i < TEST; i++){
             try {

@@ -43,7 +43,7 @@ public class DataSharing {
         this.hz = Hazelcast.newHazelcastInstance(cfg);
 
         // initialization
-        this.localBt = new BusyTableEntry(Settings.myAddr);
+        this.localBt = new BusyTableEntry(Settings.socketAddr);
         this.localTopo = new LinkedList<TopologyTableEntry>();
 
     }
@@ -109,13 +109,18 @@ public class DataSharing {
     private boolean updateRemoteBusyTable(){
         ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
 
-        if(map.get(Settings.myAddr) == null){
-            log.debug("Put new entry into busyTable for " + Settings.myAddr.toString());
-            map.put(Settings.myAddr, localBt);
+        if(Settings.socketAddr == null){
+            log.error("Error in config::addr == null");
+            System.exit(-1);
+        }
+
+        if(map.get(Settings.socketAddr) == null){
+            log.debug("Put new entry into busyTable for " + Settings.socketAddr.toString());
+            map.put(Settings.socketAddr, localBt);
         }
         else{
-            log.debug("update busyTable for " + Settings.myAddr.toString());
-            map.replace(Settings.myAddr, localBt);
+            log.debug("update busyTable for " + Settings.socketAddr.toString());
+            map.replace(Settings.socketAddr, localBt);
         }
 
         return true;

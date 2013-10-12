@@ -29,6 +29,7 @@ public class TSigar  {
             log.info(iter(sigar.getCpuList()));
             log.info(iter(sigar.getCpuInfoList()));
             log.info(iter(sigar.getCpuPercList()));
+            log.info(sigar.getCpuPerc().getCombined());
 
             log.info(sigar.getMem());
 
@@ -52,12 +53,10 @@ public class TSigar  {
             log.info(sigar.getNetInfo());
             log.info(iter(sigar.getNetInterfaceList()));
             log.info((sigar.getNetInterfaceConfig("en0")));
+            log.info(sigar.getNetStat().toString());
 
             //thread
             log.info(sigar.getThreadCpu());
-
-
-
 
 
         } catch (SigarException e) {

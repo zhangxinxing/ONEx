@@ -18,7 +18,7 @@ public class MessageHandler implements Handler, Runnable {
 
     private static Logger log = Logger.getLogger(MessageHandler.class);
     // static list and worker to ensure only one handler per machine
-    private static final List<GatewayMsg> PacketBuffer = new LinkedList<GatewayMsg>();
+    private static final List<GatewayMsg> PacketQueue = new LinkedList<GatewayMsg>();
     private static PacketWorker packetWorker;
 
     public MessageHandler(PacketWorker worker) {
@@ -39,9 +39,9 @@ public class MessageHandler implements Handler, Runnable {
             log.error("[Handler] null");
             return;
         }
-        synchronized (PacketBuffer){
-            PacketBuffer.add(msg);
-            PacketBuffer.notify();
+        synchronized (PacketQueue){
+            PacketQueue.add(msg);
+            PacketQueue.notify();
         }
         log.debug("insert " + msg.toString());
     }
@@ -50,9 +50,9 @@ public class MessageHandler implements Handler, Runnable {
     @Override
     public void run() {
         while(true){
-            synchronized (PacketBuffer){
+            synchronized (PacketQueue){
                 try {
-                    PacketBuffer.wait();
+                    PacketQueue.wait();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
@@ -62,8 +62,12 @@ public class MessageHandler implements Handler, Runnable {
             // after wake up
 
             log.debug("worker wake up");
-            packetWorker.onpPacket(PacketBuffer.get(0));
-            PacketBuffer.remove(0);
+            packetWorker.onpPacket(PacketQueue.get(0));
+            PacketQueue.remove(0);
         }
+    }
+
+    public static int sizeOfQueue(){
+        return PacketQueue.size();
     }
 }

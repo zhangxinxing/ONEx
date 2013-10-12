@@ -63,7 +63,7 @@ class CoreDispatcher implements dispatcherCallback {
     }
 
     private void onPacketIn(GatewayMsg msg) {
-        if (Monitor.isCpuBusy()){
+        if (Monitor.isBusy()){
             // dispatcher to gateway
             List<InetSocketAddress> idleList =
                     gateway.getDataSharing().getWhoIsIdle();
