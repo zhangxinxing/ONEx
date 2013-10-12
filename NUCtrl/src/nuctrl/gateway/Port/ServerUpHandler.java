@@ -15,6 +15,8 @@
  */
 package nuctrl.gateway.Port;
 
+import nuctrl.core.MessageHandler;
+import nuctrl.gateway.gatewayDispatcher;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;
 
@@ -23,8 +25,8 @@ public class ServerUpHandler extends SimpleChannelHandler {
     private Logger log = Logger.getLogger(ServerUpHandler.class);
     private gatewayDispatcher dispatcher;
 
-    public ServerUpHandler() {
-        dispatcher = new gatewayDispatcher();
+    public ServerUpHandler(MessageHandler msgHandler) {
+        dispatcher = new gatewayDispatcher(msgHandler);
     }
 
     @Override

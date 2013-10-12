@@ -16,6 +16,7 @@
 package nuctrl.gateway.Port;
 
 import nuctrl.Settings;
+import nuctrl.core.MessageHandler;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -35,10 +36,18 @@ import java.util.concurrent.Executors;
 public class IOServer {
 
     private final int port;
-    private Logger log = Logger.getLogger(IOServer.class);
+    private static Logger log = Logger.getLogger(IOServer.class);
+    private MessageHandler messageHandler;
 
-    public IOServer(){
+    public IOServer(MessageHandler msgHandler){
         this.port = Settings.PORT;
+        if (msgHandler != null){
+            this.messageHandler = msgHandler;
+        }
+        else{
+            log.error("Null past to constructor");
+            System.exit(-1);
+        }
     }
 
     public IOServer(int port) {
@@ -62,7 +71,7 @@ public class IOServer {
                         ClassResolvers.cacheDisabled(
                                 getClass().getClassLoader())
                 ));
-                p.addLast("UpHandler", new ServerUpHandler());
+                p.addLast("UpHandler", new ServerUpHandler(messageHandler));
 
                 // downward
                 p.addLast("DownHandler", new ServerDownHandler());

@@ -15,6 +15,7 @@
  */
 package nuctrl.gateway.Port;
 
+import nuctrl.core.MessageHandler;
 import nuctrl.protocol.GatewayMsg;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.*;
@@ -31,9 +32,11 @@ public class IOClient {
     private InetSocketAddress address;
     private Channel channel;
     private ClientBootstrap bootstrap;
+    private MessageHandler msgHandler;
 
-    public IOClient(InetSocketAddress address) {
+    public IOClient(InetSocketAddress address, MessageHandler msgHandler) {
         this.address = address;
+        this.msgHandler = msgHandler;
     }
 
     public void init() {
@@ -53,7 +56,7 @@ public class IOClient {
                         ClassResolvers.cacheDisabled(
                                 getClass().getClassLoader())
                 ));
-                p.addLast("UpHandler", new ClientUpHandler());
+                p.addLast("UpHandler", new ClientUpHandler(msgHandler));
 
                 // downward
                 p.addLast("DownHander", new ClientDownHandler());

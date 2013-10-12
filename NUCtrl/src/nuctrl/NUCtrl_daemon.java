@@ -1,9 +1,15 @@
 package nuctrl;
 
 import nuctrl.core.Core;
+import nuctrl.core.MessageHandler;
 import nuctrl.gateway.Gateway;
 import nuctrl.interfaces.API;
+import nuctrl.interfaces.PacketWorker;
 import nuctrl.protocol.GatewayMsg;
+import nuctrl.protocol.MessageType;
+import org.apache.log4j.Logger;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.MessageEvent;
 
 /**
  * User: fan
@@ -15,10 +21,14 @@ public class NUCtrl_daemon implements API {
 
     private Core core;
     private Gateway gateway;
+    private static Logger log = Logger.getLogger(NUCtrl_daemon.class);
 
-    public NUCtrl_daemon() {
-        gateway = new Gateway();
-        core = new Core(gateway);
+    public NUCtrl_daemon(MessageHandler msgHandler) {
+        if (msgHandler == null){
+            log.error("Null msgHandler is not allowed");
+        }
+        gateway = new Gateway(msgHandler);
+        core = new Core(gateway, msgHandler);
         Settings.getInstance().init();
     }
 
@@ -55,7 +65,36 @@ public class NUCtrl_daemon implements API {
     }
 
     public static void main(String[] args){
-        NUCtrl_daemon daemon = new NUCtrl_daemon();
+        PacketWorker packetWorker = new PacketWorker() {
+            @Override
+            public void onpPacket(GatewayMsg msg) {
+                // hello here
+                if (msg.getType() == MessageType.PACKET_IN.getType()){
+                    log.info("handle packet in");
+
+                    if (msg.getEvent() != null){
+                        MessageEvent event = msg.getEvent();
+
+                        log.debug("Got external packet-in from " + event.getChannel().getRemoteAddress().toString());
+
+                        // TODO handling business here
+
+                        GatewayMsg res = new GatewayMsg((byte)1, Settings.myAddr);
+
+                        ChannelFuture write = event.getChannel().write(res);
+                        write.awaitUninterruptibly();
+                        if (write.isSuccess()){
+                            log.debug("External Packet-In send out");
+                        }
+                    } // end of if external
+                } // end of if packet-in
+
+                else if (msg.getType() == MessageType.PACKET_OUT.getType()){
+                    log.info("handler packet out");
+                }
+            }
+        };
+        NUCtrl_daemon daemon = new NUCtrl_daemon(new MessageHandler(packetWorker));
         daemon.run();
 
         try {

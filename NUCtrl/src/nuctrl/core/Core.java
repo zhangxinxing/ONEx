@@ -11,12 +11,13 @@ import java.util.List;
 
 public class Core {
     private CoreDispatcher dispatcher;
+    private MessageHandler messageHandler;
     private static Logger log = Logger.getLogger(Core.class);
 
-	public Core(Gateway gateway) {
-        dispatcher = new CoreDispatcher(gateway);
+	public Core(Gateway gateway, MessageHandler msgHandler) {
+        this.messageHandler = msgHandler;
+        this.dispatcher = new CoreDispatcher(gateway, messageHandler);
 	}
-
 
     public void dispatchFunc(GatewayMsg msg){
         dispatcher.dispatchFunc(msg);
@@ -31,24 +32,23 @@ interface dispatcherCallback {
 
 
 class CoreDispatcher implements dispatcherCallback {
-    private InHandler inHandler;
-    private OutHandler outHandler;
+    private MessageHandler messageHandler;
     private Gateway gateway;
     private static Logger log = Logger.getLogger(CoreDispatcher.class);
 
-    public CoreDispatcher(Gateway gateway) {
+    public CoreDispatcher(Gateway gateway, MessageHandler msgHandler) {
         this.gateway = gateway;
-        this.inHandler = new InHandler();
-        this.outHandler = new OutHandler();
-
-        // start the worker thread
-        new Thread(inHandler).start();
-        new Thread(outHandler).start();
+        if (msgHandler == null){
+            log.error("null msgHandler is not allowed");
+            System.exit(-1);
+        }
+        this.messageHandler = msgHandler;
+        new Thread(messageHandler).start();
     }
 
     @Override
     public void dispatchFunc(GatewayMsg msg){
-
+        // TODO use enumeration and switch here
         // if pkt-in comes
         if (msg.getType() == MessageType.PACKET_IN.getType()){
             log.debug("[Core] dispatching PktIn");
@@ -65,18 +65,18 @@ class CoreDispatcher implements dispatcherCallback {
     private void onPacketIn(GatewayMsg msg) {
         if (Monitor.isCpuBusy()){
             // dispatcher to gateway
-            List<InetSocketAddress> idleLit =
+            List<InetSocketAddress> idleList =
                     gateway.getDataSharing().getWhoIsIdle();
-            gateway.send(idleLit.get(0), msg);
+            gateway.send(idleList.get(0), msg);
         }
 
         else{
             // handle it
-            inHandler.insert(msg);
+            messageHandler.insert(msg);
         }
     }
 
     private void onPacketOut(GatewayMsg msg) {
-        outHandler.insert(msg);
+        messageHandler.insert(msg);
     }
 }

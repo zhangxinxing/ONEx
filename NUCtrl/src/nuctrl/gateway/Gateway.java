@@ -2,6 +2,7 @@ package nuctrl.gateway;
 
 // STEP build Gateway module first to get familiar with socket as well as Java
 
+import nuctrl.core.MessageHandler;
 import nuctrl.gateway.Port.IOClient;
 import nuctrl.gateway.Port.IOServer;
 import nuctrl.protocol.GatewayMsg;
@@ -15,10 +16,16 @@ public class Gateway {
     private static Logger log = Logger.getLogger(Gateway.class);
     private DataSharing dataSharing;
     private Map<InetSocketAddress, IOClient> clientPool;
+    private MessageHandler messageHandler;
 
-    public Gateway() {
-        dataSharing = new DataSharing();
-        clientPool = new HashMap<InetSocketAddress, IOClient>();
+    public Gateway(MessageHandler msgHandler) {
+        if (msgHandler == null){
+            log.error("Null past to constructor");
+            System.exit(-1);
+        }
+        this.messageHandler = msgHandler;
+        this.dataSharing = new DataSharing();
+        this.clientPool = new HashMap<InetSocketAddress, IOClient>();
     }
 
     public DataSharing getDataSharing(){
@@ -32,7 +39,7 @@ public class Gateway {
             client = clientPool.get(addr);
         }
         else{
-            client = new IOClient(addr);
+            client = new IOClient(addr, messageHandler);
             client.init();
             clientPool.put(addr, client);
         }
@@ -45,7 +52,7 @@ public class Gateway {
     public void setup(){
 
         log.info("Gateway setting up Server thread");
-        IOServer server = new IOServer();
+        IOServer server = new IOServer(messageHandler);
 
         // initialize server thread
         server.init();

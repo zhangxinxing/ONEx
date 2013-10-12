@@ -1,20 +1,17 @@
 package nuctrl.gateway.Port;
 
+import nuctrl.core.MessageHandler;
+import nuctrl.gateway.gatewayDispatcher;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;
 
-/**
- * Handler implementation for the echo client.  It initiates the ping-pong
- * traffic between the echo client and server by sending the first message to
- * the server.
- */
 public class ClientUpHandler extends SimpleChannelUpstreamHandler {
-    private Logger log;
+    private static Logger log;
     private gatewayDispatcher dispatcher;
 
-    public ClientUpHandler() {
+    public ClientUpHandler(MessageHandler msgHandler) {
         log = Logger.getLogger(ClientUpHandler.class);
-        this.dispatcher = new gatewayDispatcher();
+        this.dispatcher = new gatewayDispatcher(msgHandler);
     }
 
     @Override
@@ -37,7 +34,6 @@ public class ClientUpHandler extends SimpleChannelUpstreamHandler {
         log.info("[client] Get message " + e.getMessage().toString());
 
         dispatcher.dispatchFunc(e);
-
 
     }
 

@@ -7,6 +7,6 @@ import nuctrl.protocol.GatewayMsg;
  * Date: 13-10-9
  * Time: PM5:01
  */
-public interface PacketOutWorker {
-    public void handlePacketOut(GatewayMsg msg);
+public interface PacketWorker {
+    public void onpPacket(GatewayMsg msg);
 }
