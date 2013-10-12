@@ -8,5 +8,5 @@ import nuctrl.protocol.GatewayMsg;
  * Time: PM5:01
  */
 public interface PacketWorker {
-    public void onpPacket(GatewayMsg msg);
+    public void onPacket(GatewayMsg msg);
 }

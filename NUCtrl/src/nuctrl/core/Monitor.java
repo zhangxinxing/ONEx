@@ -39,13 +39,13 @@ public class Monitor {
 
     // getCPUAccount
     public Map<String, Integer> getCPUAccount() {
-        List<String> apps = Settings.appNameList;
+        List<String> apps = Settings.getInstance().appNameList;
         for (String app : apps){
             if (Settings.RANDOM_TEST){
                 CPUAccount.put(app, new Random().nextInt());
             }
             else {
-                long pid = Settings.appPid.get(app);
+                long pid = Settings.getInstance().appPid.get(app);
                 // TODO sigar.getProcCpu(pid).getPercent();
             }
         }

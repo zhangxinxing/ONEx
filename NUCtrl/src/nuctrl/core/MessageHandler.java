@@ -19,7 +19,7 @@ public class MessageHandler implements Handler, Runnable {
     private static Logger log = Logger.getLogger(MessageHandler.class);
     // static list and worker to ensure only one handler per machine
     private static final List<GatewayMsg> PacketQueue = new LinkedList<GatewayMsg>();
-    private static PacketWorker packetWorker;
+    public PacketWorker packetWorker;
 
     public MessageHandler(PacketWorker worker) {
         if (worker == null) {
@@ -62,7 +62,7 @@ public class MessageHandler implements Handler, Runnable {
             // after wake up
 
             log.debug("worker wake up");
-            packetWorker.onpPacket(PacketQueue.get(0));
+            packetWorker.onPacket(PacketQueue.get(0));
             PacketQueue.remove(0);
         }
     }

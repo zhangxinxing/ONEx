@@ -1,5 +1,6 @@
 package nuctrl.gateway;
 
+import nuctrl.Settings;
 import nuctrl.core.MessageHandler;
 import nuctrl.protocol.GatewayMsg;
 import nuctrl.protocol.MessageFactory;
@@ -32,11 +33,21 @@ public class gatewayDispatcher {
         GatewayMsg msg = MessageFactory.getMessage(event);
 
         if (msg.getType() == MessageType.PACKET_IN.getType()){
-            msgHandler.insert(msg);
+            if (Settings.MULTI_THREAD){
+                msgHandler.insert(msg);
+            }
+            else {
+                msgHandler.packetWorker.onPacket(msg);
+            }
 
         }
         else if (msg.getType() == MessageType.PACKET_OUT.getType()){
-            msgHandler.insert(msg);
+            if (Settings.MULTI_THREAD){
+                msgHandler.insert(msg);
+            }
+            else {
+                msgHandler.packetWorker.onPacket(msg);
+            }
         }
 
     }

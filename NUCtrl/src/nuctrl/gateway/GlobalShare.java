@@ -42,7 +42,7 @@ public class GlobalShare {
         this.hz = Hazelcast.newHazelcastInstance(cfg);
 
         // initialization
-        this.localBt = new BusyTableEntry(Settings.socketAddr);
+        this.localBt = new BusyTableEntry(Settings.getInstance().socketAddr);
         this.localTopo = new LinkedList<TopologyTableEntry>();
         this.initUpdatingThread();
     }
@@ -100,26 +100,27 @@ public class GlobalShare {
 
     public boolean updateBusyTable(){
         localBt.setSizeOfQueueIn(mn.getSizeOfQueueIn());
-        localBt.setCpuAccount(mn.getCpuAccount());
+        localBt.setCpuAccount(mn.getCPUAccount());
         updateRemoteBusyTable();
         return true;
     }
 
     private boolean updateRemoteBusyTable(){
         ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
+        InetSocketAddress localAddr = Settings.getInstance().socketAddr;
 
-        if(Settings.socketAddr == null){
-            log.error("Error in config::addr == null");
+        if(localAddr == null){
+            log.error("Error in config: socketAddr == null");
             System.exit(-1);
         }
 
-        if(map.get(Settings.socketAddr) == null){
-            log.debug("Put new entry into busyTable for " + Settings.socketAddr.toString());
-            map.put(Settings.socketAddr, localBt);
+        if(map.get(localAddr) == null){
+            log.debug("Put new entry into busyTable for " + localAddr);
+            map.put(localAddr, localBt);
         }
         else{
-            log.debug("update busyTable for " + Settings.socketAddr.toString());
-            map.replace(Settings.socketAddr, localBt);
+            log.debug("update busyTable for " + localAddr);
+            map.replace(localAddr, localBt);
         }
 
         return true;

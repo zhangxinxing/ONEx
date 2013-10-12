@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class Gateway {
     private static Logger log = Logger.getLogger(Gateway.class);
-    private DataSharing dataSharing;
+    private GlobalShare globalShare;
     private Map<InetSocketAddress, IOClient> clientPool;
     private MessageHandler messageHandler;
 
@@ -24,12 +24,16 @@ public class Gateway {
             System.exit(-1);
         }
         this.messageHandler = msgHandler;
-        this.dataSharing = new DataSharing();
+        this.globalShare = new GlobalShare();
         this.clientPool = new HashMap<InetSocketAddress, IOClient>();
+
+        IOServer server = new IOServer(messageHandler);
+        server.init();
+        log.info("Gateway Server set up");
     }
 
-    public DataSharing getDataSharing(){
-        return dataSharing;
+    public GlobalShare getGlobalShare(){
+        return globalShare;
     }
 
 
@@ -45,17 +49,6 @@ public class Gateway {
         }
 
         client.send(msg);
-
-    }
-
-
-    public void setup(){
-
-        log.info("Gateway setting up Server thread");
-        IOServer server = new IOServer(messageHandler);
-
-        // initialize server thread
-        server.init();
 
     }
 

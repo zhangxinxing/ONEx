@@ -1,6 +1,6 @@
 package nuctrl.test;
 
-import nuctrl.gateway.DataSharing;
+import nuctrl.gateway.GlobalShare;
 
 /**
  * User: fan
@@ -10,7 +10,7 @@ import nuctrl.gateway.DataSharing;
 public class TDataSharing{
 
     public static void main(String[] args){
-        DataSharing ds = new DataSharing();
+        GlobalShare ds = new GlobalShare();
         ds.updateBusyTable();
         ds.getWhoIsIdle();
 

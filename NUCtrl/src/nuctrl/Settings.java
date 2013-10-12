@@ -14,33 +14,31 @@ import org.hyperic.sigar.SigarException;
  * Time: PM8:33
  */
 public class Settings {
-    public static boolean RANDOM_TEST = true;
-    public static String BUSYTABLE_MAP = "busyTable";
-    public static String TOPO_MAP = "topoTable";
-    public static String IP;
-    public static int PORT = 12345;
-    public static InetSocketAddress socketAddr;
-    public static int BUSY_UPDATE_INT = 1000;// ms
-    public static List<String> appNameList;
-    public static Map<String, Long> appPid;
-    public static long mainPid;
-    private static Sigar sigar = new Sigar();
+    public static final boolean RANDOM_TEST = true;
+    public static final boolean MULTI_THREAD = false;
+    public static final String BUSYTABLE_MAP = "busyTable";
+    public static final String TOPO_MAP = "topoTable";
+    public static final int PORT = 12345;
+    public static final int BUSY_UPDATE_INT = 1000;// ms
+
+    /* information */
+    public String IP;
+    public InetSocketAddress socketAddr;
+    public List<String> appNameList;
+    public Map<String, Long> appPid;
 
     // singleton
     private static Settings instance = new Settings();
     private Settings() {
         try {
-            IP = sigar.getNetInterfaceConfig().getAddress();
+            IP = new Sigar().getNetInterfaceConfig().getAddress();
             socketAddr = new InetSocketAddress(IP, PORT);
         } catch (SigarException e) {
             e.printStackTrace();
         }
-
         appNameList = new LinkedList<String>();
         appPid = new HashMap<String, Long>();
-        mainPid = new Sigar().getPid();
 
-        // TODO read in config
         parseConfig();
 
     }
@@ -49,8 +47,9 @@ public class Settings {
     }
 
     public void parseConfig() {
+        // TODO parseConfig
         if (Settings.RANDOM_TEST) {
-            this.regAppPid("app1", mainPid);
+            this.regAppPid("app1", new Sigar().getPid());
         }
     }
 

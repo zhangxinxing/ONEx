@@ -16,48 +16,27 @@ import org.jboss.netty.channel.MessageEvent;
  * Date: 13-10-9
  * Time: PM3:51
  */
-public class NUCtrl_daemon implements API {
+public class NUCtrlDaemon implements API {
     // exposed API
 
     private Core core;
     private Gateway gateway;
-    private static Logger log = Logger.getLogger(NUCtrl_daemon.class);
+    private static Logger log = Logger.getLogger(NUCtrlDaemon.class);
 
-    public NUCtrl_daemon(MessageHandler msgHandler) {
+    public NUCtrlDaemon(MessageHandler msgHandler) {
+        Settings.getInstance();
         if (msgHandler == null){
             log.error("Null msgHandler is not allowed");
         }
         gateway = new Gateway(msgHandler);
         core = new Core(gateway, msgHandler);
-        Settings.getInstance();
-    }
 
-    // setup
-    public void run(){
-        gateway.setup();
-        initUpdateGlobalInfo();
-    }
-
-    // updateGlobalInfo
-    private void initUpdateGlobalInfo(){
-        // a thread for updating busy table regularly
-        Thread updateBusyTable = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while(true){
-                    try {
-                        Thread.sleep(Settings.BUSY_UPDATE_INT);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        break;
-                    }
-                    // every 1s
-                    gateway.getDataSharing().updateBusyTable();
-                }
-            }
-        });
-
-        updateBusyTable.start();
+        // init
+//        try {
+//            Monitor.getInstance().overview();
+//        } catch (SigarException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void onPacketIn(GatewayMsg msg){
@@ -67,26 +46,28 @@ public class NUCtrl_daemon implements API {
     public static void main(String[] args){
         PacketWorker packetWorker = new PacketWorker() {
             @Override
-            public void onpPacket(GatewayMsg msg) {
+            public void onPacket(GatewayMsg msg) {
                 // hello here
                 if (msg.getType() == MessageType.PACKET_IN.getType()){
-                    log.info("handle packet in");
 
                     if (msg.getEvent() != null){
+                        log.info("Handle remote Packet-In");
                         MessageEvent event = msg.getEvent();
-
-                        log.debug("Got external packet-in from " + event.getChannel().getRemoteAddress().toString());
+                        log.debug("From " + event.getChannel().getRemoteAddress().toString());
 
                         // TODO handling business here
-
-                        GatewayMsg res = new GatewayMsg((byte)1, Settings.socketAddr);
-
+                        GatewayMsg res = new GatewayMsg((byte)1, Settings.getInstance().socketAddr);
                         ChannelFuture write = event.getChannel().write(res);
                         write.awaitUninterruptibly();
                         if (write.isSuccess()){
-                            log.debug("External Packet-In send out");
+                            log.debug("Packet-Out send out");
                         }
-                    } // end of if external
+                    }
+                    else {
+                        log.info("Local Packet-In");
+                        // TODO handling packet-in
+
+                    }
                 } // end of if packet-in
 
                 else if (msg.getType() == MessageType.PACKET_OUT.getType()){
@@ -94,8 +75,9 @@ public class NUCtrl_daemon implements API {
                 }
             }
         };
-        NUCtrl_daemon daemon = new NUCtrl_daemon(new MessageHandler(packetWorker));
-        daemon.run();
+
+        /* == main == */
+        NUCtrlDaemon daemon = new NUCtrlDaemon(new MessageHandler(packetWorker));
 
         try {
             Thread.sleep(2000);
@@ -103,7 +85,7 @@ public class NUCtrl_daemon implements API {
             e.printStackTrace();
         }
 
-        GatewayMsg msg = new GatewayMsg((byte)0, Settings.socketAddr);
+        GatewayMsg msg = new GatewayMsg((byte)0, Settings.getInstance().socketAddr);
         int TEST = 1;
         for (int i = 0; i < TEST; i++){
             try {
