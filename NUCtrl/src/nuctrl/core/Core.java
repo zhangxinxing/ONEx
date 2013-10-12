@@ -51,13 +51,13 @@ class CoreDispatcher implements dispatcherCallback {
 
         // if pkt-in comes
         if (msg.getType() == MessageType.PACKET_IN.getType()){
-            log.debug("[Core] dispatch to PktIn");
+            log.debug("[Core] dispatching PktIn");
             onPacketIn(msg);
         }
 
         // if pkt-out comes
         else if (msg.getType() == MessageType.PACKET_OUT.getType()){
-            log.debug("[Core] dispatch to PktOut");
+            log.debug("[Core] dispatching PktOut");
             onPacketOut(msg);
         }
     }

@@ -25,11 +25,6 @@ public class Gateway {
         return dataSharing;
     }
 
-    public void getGlobalInfo(){
-
-        dataSharing.getWhoIsIdle();
-        dataSharing.getBusyTableOnline();
-    }
 
     public void send(InetSocketAddress addr, GatewayMsg msg){
         IOClient client;
@@ -49,7 +44,7 @@ public class Gateway {
 
     public void setup(){
 
-        log.info("setup server ...");
+        log.info("Gateway setting up Server thread");
         IOServer server = new IOServer();
 
         // initialize server thread

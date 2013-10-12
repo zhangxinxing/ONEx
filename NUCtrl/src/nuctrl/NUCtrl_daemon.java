@@ -10,13 +10,13 @@ import nuctrl.protocol.GatewayMsg;
  * Date: 13-10-9
  * Time: PM3:51
  */
-public class NUCtrldaemon implements API {
+public class NUCtrl_daemon implements API {
     // exposed API
 
     private Core core;
     private Gateway gateway;
 
-    public NUCtrldaemon() {
+    public NUCtrl_daemon() {
         gateway = new Gateway();
         core = new Core(gateway);
         Settings.getInstance().init();
@@ -55,7 +55,7 @@ public class NUCtrldaemon implements API {
     }
 
     public static void main(String[] args){
-        NUCtrldaemon daemon = new NUCtrldaemon();
+        NUCtrl_daemon daemon = new NUCtrl_daemon();
         daemon.run();
 
         try {
@@ -65,7 +65,8 @@ public class NUCtrldaemon implements API {
         }
 
         GatewayMsg msg = new GatewayMsg((byte)0, Settings.myAddr);
-        for (;;){
+        int TEST = 1;
+        for (int i = 0; i < TEST; i++){
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {

@@ -32,7 +32,7 @@ public class ServerUpHandler extends SimpleChannelHandler {
             ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
         if (e instanceof ChannelStateEvent &&
                 ((ChannelStateEvent) e).getState() != ChannelState.INTEREST_OPS) {
-            log.info(e.toString());
+            log.trace(e.toString());
         }
         super.handleUpstream(ctx, e);
     }
@@ -40,10 +40,9 @@ public class ServerUpHandler extends SimpleChannelHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
-        log.info("[server]Got message " + e.getMessage().toString());
+        log.info("[server] Got message " + e.getMessage().toString());
 
         // dispatch with event
-        log.info("Message send to dispatcher");
         dispatcher.dispatchFunc(e);
 
 

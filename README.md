@@ -1,4 +1,5 @@
 NUCtrl
 ======
 
-Non-blocking I/O based distributed multiple controllers architecture.
+Author: Fan Zhang <hello.zhang1992@gmail.com>
+
