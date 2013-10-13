@@ -43,10 +43,15 @@ public class TDaemon {
             }
 
         }
-        log.info(">>>END Test");
 
+        // gracefully waiting
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         log.info(Benchmark.endBenchmark());
-        //daemon.fullShutdown();
+        log.info(">>>END Test");
     }
 }
 

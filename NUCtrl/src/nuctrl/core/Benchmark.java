@@ -32,19 +32,21 @@ public class Benchmark {
     }
 
     public static void addLocalPktIn(){
+        account.end = System.currentTimeMillis();
         account.nLocalPktIn += 1;
     }
 
     public static void addRemotePktIn(){
+        account.end = System.currentTimeMillis();
         account.nRemotePktIn += 1;
     }
 
     public static void addRemotePktOut(){
+        account.end = System.currentTimeMillis();
         account.nRemotePktOut += 1;
     }
 
     public static String endBenchmark(){
-        account.end = System.currentTimeMillis();
         long pid = Settings.getInstance().targetPid;
         if (pid == -1 || pid == 0){
             System.err.println(String.format("pid == %d", pid));
