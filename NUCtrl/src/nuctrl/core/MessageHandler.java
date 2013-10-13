@@ -4,6 +4,7 @@ import nuctrl.interfaces.PacketHandler;
 import nuctrl.protocol.GatewayMsg;
 import org.apache.log4j.Logger;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -64,13 +65,12 @@ public class MessageHandler implements nuctrl.interfaces.MessageHandler, Runnabl
                     break;
                 }
                 log.debug("worker wake up");
-                for (GatewayMsg msg : PacketQueue){
-                    log.error(">>>>> before remove " + PacketQueue.size());
-                    PacketQueue.remove(msg);
-                    log.error(">>>>> after remove " + PacketQueue.size());
+                Iterator<GatewayMsg> it = PacketQueue.iterator();
+                while(it.hasNext()){
+                    GatewayMsg msg = it.next();
+                    it.remove();
                     packetHandler.onPacket(msg);
                 }
-                log.debug("===== size: " + PacketQueue.size());
             }
         }
     }
