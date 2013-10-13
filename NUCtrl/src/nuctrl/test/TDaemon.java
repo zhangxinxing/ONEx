@@ -43,10 +43,10 @@ public class TDaemon {
             }
 
         }
-        log.info(Benchmark.endBenchmark());
         log.info(">>>END Test");
 
-        daemon.fullShutdown();
+        log.info(Benchmark.endBenchmark());
+        //daemon.fullShutdown();
     }
 }
 
@@ -55,34 +55,35 @@ class demoHandler implements PacketHandler{
 
     @Override
     public void onPacket(GatewayMsg msg) {
-        if (msg.getType() == MessageType.PACKET_IN.getType()){
-            if (msg.getEvent() != null){
-                log.debug("Handle remote Packet-In");
-                Benchmark.addRemotePktIn();
+        switch (MessageType.fromByte(msg.getType())){
+            case PACKET_IN:
+                if (msg.getEvent() != null){
+                    Benchmark.addRemotePktIn();
 
-                MessageEvent event = msg.getEvent();
-                log.debug("From " + event.getChannel().getRemoteAddress().toString());
+                    MessageEvent event = msg.getEvent();
+                    log.debug("Handle remote Packet-In From " + event.getChannel().getRemoteAddress().toString());
 
-                randomBusy(Settings.MAX_WHILE_LOOP); // random busy
-                GatewayMsg res = new GatewayMsg((byte)1, Settings.getInstance().socketAddr);
-                ChannelFuture write = event.getChannel().write(res);
-                write.awaitUninterruptibly();
-                if (write.isSuccess()){
-                    log.debug("Packet-Out send out");
+                    randomBusy(Settings.MAX_WHILE_LOOP); // random busy
+                    GatewayMsg res = new GatewayMsg((byte)1, Settings.getInstance().socketAddr);
+                    ChannelFuture write = event.getChannel().write(res);
+                    write.awaitUninterruptibly();
+                    if (write.isSuccess()){
+                        log.debug("Packet-Out send out");
+                    }
                 }
-            }
-            else {
-                log.debug("Local Packet-In");
-                Benchmark.addLocalPktIn();
+                else {
+                    log.debug("Local Packet-In");
+                    Benchmark.addLocalPktIn();
 
-                randomBusy(Settings.MAX_WHILE_LOOP); // random busy
-            }
-        } // end of if packet-in
+                    randomBusy(Settings.MAX_WHILE_LOOP); // random busy
+                }
+                break;
 
-        else if (msg.getType() == MessageType.PACKET_OUT.getType()){
-            log.debug("handler packet out");
-            Benchmark.addRemotePktOut();
-            randomBusy(1000);
+            case PACKET_OUT:
+                log.debug("handler packet out");
+                Benchmark.addRemotePktOut();
+                randomBusy(1000);
+                break;
         }
     }
 

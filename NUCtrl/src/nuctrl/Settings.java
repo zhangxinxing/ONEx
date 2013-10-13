@@ -17,7 +17,7 @@ public class Settings {
     /* random test */
     public static final boolean RANDOM_TEST = true;
     public static final boolean MULTI_THREAD = true;
-    public static final int TEST_RUN = 10;
+    public static final int TEST_RUN = 1;
     public static final int PACKET_INTERVAL = 0;//ms
     public static final int MAX_WHILE_LOOP = 5000;
     public static final int MAX_QUEUE = 50;

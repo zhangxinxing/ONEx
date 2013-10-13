@@ -32,25 +32,12 @@ public class gatewayDispatcher {
 
         GatewayMsg msg = MessageFactory.getMessage(event);
 
-        switch(MessageType.fromByte(msg.getType())){
-            case PACKET_IN:
-                if (Settings.MULTI_THREAD){
-                    msgHandler.insert(msg);
-                }
-                else {
-                    msgHandler.packetHandler.onPacket(msg);
-                }
-                break;
-
-            case PACKET_OUT:
-                if (Settings.MULTI_THREAD){
-                    msgHandler.insert(msg);
-                }
-                else {
-                    msgHandler.packetHandler.onPacket(msg);
-                }
-                break;
+        if (Settings.MULTI_THREAD){
+            msgHandler.insert(msg);
         }
-
+        else {
+            msgHandler.packetHandler.onPacket(msg);
+        }
     }
+
 }

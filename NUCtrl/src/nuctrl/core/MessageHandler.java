@@ -56,19 +56,28 @@ public class MessageHandler implements nuctrl.interfaces.MessageHandler, Runnabl
         while(running){
             synchronized (PacketQueue){
                 try {
-                    PacketQueue.wait();
+                    while(PacketQueue.size() == 0){
+                        PacketQueue.wait();
+                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     break;
                 }
+                log.debug("worker wake up");
+                for (GatewayMsg msg : PacketQueue){
+                    log.error(">>>>> before remove " + PacketQueue.size());
+                    PacketQueue.remove(msg);
+                    log.error(">>>>> after remove " + PacketQueue.size());
+                    packetHandler.onPacket(msg);
+                }
+                log.debug("===== size: " + PacketQueue.size());
             }
-            log.debug("worker wake up");
-            packetHandler.onPacket(PacketQueue.get(0));
-            PacketQueue.remove(0);
         }
     }
 
     public static int sizeOfQueue(){
-        return PacketQueue.size();
+        synchronized (PacketQueue){
+            return PacketQueue.size();
+        }
     }
 }

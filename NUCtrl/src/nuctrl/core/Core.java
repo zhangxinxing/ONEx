@@ -68,6 +68,8 @@ public class Core {
         // step one: close handler thread
         if (handlerThread != null){
             try {
+                Thread.State state = handlerThread.getState();
+
                 messageHandler.terminate();
                 handlerThread.join();
             } catch (InterruptedException e) {
