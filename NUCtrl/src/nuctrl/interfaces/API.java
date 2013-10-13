@@ -7,5 +7,4 @@ package nuctrl.interfaces;
  */
 public interface API {
 
-
 }

@@ -41,7 +41,7 @@ public class Core {
                     messageHandler.insert(msg);
                 }
                 else {
-                    messageHandler.packetWorker.onPacket(msg);
+                    messageHandler.packetHandler.onPacket(msg);
                 }
             }
         }
@@ -52,7 +52,7 @@ public class Core {
                 messageHandler.insert(msg);
             }
             else {
-                messageHandler.packetWorker.onPacket(msg);
+                messageHandler.packetHandler.onPacket(msg);
             }
         }
     }

@@ -37,7 +37,7 @@ public class gatewayDispatcher {
                 msgHandler.insert(msg);
             }
             else {
-                msgHandler.packetWorker.onPacket(msg);
+                msgHandler.packetHandler.onPacket(msg);
             }
 
         }
@@ -46,7 +46,7 @@ public class gatewayDispatcher {
                 msgHandler.insert(msg);
             }
             else {
-                msgHandler.packetWorker.onPacket(msg);
+                msgHandler.packetHandler.onPacket(msg);
             }
         }
 

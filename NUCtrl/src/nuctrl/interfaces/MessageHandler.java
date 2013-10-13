@@ -5,8 +5,8 @@ import nuctrl.protocol.GatewayMsg;
 /**
  * User: fan
  * Date: 13-10-9
- * Time: PM5:01
+ * Time: AM11:14
  */
-public interface PacketWorker {
-    public void onPacket(GatewayMsg msg);
+public interface MessageHandler {
+    public void insert(GatewayMsg msg);
 }

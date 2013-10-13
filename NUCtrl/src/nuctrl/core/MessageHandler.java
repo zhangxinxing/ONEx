@@ -1,7 +1,6 @@
 package nuctrl.core;
 
-import nuctrl.interfaces.Handler;
-import nuctrl.interfaces.PacketWorker;
+import nuctrl.interfaces.PacketHandler;
 import nuctrl.protocol.GatewayMsg;
 import org.apache.log4j.Logger;
 
@@ -14,21 +13,21 @@ import java.util.List;
  * Date: 13-10-10
  * Time: AM11:53
  */
-public class MessageHandler implements Handler, Runnable {
+public class MessageHandler implements nuctrl.interfaces.MessageHandler, Runnable {
 
     private static Logger log = Logger.getLogger(MessageHandler.class);
     // static list and worker to ensure only one handler per machine
     private static final List<GatewayMsg> PacketQueue = new LinkedList<GatewayMsg>();
-    public PacketWorker packetWorker;
+    public PacketHandler packetHandler;
 
-    public MessageHandler(PacketWorker worker) {
+    public MessageHandler(PacketHandler worker) {
         if (worker == null) {
             log.error("Null worker is not allowed");
             System.exit(-1);
         }
         else{
-            if (packetWorker == null){
-                packetWorker = worker;
+            if (packetHandler == null){
+                packetHandler = worker;
         }
         }
     }
@@ -36,7 +35,7 @@ public class MessageHandler implements Handler, Runnable {
     @Override
     public void insert(GatewayMsg msg) {
         if (msg == null){
-            log.error("[Handler] null");
+            log.error("[MessageHandler] null");
             return;
         }
         synchronized (PacketQueue){
@@ -62,7 +61,7 @@ public class MessageHandler implements Handler, Runnable {
             // after wake up
 
             log.debug("worker wake up");
-            packetWorker.onPacket(PacketQueue.get(0));
+            packetHandler.onPacket(PacketQueue.get(0));
             PacketQueue.remove(0);
         }
     }
