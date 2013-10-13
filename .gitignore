@@ -23,7 +23,9 @@
 *.sqlite
 
 # IDE related file #
-*.iml 
+.idea/
+out/
+build/
 
 # OS generated files #
 .DS_Store
