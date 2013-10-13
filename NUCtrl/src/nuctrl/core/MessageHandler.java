@@ -16,11 +16,13 @@ import java.util.List;
 public class MessageHandler implements nuctrl.interfaces.MessageHandler, Runnable {
 
     private static Logger log = Logger.getLogger(MessageHandler.class);
-    // static list and worker to ensure only one handler per machine
     private static final List<GatewayMsg> PacketQueue = new LinkedList<GatewayMsg>();
     public PacketHandler packetHandler;
 
+    private volatile boolean running;
+
     public MessageHandler(PacketHandler worker) {
+        this.running = true;
         if (worker == null) {
             log.error("Null worker is not allowed");
             System.exit(-1);
@@ -45,10 +47,13 @@ public class MessageHandler implements nuctrl.interfaces.MessageHandler, Runnabl
         log.debug("insert " + msg.toString());
     }
 
-    // thread of worker
+    public void terminate(){
+        running = false;
+    }
+
     @Override
     public void run() {
-        while(true){
+        while(running){
             synchronized (PacketQueue){
                 try {
                     PacketQueue.wait();
@@ -57,9 +62,6 @@ public class MessageHandler implements nuctrl.interfaces.MessageHandler, Runnabl
                     break;
                 }
             }
-
-            // after wake up
-
             log.debug("worker wake up");
             packetHandler.onPacket(PacketQueue.get(0));
             PacketQueue.remove(0);

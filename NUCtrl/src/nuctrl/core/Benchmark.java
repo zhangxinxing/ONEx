@@ -23,8 +23,8 @@ public class Benchmark {
             System.err.println("App must be registered before benchmark");
         }
         account = new Account();
-        account.start = new Date();
-        account.end = null;
+        account.start = System.currentTimeMillis();
+        account.end = -1L;
         account.procTime = null;
         account.nLocalPktIn = 0;
         account.nRemotePktIn = 0;
@@ -44,7 +44,7 @@ public class Benchmark {
     }
 
     public static String endBenchmark(){
-        account.end = new Date();
+        account.end = System.currentTimeMillis();
         long pid = Settings.getInstance().targetPid;
         if (pid == -1 || pid == 0){
             System.err.println(String.format("pid == %d", pid));
@@ -62,8 +62,8 @@ public class Benchmark {
 
 
 class Account {
-    Date start;
-    Date end;
+    Long start;
+    Long end;
 
     ProcTime procTime;
 
@@ -75,15 +75,17 @@ class Account {
     public String toString(){
         return String.format(
                 "[--benchmark--]\n" +
-                        "Begin\t\t: %s\n" +
-                        "End\t\t\t: %s\n" +
+                        "Begin\t\t: %d\n" +
+                        "End\t\t\t: %d\n" +
+                        "During\t\t: %d\n" +
                         "Time\t\t: %s\n" +
                         "localPktIn\t: %d\n" +
                         "remotePktIn\t: %d\n" +
                         "remotePktOut: %d\n" +
                 "[-- END of BENCHMARK --]\n",
-                start.toString(),
-                end.toString(),
+                start,
+                end,
+                end - start,
                 this.procTime.toString(),
                 this.nLocalPktIn,
                 this.nRemotePktIn,

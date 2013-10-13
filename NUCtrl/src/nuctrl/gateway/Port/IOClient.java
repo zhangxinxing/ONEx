@@ -79,7 +79,7 @@ public class IOClient {
         future.awaitUninterruptibly();
     }
 
-    private void destroy(){
+    public void destroy(){
         channel.close().awaitUninterruptibly();
         bootstrap.releaseExternalResources();
     }

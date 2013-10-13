@@ -38,6 +38,7 @@ public class IOServer {
     private final int port;
     private static Logger log = Logger.getLogger(IOServer.class);
     private MessageHandler messageHandler;
+    private ServerBootstrap bootstrap;
 
     public IOServer(MessageHandler msgHandler){
         this.port = Settings.PORT;
@@ -50,39 +51,46 @@ public class IOServer {
         }
     }
 
-    public IOServer(int port) {
-        this.port = port;
-    }
-
     public void init() {
         // Configure the server.
-        ServerBootstrap bootstrap = new ServerBootstrap(
+        bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
                         Executors.newCachedThreadPool(),
                         Executors.newCachedThreadPool()));
 
         // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            public ChannelPipeline getPipeline() throws Exception {
-                ChannelPipeline p = Channels.pipeline();
-
-                // upward
-                p.addLast("Decoder", new ObjectDecoder(
-                        ClassResolvers.cacheDisabled(
-                                getClass().getClassLoader())
-                ));
-                p.addLast("UpHandler", new ServerUpHandler(messageHandler));
-
-                // downward
-                p.addLast("DownHandler", new ServerDownHandler());
-                p.addLast("Encoder", new ObjectEncoder());
-
-                return p;
-            }
-        });
+        bootstrap.setPipelineFactory(new IOServerPipelineFactory(messageHandler));
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
     }
 
+    public void destroy(){
+        bootstrap.releaseExternalResources();
+    }
+}
+
+class IOServerPipelineFactory implements ChannelPipelineFactory{
+    private MessageHandler messageHandler;
+
+    public IOServerPipelineFactory(MessageHandler messageHandler) {
+        this.messageHandler = messageHandler;
+    }
+
+    @Override
+    public ChannelPipeline getPipeline() throws Exception {
+        ChannelPipeline p = Channels.pipeline();
+        // upward
+        p.addLast("Decoder", new ObjectDecoder(
+                ClassResolvers.cacheDisabled(
+                        getClass().getClassLoader())
+        ));
+        p.addLast("UpHandler", new ServerUpHandler(messageHandler));
+
+        // downward
+        p.addLast("DownHandler", new ServerDownHandler());
+        p.addLast("Encoder", new ObjectEncoder());
+
+        return p;
+    }
 }

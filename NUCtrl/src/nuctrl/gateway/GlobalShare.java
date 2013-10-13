@@ -23,15 +23,16 @@ import java.util.concurrent.ConcurrentMap;
  * Date: 13-10-3
  * Time: PM8:19
  */
-public class GlobalShare {
+public class GlobalShare implements Runnable{
     /* */
     private HazelcastInstance hz;
     private static Logger log;
     private Monitor mn;
+    private volatile boolean runningDaemon = true;
 
     // local Data
     private BusyTableEntry localBt;
-    private List<TopologyTableEntry> localTopo;
+    private List<TopologyTableEntry> localTopology;
 
     public GlobalShare(){
         log = Logger.getLogger(GlobalShare.class.getName());
@@ -43,8 +44,8 @@ public class GlobalShare {
 
         // initialization
         this.localBt = new BusyTableEntry(Settings.getInstance().socketAddr);
-        this.localTopo = new LinkedList<TopologyTableEntry>();
-        this.initUpdatingThread();
+        this.localTopology = new LinkedList<TopologyTableEntry>();
+        updateBusyTable();
     }
 
     /* Busy Table */
@@ -71,7 +72,6 @@ public class GlobalShare {
         Set<InetSocketAddress> keySet = map.keySet();
 
         InetSocketAddress maybeKey = null;
-
         for (InetSocketAddress key : keySet){
 
             if (maybeKey == null)
@@ -136,33 +136,40 @@ public class GlobalShare {
     private boolean updateRemoteTopology() {
         MultiMap<InetAddress, TopologyTableEntry> map = hz.getMultiMap(Settings.TOPO_MAP);
 
-        log.debug("update remote topology #" + this.localTopo.size());
-        for (TopologyTableEntry entry : this.localTopo){
+        log.debug("update remote topology #" + this.localTopology.size());
+        for (TopologyTableEntry entry : this.localTopology){
             map.put(entry.getSrc(), entry);
         }
         return true;
     }
 
-    // updateGlobalInfo
-    private void initUpdatingThread(){
-        // a thread for updating busy table regularly
-        updateBusyTable();
-        Thread updatingDaemon = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while(true){
-                    try {
-                        Thread.sleep(Settings.BUSY_UPDATE_INT);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        break;
-                    }
-                    // every 1s
-                    updateBusyTable();
-                }
-            }
-        });
+    public void shutdown(){
+        // step 1: shutdown daemon
+        this.runningDaemon = false;
 
-        updatingDaemon.start();
+        // step2 close hazelcast
+        Hazelcast.shutdownAll();
     }
+
+    @Override
+    public void run() {
+        while(runningDaemon){
+            try {
+                Thread.sleep(Settings.BUSY_UPDATE_INT);
+                if (!runningDaemon){
+                    break;
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                break;
+            }
+            // every 1s
+            updateBusyTable();
+        }
+    }
+
+    public void terminate(){
+        this.runningDaemon = false;
+    }
+
 }

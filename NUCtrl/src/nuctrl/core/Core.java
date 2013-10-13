@@ -14,6 +14,7 @@ public class Core {
     private MessageHandler messageHandler;
     private Gateway gateway;
     private static Logger log = Logger.getLogger(Core.class);
+    private Thread handlerThread;
 
 	public Core(Gateway gateway, MessageHandler msgHandler) {
         this.messageHandler = msgHandler;
@@ -22,7 +23,9 @@ public class Core {
             /*
                 if in multiple threads mode, open new thread for message handler
              */
-            new Thread(messageHandler).start();
+            handlerThread = new Thread(messageHandler);
+            log.debug("handler threads set up");
+            handlerThread.start();
         }
 	}
 
@@ -55,6 +58,25 @@ public class Core {
                 }
                 break;
         }
+    }
+
+    public void halfShutdown(){
+        gateway.halfShutdown();
+    }
+
+    public void fullShutdown(){
+        // step one: close handler thread
+        if (handlerThread != null){
+            try {
+                messageHandler.terminate();
+                handlerThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // step two: close gateway
+        gateway.fullShutdown();
     }
 
 }

@@ -27,6 +27,7 @@ public class TDaemon {
         NUCtrlDaemon daemon = new NUCtrlDaemon(new MessageHandler(packetHandler));
 
         log.info(">>>BEGIN Test");
+        log.info("Test Run = " + Settings.TEST_RUN);
         Benchmark.startBenchmark();
 
         if (args.length == 0){
@@ -42,8 +43,10 @@ public class TDaemon {
             }
 
         }
-        System.out.print(Benchmark.endBenchmark());
+        log.info(Benchmark.endBenchmark());
         log.info(">>>END Test");
+
+        daemon.fullShutdown();
     }
 }
 

@@ -35,6 +35,15 @@ public class NUCtrlDaemon implements API {
 //        }
     }
 
+    public void halfShutdown(){
+        core.halfShutdown();
+    }
+
+    public void fullShutdown(){
+        log.debug("shut down everything");
+        core.fullShutdown();
+    }
+
     public void daemonOnPacket(GatewayMsg msg){
        core.dispatchFunc(msg);
     }
