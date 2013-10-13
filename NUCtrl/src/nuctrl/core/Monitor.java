@@ -9,7 +9,6 @@ import java.util.*;
 
 public class Monitor {
     // data structure
-    private static long pid;
     private static Sigar sigar = new Sigar();
     private static Logger log = Logger.getLogger(Monitor.class);
 
@@ -28,14 +27,11 @@ public class Monitor {
         this.sizeOfQueueIn = 0;
         this.sysInfo = new SysInfo();
         this.procInfo = new ProcInfo();
-
-        Monitor.pid = -1;
     }
 
     public static Monitor getInstance(){
         return instance;
     }
-
 
     // getCPUAccount
     public Map<String, Integer> getCPUAccount() {
@@ -66,14 +62,14 @@ public class Monitor {
     // get size of queue by name
     public int getSizeOfQueueIn(){
         if (Settings.RANDOM_TEST){
-            sizeOfQueueIn = new Random().nextInt() % 10;
+            int tmp = new Random().nextInt() % Settings.MAX_QUEUE;
+            sizeOfQueueIn = tmp > 0 ? tmp : -tmp;
         }
         else {
             sizeOfQueueIn = MessageHandler.sizeOfQueue();
         }
         return sizeOfQueueIn;
     }
-
 
     // get local info
     private void update(){
@@ -83,11 +79,12 @@ public class Monitor {
             sysInfo.CPU_idle = sigar.getCpuPerc().getIdle();
             sysInfo.mem_free = sigar.getMem().getFreePercent();
 
-            if (Monitor.pid != -1){
+            long pid = Settings.getInstance().targetPid;
+            if (pid != -1){
                 procInfo.CPU_used = sigar.getProcCpu(pid).getPercent();
                 procInfo.mem_used = sigar.getProcMem(pid).getSize()/sigar.getMem().getTotal();
-                procInfo.systime = sigar.getProcTime(pid).getSys();
-                procInfo.usrtime = sigar.getProcTime(pid).getUser();
+                procInfo.sysTime = sigar.getProcTime(pid).getSys();
+                procInfo.usrTime = sigar.getProcTime(pid).getUser();
             }
         } catch (SigarException e) {
             e.printStackTrace();
@@ -117,6 +114,7 @@ public class Monitor {
         log.info(sigar.getMem());
 
         // process
+        long pid = Settings.getInstance().targetPid;
         if (pid == -1){
             log.info("PID unset");
         }
@@ -170,10 +168,9 @@ class SysInfo{
 }
 
 class ProcInfo{
-    long pid;
     double CPU_used;
     double mem_used;
-    long systime;
-    long usrtime;
-
+    long sysTime;
+    long usrTime;
 }
+

@@ -32,22 +32,24 @@ public class gatewayDispatcher {
 
         GatewayMsg msg = MessageFactory.getMessage(event);
 
-        if (msg.getType() == MessageType.PACKET_IN.getType()){
-            if (Settings.MULTI_THREAD){
-                msgHandler.insert(msg);
-            }
-            else {
-                msgHandler.packetHandler.onPacket(msg);
-            }
+        switch(MessageType.fromByte(msg.getType())){
+            case PACKET_IN:
+                if (Settings.MULTI_THREAD){
+                    msgHandler.insert(msg);
+                }
+                else {
+                    msgHandler.packetHandler.onPacket(msg);
+                }
+                break;
 
-        }
-        else if (msg.getType() == MessageType.PACKET_OUT.getType()){
-            if (Settings.MULTI_THREAD){
-                msgHandler.insert(msg);
-            }
-            else {
-                msgHandler.packetHandler.onPacket(msg);
-            }
+            case PACKET_OUT:
+                if (Settings.MULTI_THREAD){
+                    msgHandler.insert(msg);
+                }
+                else {
+                    msgHandler.packetHandler.onPacket(msg);
+                }
+                break;
         }
 
     }

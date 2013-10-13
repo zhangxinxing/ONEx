@@ -2,6 +2,7 @@ package nuctrl.test;
 
 import nuctrl.NUCtrlDaemon;
 import nuctrl.Settings;
+import nuctrl.core.Benchmark;
 import nuctrl.core.MessageHandler;
 import nuctrl.interfaces.PacketHandler;
 import nuctrl.protocol.GatewayMsg;
@@ -10,6 +11,8 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.MessageEvent;
 import org.apache.log4j.Logger;
 
+import java.util.Random;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Fan
@@ -17,26 +20,30 @@ import org.apache.log4j.Logger;
  * Time: AM10:58
  */
 public class TDaemon {
+    private static Logger log = Logger.getLogger(TDaemon.class);
+
     public static void main(String[] args){
         PacketHandler packetHandler = new demoHandler();
         NUCtrlDaemon daemon = new NUCtrlDaemon(new MessageHandler(packetHandler));
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        log.info(">>>BEGIN Test");
+        Benchmark.startBenchmark();
 
-        GatewayMsg msg = new GatewayMsg((byte)0, Settings.getInstance().socketAddr);
-        int TEST = 1;
-        for (int i = 0; i < TEST; i++){
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                break;
+        if (args.length == 0){
+            GatewayMsg msg = new GatewayMsg((byte)0, Settings.getInstance().socketAddr);
+
+            for (int i = 0; i < Settings.TEST_RUN; i++){
+                try {
+                    Thread.sleep(Settings.PACKET_INTERVAL);
+                } catch (InterruptedException e) {
+                    break;
+                }
+                daemon.daemonOnPacket(msg);
             }
-            daemon.onPacketIn(msg);
+
         }
+        System.out.print(Benchmark.endBenchmark());
+        log.info(">>>END Test");
     }
 }
 
@@ -45,15 +52,15 @@ class demoHandler implements PacketHandler{
 
     @Override
     public void onPacket(GatewayMsg msg) {
-        // hello here
         if (msg.getType() == MessageType.PACKET_IN.getType()){
-
             if (msg.getEvent() != null){
-                log.info("Handle remote Packet-In");
+                log.debug("Handle remote Packet-In");
+                Benchmark.addRemotePktIn();
+
                 MessageEvent event = msg.getEvent();
                 log.debug("From " + event.getChannel().getRemoteAddress().toString());
 
-                // TODO handling business here
+                randomBusy(Settings.MAX_WHILE_LOOP); // random busy
                 GatewayMsg res = new GatewayMsg((byte)1, Settings.getInstance().socketAddr);
                 ChannelFuture write = event.getChannel().write(res);
                 write.awaitUninterruptibly();
@@ -62,14 +69,25 @@ class demoHandler implements PacketHandler{
                 }
             }
             else {
-                log.info("Local Packet-In");
-                // TODO handling packet-in
+                log.debug("Local Packet-In");
+                Benchmark.addLocalPktIn();
 
+                randomBusy(Settings.MAX_WHILE_LOOP); // random busy
             }
         } // end of if packet-in
 
         else if (msg.getType() == MessageType.PACKET_OUT.getType()){
-            log.info("handler packet out");
+            log.debug("handler packet out");
+            Benchmark.addRemotePktOut();
+            randomBusy(1000);
+        }
+    }
+
+    private void randomBusy(int max){
+        int i = (new Random().nextInt() % max);
+        i = (i>0)?i:-i;
+        while(i > 0){
+            i--;
         }
     }
 }

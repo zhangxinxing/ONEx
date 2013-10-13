@@ -27,33 +27,33 @@ public class Core {
 	}
 
     public void dispatchFunc(GatewayMsg msg){
-        // TODO use enumeration and switch here
-        // if pkt-in comes
-        if (msg.getType() == MessageType.PACKET_IN.getType()){
-            log.debug("[Core] dispatching PktIn");
-            if (Monitor.getInstance().isBusy()){
-                // dispatcher to gateway
-                List<InetSocketAddress> idleList = gateway.getGlobalShare().getWhoIsIdle();
-                gateway.send(idleList.get(0), msg);
-            }
-            else{
+
+        switch(MessageType.fromByte(msg.getType())){
+            case PACKET_IN:
+                log.debug("[Core] dispatching PktIn");
+                if (Monitor.getInstance().isBusy()){
+                    List<InetSocketAddress> idleList = gateway.getGlobalShare().getWhoIsIdle();
+                    gateway.send(idleList.get(0), msg);
+                }
+                else{
+                    if (Settings.MULTI_THREAD){
+                        messageHandler.insert(msg);
+                    }
+                    else {
+                        messageHandler.packetHandler.onPacket(msg);
+                    }
+                }
+                break;
+
+            case PACKET_OUT:
+                log.debug("[Core] dispatching PktOut");
                 if (Settings.MULTI_THREAD){
                     messageHandler.insert(msg);
                 }
                 else {
                     messageHandler.packetHandler.onPacket(msg);
                 }
-            }
-        }
-        // if pkt-out comes
-        else if (msg.getType() == MessageType.PACKET_OUT.getType()){
-            log.debug("[Core] dispatching PktOut");
-            if (Settings.MULTI_THREAD){
-                messageHandler.insert(msg);
-            }
-            else {
-                messageHandler.packetHandler.onPacket(msg);
-            }
+                break;
         }
     }
 

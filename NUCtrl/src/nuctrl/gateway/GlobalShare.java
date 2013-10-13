@@ -115,7 +115,7 @@ public class GlobalShare {
         }
 
         if(map.get(localAddr) == null){
-            log.debug("Put new entry into busyTable for " + localAddr);
+            log.info("Put new entry into busyTable for " + localAddr);
             map.put(localAddr, localBt);
         }
         else{
@@ -146,7 +146,8 @@ public class GlobalShare {
     // updateGlobalInfo
     private void initUpdatingThread(){
         // a thread for updating busy table regularly
-        Thread updateBusyTable = new Thread(new Runnable() {
+        updateBusyTable();
+        Thread updatingDaemon = new Thread(new Runnable() {
             @Override
             public void run() {
                 while(true){
@@ -162,6 +163,6 @@ public class GlobalShare {
             }
         });
 
-        updateBusyTable.start();
+        updatingDaemon.start();
     }
 }

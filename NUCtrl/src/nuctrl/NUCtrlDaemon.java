@@ -4,12 +4,8 @@ import nuctrl.core.Core;
 import nuctrl.core.MessageHandler;
 import nuctrl.gateway.Gateway;
 import nuctrl.interfaces.API;
-import nuctrl.interfaces.PacketHandler;
 import nuctrl.protocol.GatewayMsg;
-import nuctrl.protocol.MessageType;
 import org.apache.log4j.Logger;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.MessageEvent;
 
 /**
  * User: fan
@@ -39,7 +35,7 @@ public class NUCtrlDaemon implements API {
 //        }
     }
 
-    public void onPacketIn(GatewayMsg msg){
+    public void daemonOnPacket(GatewayMsg msg){
        core.dispatchFunc(msg);
     }
 

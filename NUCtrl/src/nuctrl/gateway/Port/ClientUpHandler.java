@@ -25,13 +25,13 @@ public class ClientUpHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
         Channel chan = ctx.getChannel();
-        log.info("[client] connected with " + chan.getRemoteAddress().toString());
+        log.debug("[client] connected with " + chan.getRemoteAddress().toString());
     }
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
-        log.info("[client] Get message " + e.getMessage().toString());
+        log.debug("[client] Get message " + e.getMessage().toString());
 
         dispatcher.dispatchFunc(e);
 

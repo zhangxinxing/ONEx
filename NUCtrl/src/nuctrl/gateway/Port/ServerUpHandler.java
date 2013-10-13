@@ -42,7 +42,7 @@ public class ServerUpHandler extends SimpleChannelHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
-        log.info("[server] Got message " + e.getMessage().toString());
+        log.debug("[server] Got message " + e.getMessage().toString());
 
         // dispatch with event
         dispatcher.dispatchFunc(e);
