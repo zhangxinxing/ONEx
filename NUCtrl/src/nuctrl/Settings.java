@@ -1,10 +1,9 @@
 package nuctrl;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 
@@ -15,29 +14,31 @@ import org.hyperic.sigar.SigarException;
  */
 public class Settings {
     /* random test */
-    public static final boolean RANDOM_TEST = true;
-    public static final boolean MULTI_THREAD = true;
-    public static final int TEST_RUN = 1;
-    public static final int PACKET_INTERVAL = 0;//ms
-    public static final int MAX_WHILE_LOOP = 5000;
-    public static final int MAX_QUEUE = 50;
+    public static boolean   RANDOM_TEST;
+    public static boolean   MULTI_THREAD;
+    public static int       TEST_RUN;
+    public static int       PACKET_INTERVAL;//ms
+    public static int       MAX_WHILE_LOOP;
+    public static int       MAX_QUEUE;
 
-    public static final String BUSYTABLE_MAP = "busyTable";
-    public static final String TOPO_MAP = "topoTable";
-    public static final int PORT = 12345;
-    public static final int BUSY_UPDATE_INT = 1000;//ms
+    public static String    BUSYTABLE_MAP;
+    public static String    TOPO_MAP;
+    public static int       PORT;
+    public static int       BUSY_UPDATE_INT;//ms
+
+    private String          APPNAME;
 
     /* information */
     public String IP;
     public InetSocketAddress socketAddr;
     public List<String> appNameList;
     public Map<String, Long> appPid;
-    public String targetApp;
     public long targetPid;
 
     // singleton
     private static Settings instance = new Settings();
     private Settings() {
+        parseConfig();
         try {
             IP = new Sigar().getNetInterfaceConfig().getAddress();
             socketAddr = new InetSocketAddress(IP, PORT);
@@ -46,26 +47,35 @@ public class Settings {
         }
         appNameList = new LinkedList<String>();
         appPid = new HashMap<String, Long>();
-
-        parseConfig();
-
+        regAppPid(APPNAME, new Sigar().getPid());
+        targetPid = new Sigar().getPid();
     }
     public static Settings getInstance(){
         return instance;
     }
 
     public void parseConfig() {
-        // TODO parseConfig
-        if (Settings.RANDOM_TEST) {
-            this.regAppPid("app1", new Sigar().getPid());
-            this.targetPid = new Sigar().getPid();
-            this.targetApp = "app1";
+        Properties config = new Properties();
+        try {
+            config.load(getClass().getClassLoader().getResourceAsStream("nuctrl.config.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        RANDOM_TEST     = Boolean.parseBoolean(config.getProperty("RANDOM_TEST"));
+        MULTI_THREAD    = Boolean.parseBoolean(config.getProperty("MULTI_THREAD"));
+        PACKET_INTERVAL = Integer.parseInt(config.getProperty("PACKET_INTERVAL"));
+        TEST_RUN        = Integer.parseInt(config.getProperty("TEST_RUN"));
+        MAX_WHILE_LOOP  = Integer.parseInt(config.getProperty("MAX_WHILE_LOOP"));
+        MAX_QUEUE       = Integer.parseInt(config.getProperty("MAX_QUEUE"));
+        BUSY_UPDATE_INT = Integer.parseInt(config.getProperty("BUSY_UPDATE_INT"));
+        BUSYTABLE_MAP   = config.getProperty("BUSYTABLE_MAP");
+        TOPO_MAP        = config.getProperty("TOPO_MAP");
+        PORT            = Integer.parseInt(config.getProperty("PORT"));
+        APPNAME         = config.getProperty("nameOfApps");
     }
 
     public void regAppPid(String appName, long pid){
         appNameList.add(appName);
         appPid.put(appName, pid);
     }
-
 }
