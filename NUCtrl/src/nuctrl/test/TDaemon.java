@@ -26,32 +26,34 @@ public class TDaemon {
         PacketHandler packetHandler = new demoHandler();
         NUCtrlDaemon daemon = new NUCtrlDaemon(new MessageHandler(packetHandler));
 
-        log.info(">>>BEGIN Test");
-        log.info("Test Run = " + Settings.TEST_RUN);
-        Benchmark.startBenchmark();
+        if (Settings.PKTGEN){
+            log.info(">>>BEGIN Test");
+            log.info("Test Run = " + Settings.TEST_RUN);
+            Benchmark.startBenchmark();
 
-        if (args.length == 0){
-            GatewayMsg msg = new GatewayMsg((byte)0, Settings.getInstance().socketAddr);
+            if (args.length == 0){
+                GatewayMsg msg = new GatewayMsg((byte)0, Settings.getInstance().socketAddr);
 
-            for (int i = 0; i < Settings.TEST_RUN; i++){
-                try {
-                    Thread.sleep(Settings.PACKET_INTERVAL);
-                } catch (InterruptedException e) {
-                    break;
+                for (int i = 0; i < Settings.TEST_RUN; i++){
+                    try {
+                        Thread.sleep(Settings.PACKET_INTERVAL);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                    daemon.daemonOnPacket(msg);
                 }
-                daemon.daemonOnPacket(msg);
+
             }
 
+            // gracefully waiting
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info(Benchmark.endBenchmark());
+            log.info(">>>END Test");
         }
-
-        // gracefully waiting
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        log.info(Benchmark.endBenchmark());
-        log.info(">>>END Test");
     }
 }
 
