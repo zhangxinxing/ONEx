@@ -25,6 +25,7 @@ public class Settings {
     public static String    TOPO_MAP;
     public static int       PORT;
     public static int       BUSY_UPDATE_INT;//ms
+    public static boolean   PKTGEN;
 
     private String          APPNAME;
 
@@ -71,6 +72,7 @@ public class Settings {
         BUSYTABLE_MAP   = config.getProperty("BUSYTABLE_MAP");
         TOPO_MAP        = config.getProperty("TOPO_MAP");
         PORT            = Integer.parseInt(config.getProperty("PORT"));
+        PKTGEN          = Boolean.parseBoolean(config.getProperty("PKTGEN"));
         APPNAME         = config.getProperty("nameOfApps");
     }
 
