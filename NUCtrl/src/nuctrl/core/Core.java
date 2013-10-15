@@ -40,7 +40,8 @@ public class Core {
                 }
                 else{
                     if (Settings.MULTI_THREAD){
-                        messageHandler.insert(msg);
+                        //messageHandler.insert(msg);
+                        messageHandler.onMessageForThreadPool(msg);
                     }
                     else {
                         messageHandler.packetHandler.onPacket(msg);
@@ -51,7 +52,8 @@ public class Core {
             case PACKET_OUT:
                 log.debug("[Core] dispatching PktOut");
                 if (Settings.MULTI_THREAD){
-                    messageHandler.insert(msg);
+                    //messageHandler.insert(msg);
+                    messageHandler.onMessageForThreadPool(msg);
                 }
                 else {
                     messageHandler.packetHandler.onPacket(msg);

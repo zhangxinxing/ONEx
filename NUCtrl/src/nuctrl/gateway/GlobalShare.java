@@ -17,18 +17,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: fan
  * Date: 13-10-3
  * Time: PM8:19
  */
-public class GlobalShare implements Runnable{
+public class GlobalShare{
     /* */
     private HazelcastInstance hz;
     private static Logger log;
     private Monitor mn;
     private volatile boolean runningDaemon = true;
+    private ExecutorService exec;
 
     // local Data
     private BusyTableEntry localBt;
@@ -38,6 +42,8 @@ public class GlobalShare implements Runnable{
         log = Logger.getLogger(GlobalShare.class.getName());
         mn = Monitor.getInstance();
 
+        exec = Executors.newSingleThreadExecutor();
+
         /* HazelCast */
         Config cfg = new Config();
         this.hz = Hazelcast.newHazelcastInstance(cfg);
@@ -45,7 +51,28 @@ public class GlobalShare implements Runnable{
         // initialization
         this.localBt = new BusyTableEntry(Settings.getInstance().socketAddr);
         this.localTopology = new LinkedList<TopologyTableEntry>();
+
+        // important
         updateBusyTable();
+
+        exec.execute(new Runnable() {
+            @Override
+            public void run() {
+                while(runningDaemon){
+                    try {
+                        Thread.sleep(Settings.BUSY_UPDATE_INT);
+                        if (!runningDaemon){
+                            break;
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                    // every 1s
+                    updateBusyTable();
+                }
+            }
+        });
     }
 
     /* Busy Table */
@@ -146,30 +173,13 @@ public class GlobalShare implements Runnable{
     public void shutdown(){
         // step 1: shutdown daemon
         this.runningDaemon = false;
+        try {
+            exec.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
         // step2 close hazelcast
         Hazelcast.shutdownAll();
     }
-
-    @Override
-    public void run() {
-        while(runningDaemon){
-            try {
-                Thread.sleep(Settings.BUSY_UPDATE_INT);
-                if (!runningDaemon){
-                    break;
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                break;
-            }
-            // every 1s
-            updateBusyTable();
-        }
-    }
-
-    public void terminate(){
-        this.runningDaemon = false;
-    }
-
 }

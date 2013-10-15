@@ -15,7 +15,6 @@ import java.util.Map;
 public class Gateway {
     private static Logger log = Logger.getLogger(Gateway.class);
     private GlobalShare globalShare;
-    private Thread globalShareThread;
 
     private IOServer ioServer;
     private Map<InetSocketAddress, IOClient> clientPool;
@@ -29,8 +28,6 @@ public class Gateway {
         }
         this.messageHandler = msgHandler;
         this.globalShare = new GlobalShare();
-        this.globalShareThread = new Thread(globalShare);
-        globalShareThread.start();
 
         this.clientPool = new HashMap<InetSocketAddress, IOClient>();
         ioServer = new IOServer(messageHandler);
@@ -65,12 +62,6 @@ public class Gateway {
     }
 
     public void fullShutdown(){
-        globalShare.terminate();
-        try {
-            globalShareThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         globalShare.shutdown();
         halfShutdown();
         ioServer.destroy();

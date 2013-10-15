@@ -33,7 +33,8 @@ public class gatewayDispatcher {
         GatewayMsg msg = MessageFactory.getMessage(event);
 
         if (Settings.MULTI_THREAD){
-            msgHandler.insert(msg);
+            //msgHandler.insert(msg);
+            msgHandler.onMessageForThreadPool(msg);
         }
         else {
             msgHandler.packetHandler.onPacket(msg);

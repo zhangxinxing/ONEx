@@ -27,6 +27,8 @@ public class Settings {
     public static int       BUSY_UPDATE_INT;//ms
     public static boolean   PKTGEN;
 
+    public static int       SIZE_OF_POOL;
+
     private String          APPNAME;
 
     /* information */
@@ -74,6 +76,7 @@ public class Settings {
         PORT            = Integer.parseInt(config.getProperty("PORT"));
         PKTGEN          = Boolean.parseBoolean(config.getProperty("PKTGEN"));
         APPNAME         = config.getProperty("nameOfApps");
+        SIZE_OF_POOL    = Integer.parseInt(config.getProperty("SIZE_OF_POOL"));
     }
 
     public void regAppPid(String appName, long pid){

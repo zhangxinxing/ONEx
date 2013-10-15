@@ -101,4 +101,8 @@ class demoHandler implements PacketHandler{
             i--;
         }
     }
+
+    @Override
+    public void run() {
+    }
 }
