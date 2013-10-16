@@ -42,5 +42,16 @@
         </java>
     </target>
 
+    <target name="run-only">
+        <java fork="true" classname="${main-class}">
+	    <arg value="${pktgen}"/>
+	    <arg value="${port}"/>
+            <classpath>
+                <path refid="classpath"/>
+                <path location="${jar.dir}/${ant.project.name}.jar"/>
+            </classpath>
+        </java>
+    </target>
+
     <target name="build" depends="clean,jar"/>
 </project>

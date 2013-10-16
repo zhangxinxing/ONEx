@@ -19,7 +19,9 @@ public class NUCtrlDaemon implements API {
     private static Logger log = Logger.getLogger(NUCtrlDaemon.class);
 
     public NUCtrlDaemon(MessageHandler msgHandler) {
-        Settings.getInstance();
+
+        // TODO should be added back
+        // Settings.getInstance();
 
         if (msgHandler == null){
             log.error("Null msgHandler is not allowed");
@@ -27,12 +29,6 @@ public class NUCtrlDaemon implements API {
 
         Gateway gateway = new Gateway(msgHandler);
         core = new Core(gateway, msgHandler);
-        // init
-//        try {
-//            Monitor.getInstance().overview();
-//        } catch (SigarException e) {
-//            e.printStackTrace();
-//        }
     }
 
     public void halfShutdown(){

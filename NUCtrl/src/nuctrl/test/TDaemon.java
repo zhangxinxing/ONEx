@@ -24,25 +24,28 @@ public class TDaemon {
 
     public static void main(String[] args){
         PacketHandler packetHandler = new demoHandler();
+        Settings.getInstance();
+        if (args.length == 2){
+            Settings.PKTGEN = Boolean.parseBoolean(args[0]);
+            Settings.PORT = Integer.parseInt(args[1]);
+        }
         NUCtrlDaemon daemon = new NUCtrlDaemon(new MessageHandler(packetHandler));
+
 
         if (Settings.PKTGEN){
             log.info(">>>BEGIN Test");
             log.info("Test Run = " + Settings.TEST_RUN);
             Benchmark.startBenchmark();
 
-            if (args.length == 0){
-                GatewayMsg msg = new GatewayMsg((byte)0, Settings.getInstance().socketAddr);
+            GatewayMsg msg = new GatewayMsg((byte)0, Settings.getInstance().socketAddr);
 
-                for (int i = 0; i < Settings.TEST_RUN; i++){
-                    try {
-                        Thread.sleep(Settings.PACKET_INTERVAL);
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                    daemon.daemonOnPacket(msg);
+            for (int i = 0; i < Settings.TEST_RUN; i++){
+                try {
+                    Thread.sleep(Settings.PACKET_INTERVAL);
+                } catch (InterruptedException e) {
+                    break;
                 }
-
+                daemon.daemonOnPacket(msg);
             }
 
             // gracefully waiting
