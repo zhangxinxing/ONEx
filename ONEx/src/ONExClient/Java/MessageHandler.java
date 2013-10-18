@@ -25,7 +25,7 @@ public class MessageHandler implements IPacketHandler {
 
     @Override
     public void onLocalPacketIn(OFMessage msg) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        log.info(msg.toString());
     }
 
     @Override

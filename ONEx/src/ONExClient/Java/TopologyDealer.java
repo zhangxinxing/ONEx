@@ -13,6 +13,14 @@ public class TopologyDealer implements ITopology {
     SwitchDealer switchDealer;
     ONExDaemon onExDaemon;
 
+    public TopologyDealer(SwitchDealer sw_h) {
+        this.switchDealer = sw_h;
+    }
+
+    public void setDaemon(ONExDaemon daemon){
+        this.onExDaemon = daemon;
+    }
+
     @Override
     public void getGlobalTopo() {
         //To change body of implemented methods use File | Settings | File Templates.

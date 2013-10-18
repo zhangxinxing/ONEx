@@ -1,18 +1,19 @@
 package ONExClient.Java;
 
+import org.openflow.protocol.OFPacketIn;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Fan
  * Date: 13-10-19
  * Time: AM12:41
- * To change this template use File | Settings | File Templates.
  */
 public class TClient {
     public static void main(String[] args){
         System.out.println("Hello world");
-        MessageHandler msgH = new MessageHandler();
-        ONExGate onExGate = new ONExGate(msgH);
+        MessageHandler msg_h = new MessageHandler();
+        ONExGate onExGate = new ONExGate(msg_h);
 
-        System.out.println(onExGate.toString());
+        onExGate.dispatchOFMessage(new OFPacketIn());
     }
 }

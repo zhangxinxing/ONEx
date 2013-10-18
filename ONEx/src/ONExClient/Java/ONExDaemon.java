@@ -23,6 +23,8 @@ public class ONExDaemon implements IONExDaemon {
         this.messageHandler = msg_h;
         this.topologyDealer = topo_h;
         this.switchDealer = sw_h;
+
+        // TODO MAKE SOME SOCKETS HERE
     }
 
     @Override

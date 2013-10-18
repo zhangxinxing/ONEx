@@ -19,9 +19,10 @@ public class ONExGate {
 
     public ONExGate(MessageHandler msgHandler) {
         this.messageHandler = msgHandler;
-        this.topologyDealer = new TopologyDealer();
         this.switchDealer = new SwitchDealer();
+        this.topologyDealer = new TopologyDealer(switchDealer);
         this.onExDaemon = new ONExDaemon(msgHandler, topologyDealer, switchDealer);
+        topologyDealer.setDaemon(onExDaemon);
     }
 
     public void dispatchOFMessage(OFMessage msg){
