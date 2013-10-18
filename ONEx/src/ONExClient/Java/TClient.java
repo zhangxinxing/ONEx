@@ -14,6 +14,10 @@ public class TClient {
         MessageHandler msg_h = new MessageHandler();
         ONExGate onExGate = new ONExGate(msg_h);
 
-        onExGate.dispatchOFMessage(new OFPacketIn());
+        byte[] ba = {};
+        OFPacketIn pi = new OFPacketIn();
+        pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
+        pi.setPacketData(ba);
+        onExGate.dispatchOFMessage(pi);
     }
 }

@@ -4,6 +4,8 @@ import ONExClient.Java.Interface.IONExDaemon;
 import org.openflow.protocol.OFMessage;
 import org.apache.log4j.Logger;
 
+import java.nio.ByteBuffer;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Fan
@@ -34,6 +36,10 @@ public class ONExDaemon implements IONExDaemon {
 
     @Override
     public void sparePacketIn(OFMessage msg) {
+        ByteBuffer MsgBB = ByteBuffer.allocate(msg.getLengthU());
+        log.info(MsgBB.toString());
+        msg.writeTo(MsgBB);
+        log.info(MsgBB.toString());
     }
 
     @Override
