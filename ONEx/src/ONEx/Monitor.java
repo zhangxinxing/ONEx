@@ -1,6 +1,6 @@
-package ONEx.core;
+package ONEx;
 
-import ONEx.Settings;
+import ONExClient.Java.PacketHandler.MessageHandler;
 import org.apache.log4j.Logger;
 import org.hyperic.sigar.*;
 

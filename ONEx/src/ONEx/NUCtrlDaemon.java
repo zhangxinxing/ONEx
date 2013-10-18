@@ -1,9 +1,8 @@
 package ONEx;
 
-import ONEx.core.Core;
-import ONEx.core.MessageHandler;
+import ONExClient.Java.PacketHandler.Core;
+import ONExClient.Java.PacketHandler.MessageHandler;
 import ONEx.gateway.Gateway;
-import ONEx.interfaces.API;
 import ONEx.protocol.GatewayMsg;
 import org.apache.log4j.Logger;
 
@@ -12,7 +11,7 @@ import org.apache.log4j.Logger;
  * Date: 13-10-9
  * Time: PM3:51
  */
-public class NUCtrlDaemon implements API {
+public class NUCtrlDaemon {
     // exposed API
 
     private Core core;

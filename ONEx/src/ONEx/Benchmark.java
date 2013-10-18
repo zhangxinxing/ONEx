@@ -1,6 +1,5 @@
-package ONEx.core;
+package ONEx;
 
-import ONEx.Settings;
 import org.hyperic.sigar.ProcTime;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;

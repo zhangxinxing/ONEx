@@ -1,11 +1,11 @@
-package ONEx.gateway;
+package ONEx.Sharing;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import ONEx.Settings;
-import ONEx.core.Monitor;
+import ONEx.Monitor;
 import ONEx.protocol.BusyTableEntry;
 import ONEx.protocol.TopologyTableEntry;
 import org.apache.log4j.Logger;

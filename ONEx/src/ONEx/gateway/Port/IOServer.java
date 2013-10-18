@@ -16,7 +16,7 @@
 package ONEx.gateway.Port;
 
 import ONEx.Settings;
-import ONEx.core.MessageHandler;
+import ONExClient.Java.PacketHandler.MessageHandler;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;

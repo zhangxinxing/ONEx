@@ -2,7 +2,8 @@ package ONEx.gateway;
 
 // STEP build Gateway module first to get familiar with socket as well as Java
 
-import ONEx.core.MessageHandler;
+import ONEx.Sharing.GlobalShare;
+import ONExClient.Java.PacketHandler.MessageHandler;
 import ONEx.gateway.Port.IOClient;
 import ONEx.gateway.Port.IOServer;
 import ONEx.protocol.GatewayMsg;

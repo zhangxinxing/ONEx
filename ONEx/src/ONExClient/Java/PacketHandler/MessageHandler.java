@@ -1,4 +1,4 @@
-package ONEx.core;
+package ONExClient.Java.PacketHandler;
 
 import ONEx.Settings;
 import ONEx.interfaces.PacketHandler;

@@ -1,6 +1,7 @@
-package ONEx.core;
+package ONExClient.Java.PacketHandler;
 
 import ONEx.Settings;
+import ONEx.Monitor;
 import ONEx.gateway.Gateway;
 import ONEx.protocol.GatewayMsg;
 import ONEx.protocol.MessageType;

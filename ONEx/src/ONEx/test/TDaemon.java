@@ -2,8 +2,8 @@ package ONEx.test;
 
 import ONEx.NUCtrlDaemon;
 import ONEx.Settings;
-import ONEx.core.Benchmark;
-import ONEx.core.MessageHandler;
+import ONEx.Benchmark;
+import ONExClient.Java.PacketHandler.MessageHandler;
 import ONEx.interfaces.PacketHandler;
 import ONEx.protocol.GatewayMsg;
 import ONEx.protocol.MessageType;
