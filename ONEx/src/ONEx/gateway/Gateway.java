@@ -3,7 +3,7 @@ package ONEx.gateway;
 // STEP build Gateway module first to get familiar with socket as well as Java
 
 import ONEx.Sharing.GlobalShare;
-import ONExClient.Java.PacketHandler.MessageHandler;
+import ONExClient.Java.MessageHandler;
 import ONEx.gateway.Port.IOClient;
 import ONEx.gateway.Port.IOServer;
 import ONEx.protocol.GatewayMsg;
@@ -19,7 +19,7 @@ public class Gateway {
 
     private IOServer ioServer;
     private Map<InetSocketAddress, IOClient> clientPool;
-    private MessageHandler messageHandler;
+    private MessageHandler packetHandler;
 
 
     public Gateway(MessageHandler msgHandler) {
@@ -27,11 +27,11 @@ public class Gateway {
             log.error("Null past to constructor");
             System.exit(-1);
         }
-        this.messageHandler = msgHandler;
+        this.packetHandler = msgHandler;
         this.globalShare = new GlobalShare();
 
         this.clientPool = new HashMap<InetSocketAddress, IOClient>();
-        ioServer = new IOServer(messageHandler);
+        ioServer = new IOServer(packetHandler);
         ioServer.init();
         log.info("Gateway Server set up");
     }
@@ -47,7 +47,7 @@ public class Gateway {
             client = clientPool.get(addr);
         }
         else{
-            client = new IOClient(addr, messageHandler);
+            client = new IOClient(addr, packetHandler);
             client.init();
             clientPool.put(addr, client);
         }

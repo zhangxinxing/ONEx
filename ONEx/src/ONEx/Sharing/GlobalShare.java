@@ -126,7 +126,6 @@ public class GlobalShare{
     }
 
     public boolean updateBusyTable(){
-        localBt.setSizeOfQueueIn(mn.getSizeOfQueueIn());
         localBt.setCpuAccount(mn.getCPUAccount());
         updateRemoteBusyTable();
         return true;

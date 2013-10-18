@@ -3,8 +3,7 @@ package ONEx.test;
 import ONEx.NUCtrlDaemon;
 import ONEx.Settings;
 import ONEx.Benchmark;
-import ONExClient.Java.PacketHandler.MessageHandler;
-import ONEx.interfaces.PacketHandler;
+import ONExClient.Java.MessageHandler;
 import ONEx.protocol.GatewayMsg;
 import ONEx.protocol.MessageType;
 import org.jboss.netty.channel.ChannelFuture;
@@ -23,13 +22,12 @@ public class TDaemon {
     private static Logger log = Logger.getLogger(TDaemon.class);
 
     public static void main(String[] args){
-        PacketHandler packetHandler = new demoHandler();
         Settings.getInstance();
         if (args.length == 2){
             Settings.PKTGEN = Boolean.parseBoolean(args[0]);
             Settings.PORT = Integer.parseInt(args[1]);
         }
-        NUCtrlDaemon daemon = new NUCtrlDaemon(new MessageHandler(packetHandler));
+        NUCtrlDaemon daemon = new NUCtrlDaemon();
 
 
         if (Settings.PKTGEN){
@@ -60,7 +58,7 @@ public class TDaemon {
     }
 }
 
-class demoHandler implements PacketHandler{
+class demoHandler implements ONEx.interfaces.PacketHandler {
     private static Logger log = Logger.getLogger(demoHandler.class);
 
     @Override

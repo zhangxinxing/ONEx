@@ -1,6 +1,6 @@
 package ONEx;
 
-import ONExClient.Java.PacketHandler.MessageHandler;
+import ONExClient.Java.MessageHandler;
 import org.apache.log4j.Logger;
 import org.hyperic.sigar.*;
 
@@ -57,18 +57,6 @@ public class Monitor {
         else {
             return getCPUAccount().get(appName);
         }
-    }
-
-    // get size of queue by name
-    public int getSizeOfQueueIn(){
-        if (Settings.RANDOM_TEST){
-            int tmp = new Random().nextInt() % Settings.MAX_QUEUE;
-            sizeOfQueueIn = tmp > 0 ? tmp : -tmp;
-        }
-        else {
-            sizeOfQueueIn = MessageHandler.sizeOfQueue();
-        }
-        return sizeOfQueueIn;
     }
 
     // get local info

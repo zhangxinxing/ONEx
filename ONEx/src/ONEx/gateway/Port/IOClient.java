@@ -15,7 +15,7 @@
  */
 package ONEx.gateway.Port;
 
-import ONExClient.Java.PacketHandler.MessageHandler;
+import ONExClient.Java.MessageHandler;
 import ONEx.protocol.GatewayMsg;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.*;

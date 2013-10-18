@@ -1,7 +1,7 @@
 package ONEx.gateway;
 
 import ONEx.Settings;
-import ONExClient.Java.PacketHandler.MessageHandler;
+import ONExClient.Java.MessageHandler;
 import ONEx.protocol.GatewayMsg;
 import ONEx.protocol.MessageFactory;
 import org.apache.log4j.Logger;
@@ -30,14 +30,6 @@ public class gatewayDispatcher {
     public void dispatchFunc(MessageEvent event) {
 
         GatewayMsg msg = MessageFactory.getMessage(event);
-
-        if (Settings.MULTI_THREAD){
-            //msgHandler.insert(msg);
-            msgHandler.onMessageForThreadPool(msg);
-        }
-        else {
-            msgHandler.packetHandler.onPacket(msg);
-        }
     }
 
 }

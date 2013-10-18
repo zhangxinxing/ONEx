@@ -16,7 +16,7 @@
 package ONEx.gateway.Port;
 
 import ONEx.Settings;
-import ONExClient.Java.PacketHandler.MessageHandler;
+import ONExClient.Java.MessageHandler;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -37,13 +37,13 @@ public class IOServer {
 
     private final int port;
     private static Logger log = Logger.getLogger(IOServer.class);
-    private MessageHandler messageHandler;
+    private MessageHandler packetHandler;
     private ServerBootstrap bootstrap;
 
     public IOServer(MessageHandler msgHandler){
         this.port = Settings.PORT;
         if (msgHandler != null){
-            this.messageHandler = msgHandler;
+            this.packetHandler = msgHandler;
         }
         else{
             log.error("Null past to constructor");
@@ -59,7 +59,7 @@ public class IOServer {
                         Executors.newCachedThreadPool()));
 
         // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(new IOServerPipelineFactory(messageHandler));
+        bootstrap.setPipelineFactory(new IOServerPipelineFactory(packetHandler));
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
@@ -71,10 +71,10 @@ public class IOServer {
 }
 
 class IOServerPipelineFactory implements ChannelPipelineFactory{
-    private MessageHandler messageHandler;
+    private MessageHandler packetHandler;
 
-    public IOServerPipelineFactory(MessageHandler messageHandler) {
-        this.messageHandler = messageHandler;
+    public IOServerPipelineFactory(MessageHandler packetHandler) {
+        this.packetHandler = packetHandler;
     }
 
     @Override
@@ -85,7 +85,7 @@ class IOServerPipelineFactory implements ChannelPipelineFactory{
                 ClassResolvers.cacheDisabled(
                         getClass().getClassLoader())
         ));
-        p.addLast("UpHandler", new ServerUpHandler(messageHandler));
+        p.addLast("UpHandler", new ServerUpHandler(packetHandler));
 
         // downward
         p.addLast("DownHandler", new ServerDownHandler());

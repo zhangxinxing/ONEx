@@ -1,7 +1,6 @@
 package ONEx;
 
-import ONExClient.Java.PacketHandler.Core;
-import ONExClient.Java.PacketHandler.MessageHandler;
+import ONExClient.Java.MessageHandler;
 import ONEx.gateway.Gateway;
 import ONEx.protocol.GatewayMsg;
 import org.apache.log4j.Logger;
@@ -14,33 +13,21 @@ import org.apache.log4j.Logger;
 public class NUCtrlDaemon {
     // exposed API
 
-    private Core core;
     private static Logger log = Logger.getLogger(NUCtrlDaemon.class);
 
-    public NUCtrlDaemon(MessageHandler msgHandler) {
+    public NUCtrlDaemon() {
 
         // TODO should be added back
-        // Settings.getInstance();
-
-        if (msgHandler == null){
-            log.error("Null msgHandler is not allowed");
-        }
-
-        Gateway gateway = new Gateway(msgHandler);
-        core = new Core(gateway, msgHandler);
     }
 
     public void halfShutdown(){
-        core.halfShutdown();
     }
 
     public void fullShutdown(){
         log.debug("shut down everything");
-        core.fullShutdown();
     }
 
     public void daemonOnPacket(GatewayMsg msg){
-       core.dispatchFunc(msg);
     }
 
 
