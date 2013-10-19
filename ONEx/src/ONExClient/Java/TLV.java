@@ -9,13 +9,10 @@ import java.nio.ByteBuffer;
  * Time: AM8:54
  */
 class TLV{
+    private static final int HEADER_LENGTH = 5;
     private byte TYPE;
     private int LEN;
     private byte[] VALUES;
-
-    public int computeLength(){
-        return (VALUES == null) ? LEN : LEN + VALUES.length;
-    }
 
     public TLV(byte Type, int len, byte[] values){
         this.TYPE = Type;
@@ -23,25 +20,40 @@ class TLV{
         this.VALUES = values;
     }
 
+    public TLV(ByteBuffer TLVBB){
+        this.TYPE = TLVBB.get();
+        this.LEN = TLVBB.getInt();
+        if (VALUES == null){
+            VALUES = new byte[LEN];
+        }
+        TLVBB.get(this.VALUES, 0, this.LEN);
+        assert isValid();
+    }
+
     public boolean isValid(){
         return (LEN == VALUES.length);
     }
 
     public void writeTo(ByteBuffer TLVBB){
-        TLVBB.putChar((char)TYPE);
+        assert TLVBB.limit() - TLVBB.position() >= getLength();
+        TLVBB.put(TYPE);
         TLVBB.putInt(LEN);
         if(VALUES != null) {
             TLVBB.put(VALUES);
         }
     }
 
-    public boolean readFrom(ByteBuffer TLVBB){
-        this.TYPE = (byte)TLVBB.getChar();
-        this.LEN = TLVBB.getInt();
-        this.VALUES = TLVBB.array();
-        return isValid();
+    public int getLength(){
+        assert VALUES != null;
+        assert LEN == VALUES.length;
+
+        return LEN + HEADER_LENGTH;
     }
 
+    public String toString(){
+        assert LEN == VALUES.length;
+        return String.format("[TLV]LEN=%d/%d", LEN, getLength());
+    }
 
     class Type{
         public static final byte PACKET_IN          = 0x00;
@@ -50,7 +62,6 @@ class TLV{
         public static final byte LOCAL_TOPO         = 0x03;
         public static final byte GLOBAL_SW_TOPO     = 0x04;
         public static final byte GLOBAL_HOST_TOPO   = 0x05;
-
     }
 
 }

@@ -52,11 +52,11 @@ public class ONExDaemon implements IONExDaemon {
                 messageHandler.onRemotePacketIn(msg);
                 break;
 
-            case ONExProtocol.REP_SPARE_PACKET_IN:
+            case ONExProtocol.RES_SPARE_PACKET_IN:
                 messageHandler.onRemotePacketOut(msg);
                 break;
 
-            case ONExProtocol.REP_GET_GLOBAL_TOPO:
+            case ONExProtocol.RES_GET_GLOBAL_TOPO:
                 topologyDealer.parseGlobalTopo();
                 break;
 

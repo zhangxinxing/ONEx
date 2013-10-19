@@ -1,6 +1,7 @@
 package ONExClient.Java;
 
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -8,14 +9,27 @@ import java.util.List;
  * User: Fan
  * Date: 13-10-19
  * Time: AM10:27
- * To change this template use File | Settings | File Templates.
  */
 public class GlobalTopo {
-    List<HOSTS_TOPO> hostList;
-    List<SW_TOPO> swTopos;
+    List<hostsTopo> hostList;
+    List<swTopo> swTopos;
 
-    private static final int HostSize = 4 + 8 + 2;
-    private static final int SwSize = 2*(8 + 2);
+    public GlobalTopo() {
+        hostList = new LinkedList<hostsTopo>();
+        swTopos = new LinkedList<swTopo>();
+
+        // TODO for test only
+        hostList.add(new hostsTopo(0xABABABAB, 123L, (short)92));
+        swTopos.add(new swTopo(123L, (short)123, 124L, (short)12));
+    }
+
+
+    private void addEntry(){
+
+    }
+
+    private static final int HostSize = 4+8+2;
+    private static final int SwSize = 2*(8+2);
 
     public int getHostListLength(){
         return hostList.size() * HostSize;
@@ -27,7 +41,7 @@ public class GlobalTopo {
 
     public ByteBuffer hostToBuffer(){
         ByteBuffer BB = ByteBuffer.allocate(getHostListLength());
-        for (HOSTS_TOPO ht : hostList){
+        for (hostsTopo ht : hostList){
             ht.writeTo(BB);
         }
 
@@ -36,17 +50,23 @@ public class GlobalTopo {
 
     public ByteBuffer swToBuffer(){
         ByteBuffer BB = ByteBuffer.allocate(getSwTopoLength());
-        for (SW_TOPO sw : swTopos){
+        for (swTopo sw : swTopos){
             sw.writeTo(BB);
         }
 
         return BB;
     }
 
-    class HOSTS_TOPO{
+    class hostsTopo {
         int host;
         long dpid;
         short port;
+
+        hostsTopo(int host, long dpid, short port) {
+            this.host = host;
+            this.dpid = dpid;
+            this.port = port;
+        }
 
         public void writeTo(ByteBuffer BB){
             BB.putInt(host);
@@ -56,11 +76,18 @@ public class GlobalTopo {
 
     }
 
-    class SW_TOPO{
+    class swTopo {
         long src_dpid;
         short src_port;
         long dst_dpid;
         short dst_port;
+
+        swTopo(long src_dpid, short src_port, long dst_dpid, short dst_port) {
+            this.src_dpid = src_dpid;
+            this.src_port = src_port;
+            this.dst_dpid = dst_dpid;
+            this.dst_port = dst_port;
+        }
 
         public void writeTo(ByteBuffer BB){
             BB.putLong(src_dpid);

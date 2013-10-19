@@ -9,7 +9,7 @@ import ONExClient.Java.Interface.ITopology;
  * Time: PM11:46
  */
 public class TopologyDealer implements ITopology {
-    Topology localTopo;
+    LocalTopo localTopo;
 
     SwitchDealer switchDealer;
     ONExDaemon onExDaemon;
