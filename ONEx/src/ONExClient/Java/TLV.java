@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
  * Date: 13-10-19
  * Time: AM8:54
  */
-class TLV{
+public class TLV{
     private static final int HEADER_LENGTH = 5;
     private byte TYPE;
     private int LEN;

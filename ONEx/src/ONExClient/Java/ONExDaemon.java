@@ -1,10 +1,20 @@
 package ONExClient.Java;
 
 import ONExClient.Java.Interface.IONExDaemon;
+import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.handler.codec.serialization.ClassResolvers;
+import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
+import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 import org.openflow.protocol.OFMessage;
 import org.apache.log4j.Logger;
 
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.concurrent.Executors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,6 +23,9 @@ import java.nio.ByteBuffer;
  * Time: PM11:47
  */
 public class ONExDaemon implements IONExDaemon {
+    private static final String host = "127.0.0.1";
+    private static final int port = 9999;
+
     private MessageHandler messageHandler;
     private TopologyDealer topologyDealer;
     private SwitchDealer switchDealer;
@@ -27,6 +40,23 @@ public class ONExDaemon implements IONExDaemon {
         this.switchDealer = sw_h;
 
         // TODO MAKE SOME SOCKETS HERE
+        // Configure the client.
+        ClientBootstrap bootstrap = new ClientBootstrap(
+                new NioClientSocketChannelFactory(
+                        Executors.newCachedThreadPool(),
+                        Executors.newCachedThreadPool()));
+
+        // Set up the pipeline factory.
+        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+            public ChannelPipeline getPipeline() throws Exception {
+                return Channels.pipeline(
+
+                        new ONExClientHandler());
+            }
+        });
+
+        // Start the connection attempt.
+        bootstrap.connect(new InetSocketAddress(host, port));
     }
 
     @Override
