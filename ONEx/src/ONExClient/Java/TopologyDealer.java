@@ -7,9 +7,10 @@ import ONExClient.Java.Interface.ITopology;
  * User: Fan
  * Date: 13-10-18
  * Time: PM11:46
- * To change this template use File | Settings | File Templates.
  */
 public class TopologyDealer implements ITopology {
+    Topology localTopo;
+
     SwitchDealer switchDealer;
     ONExDaemon onExDaemon;
 
@@ -33,8 +34,7 @@ public class TopologyDealer implements ITopology {
 
     @Override
     public void updateLocalTopo() {
-        ONExProtocol OP = ONExProtocolFactory.buildONEx();
-        onExDaemon.sendONEx(OP);
+        onExDaemon.sendONEx(null);
 
     }
 

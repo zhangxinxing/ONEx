@@ -11,6 +11,7 @@ import org.openflow.protocol.OFMessage;
  */
 public class ONExGate {
     private static Logger log = Logger.getLogger(ONExGate.class);
+    public static int ID;
 
     private MessageHandler messageHandler;
     private ONExDaemon onExDaemon;
