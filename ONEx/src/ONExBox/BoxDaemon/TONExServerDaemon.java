@@ -8,6 +8,6 @@ package ONExBox.BoxDaemon;
  */
 public class TONExServerDaemon {
     public static void main(String[] args){
-        ONExServerDamon serverDamon = new ONExServerDamon(12345);
+        ONExServerDaemon serverDamon = new ONExServerDaemon(12345);
     }
 }

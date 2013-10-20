@@ -1,5 +1,7 @@
-package ONExClient.Java;
+package ONExProtocol;
 
+import ONExClient.Java.GlobalTopo;
+import ONExClient.Java.LocalTopo;
 import org.openflow.protocol.*;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.factory.BasicFactory;
@@ -21,13 +23,13 @@ public class TONExProtocol {
         OFPacketIn pi = new OFPacketIn();
         pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
         pi.setPacketData(ba);
-        ONExProtocol msg = ONExProtocolFactory.ONExSparePI(pi);
+        ONExPacket msg = ONExProtocolFactory.ONExSparePI(pi);
         log(msg.toString());
 
         ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log(ONExProtocolFactory.ONExParser(msgBB).toString());
+        log(ONExProtocolFactory.parser(msgBB).toString());
 
         // 2
         OFFlowMod ofFlowMod = new OFFlowMod();
@@ -40,7 +42,7 @@ public class TONExProtocol {
         msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log(ONExProtocolFactory.ONExParser(msgBB).toString());
+        log(ONExProtocolFactory.parser(msgBB).toString());
 
         // 3
         LocalTopo topo = new LocalTopo();
@@ -49,7 +51,7 @@ public class TONExProtocol {
         msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log(ONExProtocolFactory.ONExParser(msgBB).toString());
+        log(ONExProtocolFactory.parser(msgBB).toString());
 
         // 4
         msg = ONExProtocolFactory.ONExGetGlobalTopo();
@@ -57,7 +59,7 @@ public class TONExProtocol {
         msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log(ONExProtocolFactory.ONExParser(msgBB).toString());
+        log(ONExProtocolFactory.parser(msgBB).toString());
 
         // 5
         GlobalTopo globalTopo = new GlobalTopo();
@@ -66,7 +68,7 @@ public class TONExProtocol {
         msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log(ONExProtocolFactory.ONExParser(msgBB).toString());
+        log(ONExProtocolFactory.parser(msgBB).toString());
 
         // 6
         msg = ONExProtocolFactory.ONExReqGlobalFlowMod();
@@ -74,7 +76,7 @@ public class TONExProtocol {
         msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log(ONExProtocolFactory.ONExParser(msgBB).toString());
+        log(ONExProtocolFactory.parser(msgBB).toString());
 
         // 7
         msg = ONExProtocolFactory.ONExSCFlowMod(ofFlowMod);
@@ -82,7 +84,7 @@ public class TONExProtocol {
         msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log(ONExProtocolFactory.ONExParser(msgBB).toString());
+        log(ONExProtocolFactory.parser(msgBB).toString());
     }
 
     public static void log(Object obj){

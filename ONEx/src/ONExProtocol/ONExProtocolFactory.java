@@ -1,10 +1,16 @@
-package ONExClient.Java;
+package ONExProtocol;
 
+import ONExClient.Java.GlobalTopo;
+import ONExClient.Java.LocalTopo;
+import ONExClient.Java.ONExGate;
+import ONExClient.Java.TLV;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 
 import java.nio.ByteBuffer;
+
+import org.apache.log4j.Logger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,8 +19,10 @@ import java.nio.ByteBuffer;
  * Time: PM11:46
  */
 public class ONExProtocolFactory {
-    public static ONExProtocol ONExSparePI(OFPacketIn pi){
-        ONExProtocol op = new ONExProtocol(ONExProtocol.SPARE_PACKET_IN, ONExGate.ID);
+    private static Logger log = Logger.getLogger(ONExProtocolFactory.class);
+
+    public static ONExPacket ONExSparePI(OFPacketIn pi){
+        ONExPacket op = new ONExPacket(ONExPacket.SPARE_PACKET_IN, ONExGate.ID);
         ByteBuffer PIBB = ByteBuffer.allocate(pi.getLengthU());
         pi.writeTo(PIBB);
         op.setTLV(new TLV(
@@ -25,8 +33,8 @@ public class ONExProtocolFactory {
         return op;
     }
 
-    public static ONExProtocol ONExResSparePI(OFFlowMod flowMod, OFPacketOut po){
-        ONExProtocol op = new ONExProtocol(ONExProtocol.RES_SPARE_PACKET_IN, ONExGate.ID);
+    public static ONExPacket ONExResSparePI(OFFlowMod flowMod, OFPacketOut po){
+        ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, ONExGate.ID);
         ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLengthU());
         flowMod.writeTo(FMBB);
 
@@ -48,8 +56,8 @@ public class ONExProtocolFactory {
         return op;
     }
 
-    public static ONExProtocol ONExUploadLocalTopo(LocalTopo topo){
-        ONExProtocol op = new ONExProtocol(ONExProtocol.UPLOAD_LOCAL_TOPO, ONExGate.ID);
+    public static ONExPacket ONExUploadLocalTopo(LocalTopo topo){
+        ONExPacket op = new ONExPacket(ONExPacket.UPLOAD_LOCAL_TOPO, ONExGate.ID);
         op.setTLV(new TLV(
                 TLV.Type.LOCAL_TOPO,
                 topo.getLength(),
@@ -58,14 +66,14 @@ public class ONExProtocolFactory {
         return op;
     }
 
-    public static ONExProtocol ONExGetGlobalTopo(){
-        ONExProtocol op = new ONExProtocol(ONExProtocol.GET_GLOBAL_TOPO, ONExGate.ID);
+    public static ONExPacket ONExGetGlobalTopo(){
+        ONExPacket op = new ONExPacket(ONExPacket.GET_GLOBAL_TOPO, ONExGate.ID);
         return op;
     }
 
-    public static ONExProtocol ONExResGlobalTopo(GlobalTopo globalTopo){
+    public static ONExPacket ONExResGlobalTopo(GlobalTopo globalTopo){
         // S -> C
-        ONExProtocol op = new ONExProtocol(ONExProtocol.GET_GLOBAL_TOPO, ONExGate.ID);
+        ONExPacket op = new ONExPacket(ONExPacket.GET_GLOBAL_TOPO, ONExGate.ID);
         op.setTLV(new TLV(
                 TLV.Type.GLOBAL_HOST_TOPO,
                 globalTopo.getHostListLength(),
@@ -80,15 +88,15 @@ public class ONExProtocolFactory {
         return op;
     }
 
-    public static ONExProtocol ONExReqGlobalFlowMod(){
-        ONExProtocol op = new ONExProtocol(ONExProtocol.REQ_GLOBAL_FLOW_MOD, ONExGate.ID);
+    public static ONExPacket ONExReqGlobalFlowMod(){
+        ONExPacket op = new ONExPacket(ONExPacket.REQ_GLOBAL_FLOW_MOD, ONExGate.ID);
         // TODO provide further information
         return op;
 
     }
 
-    public static ONExProtocol ONExSCFlowMod(OFFlowMod flowMod){
-        ONExProtocol op = new ONExProtocol(ONExProtocol.RES_SPARE_PACKET_IN, ONExGate.ID);
+    public static ONExPacket ONExSCFlowMod(OFFlowMod flowMod){
+        ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, ONExGate.ID);
         ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLengthU());
         flowMod.writeTo(FMBB);
         op.setTLV(new TLV(
@@ -100,15 +108,27 @@ public class ONExProtocolFactory {
         return op;
     }
 
-    public static ONExProtocol ONExParser(ByteBuffer msg) {
+    public static ONExPacket parser(ByteBuffer msg) {
+        if (msg == null){
+            log.error("msg == null");
+            return null;
+        }
         if(msg.hasRemaining()){
-            ONExProtocol op = new ONExProtocol(0xFFFFFFFF, ONExGate.ID);
+            ONExPacket op = new ONExPacket(0xFFFFFFFF, ONExGate.ID);
             op.setHeader(msg);
             op.setTLVs(msg);
             return op;
         }
         else{
+            log.error("msg == empty");
             return null;
         }
+    }
+
+    public static ONExPacket parser(byte[] array){
+        ByteBuffer buf = ByteBuffer.wrap(array);
+        log.debug(buf.toString());
+//        return null;
+        return parser(ByteBuffer.wrap(array));
     }
 }

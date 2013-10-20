@@ -15,6 +15,7 @@
  */
 package ONExBox.BoxDaemon;
 
+import ONExProtocol.ONExPacket;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -23,14 +24,15 @@ import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
 
-public class ONExServerDamon {
-    private static Logger log = Logger.getLogger(ONExServerDamon.class);
+public class ONExServerDaemon {
+    private static Logger log = Logger.getLogger(ONExServerDaemon.class);
     private ServerBootstrap bootstrap;
     private Channel clientChannel;
 
-    public ONExServerDamon(int port){
+    public ONExServerDaemon(int port){
         // Configure the server.
         bootstrap = new ServerBootstrap(
                 new OioServerSocketChannelFactory(
@@ -45,7 +47,12 @@ public class ONExServerDamon {
         log.debug("Bind to " + port);
     }
 
-    public void send(byte[] array){
+    public void sendONEx(ONExPacket ONExP){
+        ByteBuffer buf = ByteBuffer.allocate(ONExP.getLength());
+        sendRaw(buf.array());
+    }
+
+    public void sendRaw(byte[] array){
         ChannelBuffer buf = ChannelBuffers.copiedBuffer(array);
         ChannelFuture cf= clientChannel.write(buf);
         cf.awaitUninterruptibly();

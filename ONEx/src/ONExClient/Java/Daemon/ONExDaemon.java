@@ -2,7 +2,7 @@ package ONExClient.Java.Daemon;
 
 import ONExClient.Java.Interface.IONExDaemon;
 import ONExClient.Java.MessageHandler;
-import ONExClient.Java.ONExProtocol;
+import ONExProtocol.ONExPacket;
 import ONExClient.Java.SwitchDealer;
 import ONExClient.Java.TopologyDealer;
 import org.apache.log4j.Logger;
@@ -13,7 +13,7 @@ import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
 import org.jboss.netty.util.ThreadNameDeterminer;
 import org.openflow.protocol.OFMessage;
 
-import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
@@ -58,15 +58,19 @@ public class ONExDaemon implements IONExDaemon {
 
         if (!future.isSuccess()) {
             destroy();
+            return;
         }
         log.debug(String.format("connected with %s:%d", host, port));
     }
 
     @Override
-    public void sendONEx(ONExProtocol OP) throws IOException {
-        ByteBuffer OpBB = ByteBuffer.allocate(OP.getLength());
-        send(OpBB.array());
+    public void sendONEx(ONExPacket OP) {
+        sendRaw(OP.toByteBuffer().array());
+    }
 
+    public void sendRaw(byte[] array){
+        ChannelFuture future = channel.write(ChannelBuffers.copiedBuffer(array));
+        future.awaitUninterruptibly();
     }
 
     @Override
@@ -83,19 +87,19 @@ public class ONExDaemon implements IONExDaemon {
         OFMessage msg = null;
 
         switch(instruction){
-            case ONExProtocol.SPARE_PACKET_IN:
+            case ONExPacket.SPARE_PACKET_IN:
                 messageHandler.onRemotePacketIn(msg);
                 break;
 
-            case ONExProtocol.RES_SPARE_PACKET_IN:
+            case ONExPacket.RES_SPARE_PACKET_IN:
                 messageHandler.onRemotePacketOut(msg);
                 break;
 
-            case ONExProtocol.RES_GET_GLOBAL_TOPO:
+            case ONExPacket.RES_GET_GLOBAL_TOPO:
                 topologyDealer.parseGlobalTopo();
                 break;
 
-            case ONExProtocol.SC_FLOW_MOD:
+            case ONExPacket.SC_FLOW_MOD:
                 switchDealer.sendFlowMod();
                 break;
 
@@ -104,21 +108,16 @@ public class ONExDaemon implements IONExDaemon {
         }
     }
 
-    @Override
-    public String toString(){
-        return "Fucking";
-    }
-
-
-    public void send(byte[] array){
-        ChannelFuture future = channel.write(ChannelBuffers.copiedBuffer(array));
-        future.awaitUninterruptibly();
-    }
 
     public void destroy(){
         if (channel != null)
             channel.close().awaitUninterruptibly();
         bootstrap.releaseExternalResources();
+    }
+
+    @Override
+    public String toString(){
+        return "Fucking";
     }
 }
 

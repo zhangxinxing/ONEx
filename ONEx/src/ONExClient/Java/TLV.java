@@ -55,7 +55,7 @@ public class TLV{
         return String.format("[TLV]LEN=%d/%d", LEN, getLength());
     }
 
-    class Type{
+    public class Type{
         public static final byte PACKET_IN          = 0x00;
         public static final byte FLOWMOD            = 0x01;
         public static final byte PACKET_OUT         = 0x02;

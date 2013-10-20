@@ -37,12 +37,7 @@ public class TopologyDealer implements ITopology {
 
     @Override
     public void updateLocalTopo() {
-        try {
-            onExDaemon.sendONEx(null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        onExDaemon.sendONEx(null);
     }
 
     @Override

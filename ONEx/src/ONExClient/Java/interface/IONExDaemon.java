@@ -1,9 +1,7 @@
 package ONExClient.Java.Interface;
 
-import ONExClient.Java.ONExProtocol;
+import ONExProtocol.ONExPacket;
 import org.openflow.protocol.OFMessage;
-
-import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,7 +11,7 @@ import java.io.IOException;
  * To change this template use File | Settings | File Templates.
  */
 public interface IONExDaemon {
-    void sendONEx(ONExProtocol OP) throws IOException;
+    void sendONEx(ONExPacket OP);
 
     void parseONEx();
 

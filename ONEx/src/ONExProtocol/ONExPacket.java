@@ -1,8 +1,10 @@
-package ONExClient.Java;
+package ONExProtocol;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
+
+import ONExClient.Java.TLV;
 import org.apache.log4j.Logger;
 
 /**
@@ -11,7 +13,7 @@ import org.apache.log4j.Logger;
  * Date: 13-10-19
  * Time: AM12:14
  */
-public class ONExProtocol {
+public class ONExPacket {
     public static final int SPARE_PACKET_IN     = 0x00000000;
     public static final int RES_SPARE_PACKET_IN = 0x00000001;
     public static final int UPLOAD_LOCAL_TOPO   = 0x00000002;
@@ -23,13 +25,13 @@ public class ONExProtocol {
     public static final int ONEX_INS_MIN        = SPARE_PACKET_IN;
 
 
-    private static Logger log = Logger.getLogger(ONExProtocol.class);
+    private static Logger log = Logger.getLogger(ONExPacket.class);
 
     /* field */
     private ONExHeader header;
     private List<TLV> TLVs;
 
-    public ONExProtocol(int INS, int ID) {
+    public ONExPacket(int INS, int ID) {
         header = new ONExHeader(INS, ID);
         TLVs = new LinkedList<TLV>();
     }
@@ -74,9 +76,20 @@ public class ONExProtocol {
         return length;
     }
 
+    public byte[] toByteArray(){
+        ByteBuffer buf = toByteBuffer();
+        return buf.array();
+    }
+
+    public ByteBuffer toByteBuffer(){
+        ByteBuffer buf = ByteBuffer.allocate(getLength());
+        writeTo(buf);
+        return buf;
+    }
+
     @Override
     public String toString(){
-        String tostring = "[ONExProtocol, length=" + getLength() +
+        String tostring = "[ONExPacket, length=" + getLength() +
                 "]" + header.toString();
         tostring += String.format("[TLVs, #=%d]", TLVs.size());
         for (TLV tlv : TLVs){
@@ -86,12 +99,13 @@ public class ONExProtocol {
     }
 
     class ONExHeader {
+
         /* static final */
         private static final int HEADER_LENGTH = 1 + 4 + 4 + 4;
-
         private byte VERSION;
         private int LEN;
         private int INS;
+
         private int ID;
 
         ONExHeader(int INS, int ID) {

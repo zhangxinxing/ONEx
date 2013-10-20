@@ -15,7 +15,11 @@
  */
 package ONExBox.BoxDaemon;
 
+import MyDebugger.Dumper;
+import ONExProtocol.ONExPacket;
+import ONExProtocol.ONExProtocolFactory;
 import org.apache.log4j.Logger;
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.*;
 
 public class ServerUpHandler extends SimpleChannelHandler {
@@ -39,6 +43,9 @@ public class ServerUpHandler extends SimpleChannelHandler {
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
         log.debug("[server] Got message " + e.getMessage().toString());
+        ONExPacket op = ONExProtocolFactory.parser(((ChannelBuffer) e.getMessage()).array());
+
+        log.info(op.toString());
         log.debug("[server] Echo sent");
         ctx.getChannel().write(e.getMessage());
 
@@ -53,7 +60,7 @@ public class ServerUpHandler extends SimpleChannelHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
         // Close the connection when an exception is raised.
-        log.error("Unexpected exception from downstream.", e.getCause());
+        log.error("Exception from downstream.", e.getCause());
         e.getChannel().close();
     }
 }
