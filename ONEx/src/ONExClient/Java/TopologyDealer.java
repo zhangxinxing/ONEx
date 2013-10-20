@@ -1,6 +1,9 @@
 package ONExClient.Java;
 
+import ONExClient.Java.Daemon.ONExDaemon;
 import ONExClient.Java.Interface.ITopology;
+
+import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,7 +37,11 @@ public class TopologyDealer implements ITopology {
 
     @Override
     public void updateLocalTopo() {
-        onExDaemon.sendONEx(null);
+        try {
+            onExDaemon.sendONEx(null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

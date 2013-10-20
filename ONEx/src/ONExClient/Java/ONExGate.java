@@ -1,5 +1,6 @@
 package ONExClient.Java;
 
+import ONExClient.Java.Daemon.ONExDaemon;
 import org.apache.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
