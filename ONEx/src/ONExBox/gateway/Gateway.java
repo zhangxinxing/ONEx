@@ -1,12 +1,12 @@
 package ONExBox.gateway;
 
-// STEP build Gateway module first to get familiar with socket as well as Java
+// STEP build Gateway module first to get familiar with socket as well as onex4j
 
 import ONExBox.Sharing.GlobalShare;
-import ONExClient.Java.MessageHandler;
+import ONExClient.onex4j.MessageHandler;
 import ONExBox.gateway.Port.IOClient;
 import ONExBox.gateway.Port.IOServer;
-import ONExBox.protocol.GatewayMsg;
+import ONExProtocol.ONExPacket;
 import org.apache.log4j.Logger;
 
 import java.net.InetSocketAddress;
@@ -19,19 +19,16 @@ public class Gateway {
 
     private IOServer ioServer;
     private Map<InetSocketAddress, IOClient> clientPool;
-    private MessageHandler packetHandler;
-
 
     public Gateway(MessageHandler msgHandler) {
         if (msgHandler == null){
             log.error("Null past to constructor");
             System.exit(-1);
         }
-        this.packetHandler = msgHandler;
         this.globalShare = new GlobalShare();
 
         this.clientPool = new HashMap<InetSocketAddress, IOClient>();
-        ioServer = new IOServer(packetHandler);
+        ioServer = new IOServer();
         ioServer.init();
         log.info("Gateway Server set up");
     }
@@ -40,19 +37,35 @@ public class Gateway {
         return globalShare;
     }
 
+    public InetSocketAddress sparePacketIn(ONExPacket op){
+        if (op.getINS() != ONExPacket.SPARE_PACKET_IN){
+            log.error("The method should only be called on SPARE_PACKET_IN");
+            return null;
+        }
+        // TODO
+        InetSocketAddress target = globalShare.getWhoIsIdle().get(0);
+        assert target != null;
+        send(target, op);
+        return target;
+    }
 
-    public void send(InetSocketAddress addr, GatewayMsg msg){
+    public void sendBackPacketIn(ONExPacket op){
+        // ADD src field in OPSpearPacketIN
+
+    }
+
+    private void send(InetSocketAddress addr, ONExPacket op){
         IOClient client;
         if (clientPool.containsKey(addr)){
             client = clientPool.get(addr);
         }
         else{
-            client = new IOClient(addr, packetHandler);
+            client = new IOClient(addr);
             client.init();
             clientPool.put(addr, client);
         }
 
-        client.send(msg);
+        client.send(op);
 
     }
 

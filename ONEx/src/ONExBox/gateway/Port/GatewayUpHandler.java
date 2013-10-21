@@ -15,18 +15,18 @@
  */
 package ONExBox.gateway.Port;
 
-import ONExClient.Java.MessageHandler;
-import ONExBox.gateway.gatewayDispatcher;
+import ONExBox.BoxDaemon.ONExServerDaemon;
+import ONExProtocol.ONExPacket;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;
 
-public class ServerUpHandler extends SimpleChannelHandler {
+public class GatewayUpHandler extends SimpleChannelHandler {
 
-    private Logger log = Logger.getLogger(ServerUpHandler.class);
-    private gatewayDispatcher dispatcher;
+    private Logger log = Logger.getLogger(GatewayUpHandler.class);
 
-    public ServerUpHandler(MessageHandler msgHandler) {
-        dispatcher = new gatewayDispatcher(msgHandler);
+    private ONExServerDaemon serverDaemon;
+
+    public GatewayUpHandler() {
     }
 
     @Override
@@ -43,10 +43,22 @@ public class ServerUpHandler extends SimpleChannelHandler {
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
         log.debug("[server] Got message " + e.getMessage().toString());
+        ONExPacket op = (ONExPacket)e.getMessage();
+        switch(op.getINS()){
+            case ONExPacket.SPARE_PACKET_IN:
+                // packet in from other server
+                // should be sent to client
+                log.debug("send to client daemon");
+                serverDaemon.sendONEx(op);
+                break;
 
-        // dispatch with event
-        dispatcher.dispatchFunc(e);
-
+            case ONExPacket.RES_SPARE_PACKET_IN:
+                // from other server, stupid forward
+                serverDaemon.sendONEx(op);
+                break;
+            default:
+                log.error("should not be received on client");
+        }
 
         try {
             super.messageReceived(ctx, e);

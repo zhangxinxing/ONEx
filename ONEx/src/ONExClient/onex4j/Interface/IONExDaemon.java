@@ -1,4 +1,4 @@
-package ONExClient.Java.Interface;
+package ONExClient.onex4j.Interface;
 
 import ONExProtocol.ONExPacket;
 import org.openflow.protocol.OFMessage;
@@ -13,7 +13,7 @@ import org.openflow.protocol.OFMessage;
 public interface IONExDaemon {
     void sendONEx(ONExPacket OP);
 
-    void parseONEx();
+    void dispatchONEx(ONExPacket op);
 
     void sparePacketIn(OFMessage msg);
 

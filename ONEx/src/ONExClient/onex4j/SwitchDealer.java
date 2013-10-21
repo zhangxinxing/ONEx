@@ -1,6 +1,7 @@
-package ONExClient.Java;
+package ONExClient.onex4j;
 
-import ONExClient.Java.Interface.ISwitchDealer;
+import ONExClient.onex4j.Interface.ISwitchDealer;
+import org.openflow.protocol.OFFlowMod;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,7 +17,7 @@ public class SwitchDealer implements ISwitchDealer {
     }
 
     @Override
-    public void sendFlowMod() {
+    public void sendFlowMod(OFFlowMod off) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 }

@@ -1,9 +1,8 @@
 package ONExProtocol;
 
-import ONExClient.Java.GlobalTopo;
-import ONExClient.Java.LocalTopo;
-import ONExClient.Java.ONExGate;
-import ONExClient.Java.TLV;
+import ONExClient.onex4j.GlobalTopo;
+import ONExClient.onex4j.LocalTopo;
+import ONExClient.onex4j.ONExGate;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
@@ -29,6 +28,12 @@ public class ONExProtocolFactory {
                 TLV.Type.PACKET_IN,
                 pi.getLengthU(),
                 PIBB.array()
+        ));
+
+        op.setTLV(new TLV(
+                TLV.Type.SRC_HOST,
+                8,
+                null // to be filled when Server daemon dispatch it
         ));
         return op;
     }

@@ -1,19 +1,20 @@
-package ONExClient.Java.Daemon;
+package ONExClient.onex4j.Daemon;
 
-import ONExClient.Java.Interface.IONExDaemon;
-import ONExClient.Java.MessageHandler;
+import ONExClient.onex4j.Interface.IONExDaemon;
+import ONExClient.onex4j.MessageHandler;
 import ONExProtocol.ONExPacket;
-import ONExClient.Java.SwitchDealer;
-import ONExClient.Java.TopologyDealer;
+import ONExClient.onex4j.SwitchDealer;
+import ONExClient.onex4j.TopologyDealer;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
 import org.jboss.netty.util.ThreadNameDeterminer;
+import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFPacketOut;
 
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
@@ -82,29 +83,46 @@ public class ONExDaemon implements IONExDaemon {
     }
 
     @Override
-    public void parseONEx() {
-        int instruction = 0;
-        OFMessage msg = null;
-
-        switch(instruction){
+    public void dispatchONEx(ONExPacket op) {
+        switch(op.getINS()){
             case ONExPacket.SPARE_PACKET_IN:
-                messageHandler.onRemotePacketIn(msg);
+                messageHandler.onRemotePacketIn(op.getOFPacketIn());
                 break;
 
             case ONExPacket.RES_SPARE_PACKET_IN:
-                messageHandler.onRemotePacketOut(msg);
+                // TODO flowmod and packet-out
+                OFFlowMod ofFlowMod = op.getFlowMod();
+                OFPacketOut ofPacketOut = op.getOFPacketOut();
+
+                if (op.getFlowMod() != null){
+                    switchDealer.sendFlowMod(ofFlowMod);
+                }
+                assert ofPacketOut != null;
+                messageHandler.onRemotePacketOut(ofPacketOut);
+                break;
+
+            case ONExPacket.UPLOAD_LOCAL_TOPO:
+                log.error("Wrong type");
+                break;
+
+            case ONExPacket.GET_GLOBAL_TOPO:
+                log.error("Wrong type");
                 break;
 
             case ONExPacket.RES_GET_GLOBAL_TOPO:
                 topologyDealer.parseGlobalTopo();
                 break;
 
+            case ONExPacket.REQ_GLOBAL_FLOW_MOD:
+                log.error("Wrong type");
+                break;
+
             case ONExPacket.SC_FLOW_MOD:
-                switchDealer.sendFlowMod();
+                switchDealer.sendFlowMod(op.getFlowMod());
                 break;
 
             default:
-                System.err.println("should not be received on client");
+               log.error("should not be received on client");
         }
     }
 

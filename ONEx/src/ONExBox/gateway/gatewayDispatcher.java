@@ -1,6 +1,6 @@
 package ONExBox.gateway;
 
-import ONExClient.Java.MessageHandler;
+import ONExClient.onex4j.MessageHandler;
 import ONExBox.protocol.GatewayMsg;
 import ONExBox.protocol.MessageFactory;
 import org.apache.log4j.Logger;

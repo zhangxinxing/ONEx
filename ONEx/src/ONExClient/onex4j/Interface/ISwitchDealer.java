@@ -1,4 +1,6 @@
-package ONExClient.Java.Interface;
+package ONExClient.onex4j.Interface;
+
+import org.openflow.protocol.OFFlowMod;
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,5 +12,5 @@ package ONExClient.Java.Interface;
 public interface ISwitchDealer {
     void getTopo();
 
-    void sendFlowMod();
+    void sendFlowMod(OFFlowMod off);
 }

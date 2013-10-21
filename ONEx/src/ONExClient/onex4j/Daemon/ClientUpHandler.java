@@ -1,4 +1,4 @@
-package ONExClient.Java.Daemon;
+package ONExClient.onex4j.Daemon;
 
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;

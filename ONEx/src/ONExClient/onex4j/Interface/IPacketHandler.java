@@ -1,4 +1,4 @@
-package ONExClient.Java.Interface;
+package ONExClient.onex4j.Interface;
 
 import org.openflow.protocol.OFMessage;
 

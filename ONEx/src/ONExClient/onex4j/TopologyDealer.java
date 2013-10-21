@@ -1,9 +1,7 @@
-package ONExClient.Java;
+package ONExClient.onex4j;
 
-import ONExClient.Java.Daemon.ONExDaemon;
-import ONExClient.Java.Interface.ITopology;
-
-import java.io.IOException;
+import ONExClient.onex4j.Daemon.ONExDaemon;
+import ONExClient.onex4j.Interface.ITopology;
 
 /**
  * Created with IntelliJ IDEA.

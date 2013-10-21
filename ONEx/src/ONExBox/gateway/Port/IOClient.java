@@ -15,8 +15,8 @@
  */
 package ONExBox.gateway.Port;
 
-import ONExClient.Java.MessageHandler;
-import ONExBox.protocol.GatewayMsg;
+import ONExClient.onex4j.MessageHandler;
+import ONExProtocol.ONExPacket;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -34,7 +34,7 @@ public class IOClient {
     private ClientBootstrap bootstrap;
     private MessageHandler msgHandler;
 
-    public IOClient(InetSocketAddress address, MessageHandler msgHandler) {
+    public IOClient(InetSocketAddress address) {
         this.address = address;
         this.msgHandler = msgHandler;
     }
@@ -74,7 +74,7 @@ public class IOClient {
         }
     }
 
-    public void send(GatewayMsg msg){
+    public void send(ONExPacket msg){
         ChannelFuture future = channel.write(msg);
         future.awaitUninterruptibly();
     }

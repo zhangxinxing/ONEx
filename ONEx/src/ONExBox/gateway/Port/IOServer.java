@@ -16,7 +16,6 @@
 package ONExBox.gateway.Port;
 
 import ONExBox.Settings;
-import ONExClient.Java.MessageHandler;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -35,20 +34,12 @@ import java.util.concurrent.Executors;
  */
 public class IOServer {
 
-    private final int port;
+    private int port;
     private static Logger log = Logger.getLogger(IOServer.class);
-    private MessageHandler packetHandler;
     private ServerBootstrap bootstrap;
 
-    public IOServer(MessageHandler msgHandler){
+    public IOServer(){
         this.port = Settings.PORT;
-        if (msgHandler != null){
-            this.packetHandler = msgHandler;
-        }
-        else{
-            log.error("Null past to constructor");
-            System.exit(-1);
-        }
     }
 
     public void init() {
@@ -59,7 +50,7 @@ public class IOServer {
                         Executors.newCachedThreadPool()));
 
         // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(new IOServerPipelineFactory(packetHandler));
+        bootstrap.setPipelineFactory(new IOServerPipelineFactory());
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
@@ -71,10 +62,8 @@ public class IOServer {
 }
 
 class IOServerPipelineFactory implements ChannelPipelineFactory{
-    private MessageHandler packetHandler;
 
-    public IOServerPipelineFactory(MessageHandler packetHandler) {
-        this.packetHandler = packetHandler;
+    public IOServerPipelineFactory() {
     }
 
     @Override
@@ -85,7 +74,7 @@ class IOServerPipelineFactory implements ChannelPipelineFactory{
                 ClassResolvers.cacheDisabled(
                         getClass().getClassLoader())
         ));
-        p.addLast("UpHandler", new ServerUpHandler(packetHandler));
+        p.addLast("UpHandler", new GatewayUpHandler());
 
         // downward
         p.addLast("DownHandler", new ServerDownHandler());

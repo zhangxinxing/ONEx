@@ -1,11 +1,13 @@
 package ONExProtocol;
 
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
-import ONExClient.Java.TLV;
 import org.apache.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;
@@ -61,6 +63,52 @@ public class ONExPacket implements Serializable {
         else{
             System.err.println("ByteBuffer sucks, " + headerBB.toString());
         }
+    }
+
+    public void setSrcHost(InetSocketAddress address){
+        if (header.INS != SPARE_PACKET_IN && header.INS != RES_SPARE_PACKET_IN)
+            return;
+        ByteBuffer buf = ByteBuffer.allocate(8);
+        byte[] addr = address.getAddress().getAddress();
+        for (byte i : addr){
+            buf.put(i);
+        }
+        buf.putInt(address.getPort());
+
+        for (TLV tlv : TLVs){
+            if (tlv.getType() == TLV.Type.SRC_HOST){
+                tlv.setValue(buf.array());
+            }
+        }
+    }
+
+    public InetSocketAddress getSrcHost(){
+        if (header.INS != SPARE_PACKET_IN && header.INS != RES_SPARE_PACKET_IN)
+            return null;
+
+        byte[] srcHost = null;
+
+        for (TLV tlv : TLVs){
+            if (tlv.getType() == TLV.Type.SRC_HOST){
+                srcHost = tlv.getValue();
+            }
+        }
+
+        if (srcHost == null)
+            return null;
+
+        byte[] addr = new byte[4];
+        for (int i = 0; i < 4; i++){
+            addr[i] = srcHost[0];
+        }
+        try {
+            InetAddress address = InetAddress.getByAddress(addr);
+            int port = ByteBuffer.wrap(srcHost, 4, 4).getInt();
+            return new InetSocketAddress(address, port);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public OFPacketIn getOFPacketIn(){

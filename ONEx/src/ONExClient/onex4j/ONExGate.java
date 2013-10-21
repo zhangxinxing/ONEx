@@ -1,6 +1,6 @@
-package ONExClient.Java;
+package ONExClient.onex4j;
 
-import ONExClient.Java.Daemon.ONExDaemon;
+import ONExClient.onex4j.Daemon.ONExDaemon;
 import org.apache.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
@@ -30,7 +30,7 @@ public class ONExGate {
     public void dispatchOFMessage(OFMessage msg){
         switch(msg.getType()){
             case PACKET_IN:
-                if (ONExClient.Java.Monitor.isBusy()){
+                if (ONExClient.onex4j.Monitor.isBusy()){
                     onExDaemon.sparePacketIn(msg);
                 }
                 else{

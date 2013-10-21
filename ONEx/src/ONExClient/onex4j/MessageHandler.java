@@ -1,6 +1,6 @@
-package ONExClient.Java;
+package ONExClient.onex4j;
 
-import ONExClient.Java.Interface.IPacketHandler;
+import ONExClient.onex4j.Interface.IPacketHandler;
 import org.apache.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 

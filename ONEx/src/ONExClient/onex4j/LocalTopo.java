@@ -1,4 +1,4 @@
-package ONExClient.Java;
+package ONExClient.onex4j;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;

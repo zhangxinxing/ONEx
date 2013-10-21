@@ -1,6 +1,6 @@
 package ONExBox.gateway.Port;
 
-import ONExClient.Java.MessageHandler;
+import ONExClient.onex4j.MessageHandler;
 import ONExBox.gateway.gatewayDispatcher;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;

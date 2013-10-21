@@ -1,9 +1,9 @@
-package ONExClient.Java.Daemon;
+package ONExClient.onex4j.Daemon;
 
 import MyDebugger.Dumper;
-import ONExClient.Java.MessageHandler;
-import ONExClient.Java.SwitchDealer;
-import ONExClient.Java.TopologyDealer;
+import ONExClient.onex4j.MessageHandler;
+import ONExClient.onex4j.SwitchDealer;
+import ONExClient.onex4j.TopologyDealer;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;
 import org.openflow.protocol.OFFlowMod;

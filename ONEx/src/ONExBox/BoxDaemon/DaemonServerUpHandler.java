@@ -35,12 +35,15 @@ public class DaemonServerUpHandler extends SimpleChannelHandler {
 
         switch(op.getINS()){
             case ONExPacket.SPARE_PACKET_IN:
+                log.debug("send to gateway spare");
+
                 gateway.sparePacketIn(op);
                 break;
 
             case ONExPacket.RES_SPARE_PACKET_IN:
-                // stupid forward
-                serverDaemon.sendONEx(op);
+                // from client
+                // should be forward to its original place
+                gateway.sendBackPacketIn(op);
                 break;
 
             case ONExPacket.UPLOAD_LOCAL_TOPO:
@@ -51,16 +54,8 @@ public class DaemonServerUpHandler extends SimpleChannelHandler {
                 // TODO handle topology stuff
                 break;
 
-            case ONExPacket.RES_GET_GLOBAL_TOPO:
-                log.error("Wrong type");
-                break;
-
             case ONExPacket.REQ_GLOBAL_FLOW_MOD:
                 // TODO handle topology stuff
-                break;
-
-            case ONExPacket.SC_FLOW_MOD:
-                log.error("Wrong type");
                 break;
 
             default:

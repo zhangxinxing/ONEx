@@ -1,4 +1,4 @@
-package ONExClient.Java;
+package ONExClient.onex4j;
 
 /**
  * Created with IntelliJ IDEA.

@@ -1,11 +1,12 @@
 package ONExProtocol;
 
-import ONExClient.Java.GlobalTopo;
-import ONExClient.Java.LocalTopo;
+import ONExClient.onex4j.GlobalTopo;
+import ONExClient.onex4j.LocalTopo;
 import org.openflow.protocol.*;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.factory.BasicFactory;
 
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 
@@ -24,12 +25,15 @@ public class TONExProtocol {
         pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
         pi.setPacketData(ba);
         ONExPacket msg = ONExProtocolFactory.ONExSparePI(pi);
+        msg.setSrcHost(new InetSocketAddress("127.1.2.3", 1234));
         log(msg.toString());
 
         ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log(ONExProtocolFactory.parser(msgBB).toString());
+        msg = ONExProtocolFactory.parser(msgBB);
+        log(msg.toString());
+        log(msg.getSrcHost().toString());
 
         // 2
         OFFlowMod ofFlowMod = new OFFlowMod();
