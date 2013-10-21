@@ -12,7 +12,7 @@ import org.hyperic.sigar.SigarException;
  * Date: 13-10-3
  * Time: PM8:33
  */
-public class Settings {
+public class ONExSetting {
     /* random test */
     public static boolean   RANDOM_TEST;
     public static boolean   MULTI_THREAD;
@@ -39,8 +39,8 @@ public class Settings {
     public long targetPid;
 
     // singleton
-    private static Settings instance = new Settings();
-    private Settings() {
+    private static ONExSetting instance = new ONExSetting();
+    private ONExSetting() {
         parseConfig();
         try {
             IP = new Sigar().getNetInterfaceConfig().getAddress();
@@ -53,14 +53,15 @@ public class Settings {
         regAppPid(APPNAME, new Sigar().getPid());
         targetPid = new Sigar().getPid();
     }
-    public static Settings getInstance(){
+    public static ONExSetting getInstance(){
+        assert instance != null;
         return instance;
     }
 
     public void parseConfig() {
         Properties config = new Properties();
         try {
-            config.load(getClass().getClassLoader().getResourceAsStream("nuctrl.config.properties"));
+            config.load(getClass().getClassLoader().getResourceAsStream("config.properties"));
         } catch (IOException e) {
             e.printStackTrace();
         }

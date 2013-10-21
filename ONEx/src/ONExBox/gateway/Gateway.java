@@ -41,11 +41,13 @@ public class Gateway {
         // TODO
         InetSocketAddress target = globalShare.getWhoIsIdle().get(0);
         assert target != null;
+        log.debug("idle target " + target.toString());
         send(target, op);
         return target;
     }
 
     public void sendBackPacketIn(ONExPacket op){
+        log.info("Send packet back to " + op.getSrcHost().toString());
         // ADD src field in OPSpearPacketIN
 
     }

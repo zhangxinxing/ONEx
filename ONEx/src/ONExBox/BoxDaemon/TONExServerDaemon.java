@@ -1,5 +1,6 @@
 package ONExBox.BoxDaemon;
 
+import ONExBox.ONExSetting;
 import ONExBox.gateway.Gateway;
 
 /**
@@ -11,6 +12,6 @@ import ONExBox.gateway.Gateway;
 public class TONExServerDaemon {
     public static void main(String[] args){
         Gateway gateway = new Gateway();
-        ONExServerDaemon serverDamon = new ONExServerDaemon(gateway, 12345);
+        ONExServerDaemon serverDamon = new ONExServerDaemon(gateway, ONExSetting.PORT);
     }
 }

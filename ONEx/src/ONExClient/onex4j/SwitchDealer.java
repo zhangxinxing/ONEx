@@ -8,16 +8,16 @@ import org.openflow.protocol.OFFlowMod;
  * User: Fan
  * Date: 13-10-19
  * Time: AM12:32
- * To change this template use File | Settings | File Templates.
+ * To change this template use File | ONExSetting | File Templates.
  */
 public class SwitchDealer implements ISwitchDealer {
     @Override
     public void getTopo() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        //To change body of implemented methods use File | ONExSetting | File Templates.
     }
 
     @Override
     public void sendFlowMod(OFFlowMod off) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        //To change body of implemented methods use File | ONExSetting | File Templates.
     }
 }

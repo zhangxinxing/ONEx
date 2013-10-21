@@ -1,10 +1,10 @@
 package ONExBox.Sharing;
 
+import ONExBox.ONExSetting;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
-import ONExBox.Settings;
 import ONExBox.Monitor;
 import ONExBox.protocol.BusyTableEntry;
 import ONExBox.protocol.TopologyTableEntry;
@@ -49,7 +49,7 @@ public class GlobalShare{
         this.hz = Hazelcast.newHazelcastInstance(cfg);
 
         // initialization
-        this.localBt = new BusyTableEntry(Settings.getInstance().socketAddr);
+        this.localBt = new BusyTableEntry(ONExSetting.getInstance().socketAddr);
         this.localTopology = new LinkedList<TopologyTableEntry>();
 
         // important
@@ -60,7 +60,7 @@ public class GlobalShare{
             public void run() {
                 while(runningDaemon){
                     try {
-                        Thread.sleep(Settings.BUSY_UPDATE_INT);
+                        Thread.sleep(ONExSetting.BUSY_UPDATE_INT);
                         if (!runningDaemon){
                             break;
                         }
@@ -78,7 +78,7 @@ public class GlobalShare{
     /* Busy Table */
     private boolean getBusyTableByAddr(InetSocketAddress addr){
         log.info("getting busyTable of " + addr.toString());
-        ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
+        ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(ONExSetting.BUSYTABLE_MAP);
         BusyTableEntry bt = map.get(addr);
         if (bt != null){
             log.debug(bt.toString());
@@ -87,11 +87,11 @@ public class GlobalShare{
     }
 
     public Map getBusyTableOnline(){
-        return hz.getMap(Settings.BUSYTABLE_MAP);
+        return hz.getMap(ONExSetting.BUSYTABLE_MAP);
     }
 
     public List<InetSocketAddress> getWhoIsIdle(){
-        ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
+        ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(ONExSetting.BUSYTABLE_MAP);
         List<InetSocketAddress> idle = new LinkedList<InetSocketAddress>();
 
         log.debug(">>>begin [getWhoIsIdle]");
@@ -132,8 +132,8 @@ public class GlobalShare{
     }
 
     private boolean updateRemoteBusyTable(){
-        ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(Settings.BUSYTABLE_MAP);
-        InetSocketAddress localAddr = Settings.getInstance().socketAddr;
+        ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(ONExSetting.BUSYTABLE_MAP);
+        InetSocketAddress localAddr = ONExSetting.getInstance().socketAddr;
 
         if(localAddr == null){
             log.error("Error in config: socketAddr == null");
@@ -160,7 +160,7 @@ public class GlobalShare{
     }
 
     private boolean updateRemoteTopology() {
-        MultiMap<InetAddress, TopologyTableEntry> map = hz.getMultiMap(Settings.TOPO_MAP);
+        MultiMap<InetAddress, TopologyTableEntry> map = hz.getMultiMap(ONExSetting.TOPO_MAP);
 
         log.debug("update remote topology #" + this.localTopology.size());
         for (TopologyTableEntry entry : this.localTopology){

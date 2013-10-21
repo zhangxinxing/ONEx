@@ -1,17 +1,11 @@
 package ONExClient.onex4j.Daemon;
 
-import MyDebugger.Dumper;
 import ONExClient.onex4j.MessageHandler;
 import ONExClient.onex4j.SwitchDealer;
 import ONExClient.onex4j.TopologyDealer;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;
-import org.openflow.protocol.OFFlowMod;
-import org.openflow.protocol.OFMatch;
-import org.openflow.protocol.OFPacketOut;
-import org.openflow.protocol.action.OFAction;
-
-import java.util.LinkedList;
+import org.openflow.protocol.OFPacketIn;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,14 +21,11 @@ public class TONExDaemon {
                 new SwitchDealer()
         );
 
-        OFFlowMod ofFlowMod = new OFFlowMod();
-        ofFlowMod.setMatch(new OFMatch());
-        OFPacketOut po = new OFPacketOut();
-        po.setActions(new LinkedList<OFAction>());
-
-        ONExPacket msg = ONExProtocolFactory.ONExResSparePI(ofFlowMod, po);
-        log(msg.toString());
-        log(Dumper.byteArray(msg.toByteArray()));
+        byte[] ba = {0x01,0x01,0x01};
+        OFPacketIn pi = new OFPacketIn();
+        pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
+        pi.setPacketData(ba);
+        ONExPacket msg = ONExProtocolFactory.ONExSparePI(pi);
 
         daemon.sendONEx(msg);
 

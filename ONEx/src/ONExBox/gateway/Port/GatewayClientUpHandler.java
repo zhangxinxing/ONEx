@@ -1,17 +1,14 @@
 package ONExBox.gateway.Port;
 
 import ONExClient.onex4j.MessageHandler;
-import ONExBox.gateway.gatewayDispatcher;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;
 
-public class ClientUpHandler extends SimpleChannelUpstreamHandler {
+public class GatewayClientUpHandler extends SimpleChannelUpstreamHandler {
     private static Logger log;
-    private gatewayDispatcher dispatcher;
 
-    public ClientUpHandler(MessageHandler msgHandler) {
-        log = Logger.getLogger(ClientUpHandler.class);
-        this.dispatcher = new gatewayDispatcher(msgHandler);
+    public GatewayClientUpHandler(MessageHandler msgHandler) {
+        log = Logger.getLogger(GatewayClientUpHandler.class);
     }
 
     @Override
@@ -32,9 +29,7 @@ public class ClientUpHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
         log.debug("[client] Get message " + e.getMessage().toString());
-
-        dispatcher.dispatchFunc(e);
-
+        // TODO
     }
 
     @Override

@@ -20,13 +20,13 @@ import ONExProtocol.ONExPacket;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;
 
-public class GatewayUpHandler extends SimpleChannelHandler {
+public class GatewayServerUpHandler extends SimpleChannelHandler {
 
-    private Logger log = Logger.getLogger(GatewayUpHandler.class);
+    private Logger log = Logger.getLogger(GatewayServerUpHandler.class);
 
     private ONExServerDaemon serverDaemon;
 
-    public GatewayUpHandler() {
+    public GatewayServerUpHandler() {
     }
 
     @Override

@@ -15,7 +15,7 @@
  */
 package ONExBox.gateway.Port;
 
-import ONExBox.Settings;
+import ONExBox.ONExSetting;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -39,7 +39,7 @@ public class IOServer {
     private ServerBootstrap bootstrap;
 
     public IOServer(){
-        this.port = Settings.PORT;
+        this.port = ONExSetting.PORT;
     }
 
     public void init() {
@@ -74,10 +74,9 @@ class IOServerPipelineFactory implements ChannelPipelineFactory{
                 ClassResolvers.cacheDisabled(
                         getClass().getClassLoader())
         ));
-        p.addLast("UpHandler", new GatewayUpHandler());
+        p.addLast("UpHandler", new GatewayServerUpHandler());
 
         // downward
-        p.addLast("DownHandler", new ServerDownHandler());
         p.addLast("Encoder", new ObjectEncoder());
 
         return p;

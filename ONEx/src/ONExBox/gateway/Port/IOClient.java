@@ -56,10 +56,9 @@ public class IOClient {
                         ClassResolvers.cacheDisabled(
                                 getClass().getClassLoader())
                 ));
-                p.addLast("UpHandler", new ClientUpHandler(msgHandler));
+                p.addLast("UpHandler", new GatewayClientUpHandler(msgHandler));
 
                 // downward
-                p.addLast("DownHander", new ClientDownHandler());
                 p.addLast("ObjectEncoder", new ObjectEncoder());
                 return p;
             }

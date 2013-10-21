@@ -16,7 +16,7 @@ public class Benchmark {
     private static Sigar sigar = new Sigar();
 
     public static void startBenchmark(){
-        if (Settings.getInstance().targetPid == -1){
+        if (ONExSetting.getInstance().targetPid == -1){
             System.err.println("App must be registered before benchmark");
         }
         account = new Account();
@@ -44,7 +44,7 @@ public class Benchmark {
     }
 
     public static String endBenchmark(){
-        long pid = Settings.getInstance().targetPid;
+        long pid = ONExSetting.getInstance().targetPid;
         if (pid == -1 || pid == 0){
             System.err.println(String.format("pid == %d", pid));
         }

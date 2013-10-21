@@ -25,7 +25,7 @@ public class TopologyDealer implements ITopology {
 
     @Override
     public void getGlobalTopo() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        //To change body of implemented methods use File | ONExSetting | File Templates.
     }
 
     @Override
@@ -40,6 +40,6 @@ public class TopologyDealer implements ITopology {
 
     @Override
     public void parseGlobalTopo() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        //To change body of implemented methods use File | ONExSetting | File Templates.
     }
 }

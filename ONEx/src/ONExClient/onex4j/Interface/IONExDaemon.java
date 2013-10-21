@@ -8,7 +8,7 @@ import org.openflow.protocol.OFMessage;
  * User: Fan
  * Date: 13-10-18
  * Time: PM11:42
- * To change this template use File | Settings | File Templates.
+ * To change this template use File | ONExSetting | File Templates.
  */
 public interface IONExDaemon {
     void sendONEx(ONExPacket OP);

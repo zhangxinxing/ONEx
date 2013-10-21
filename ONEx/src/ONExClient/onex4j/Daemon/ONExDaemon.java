@@ -26,8 +26,7 @@ import java.util.concurrent.Executors;
  * Time: PM11:47
  */
 public class ONExDaemon implements IONExDaemon {
-    private static final String host = "127.0.0.1";
-    private static final int port = 12345;
+    private static final String host = "localhost";
     private Channel channel;
     private ClientBootstrap bootstrap;
 
@@ -36,7 +35,7 @@ public class ONExDaemon implements IONExDaemon {
     private SwitchDealer switchDealer;
     private Logger log = Logger.getLogger(ONExDaemon.class);
 
-    public ONExDaemon(MessageHandler msg_h, TopologyDealer topo_h, SwitchDealer sw_h) {
+    public ONExDaemon(int port, MessageHandler msg_h, TopologyDealer topo_h, SwitchDealer sw_h) {
         if (msg_h == null || topo_h == null || sw_h == null){
             log.error("Null arguments");
         }
@@ -145,7 +144,7 @@ class pipelineFactory implements ChannelPipelineFactory{
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline p = Channels.pipeline();
         // upward
-        p.addLast("UpHandler", new ClientUpHandler());
+        p.addLast("UpHandler", new CubeDaemonUpHandler());
         // downward
         return p;
     }

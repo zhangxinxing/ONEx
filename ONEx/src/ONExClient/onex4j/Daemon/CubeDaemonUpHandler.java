@@ -3,11 +3,11 @@ package ONExClient.onex4j.Daemon;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;
 
-public class ClientUpHandler extends SimpleChannelUpstreamHandler {
+public class CubeDaemonUpHandler extends SimpleChannelUpstreamHandler {
     private static Logger log;
 
-    public ClientUpHandler() {
-        log = Logger.getLogger(ClientUpHandler.class);
+    public CubeDaemonUpHandler() {
+        log = Logger.getLogger(CubeDaemonUpHandler.class);
     }
 
     @Override
@@ -28,6 +28,7 @@ public class ClientUpHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
         log.debug("[client] Get message " + e.getMessage().toString());
+        // TODO parse ONExProtocol here
     }
 
     @Override

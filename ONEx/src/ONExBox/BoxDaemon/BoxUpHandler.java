@@ -1,5 +1,6 @@
 package ONExBox.BoxDaemon;
 
+import ONExBox.ONExSetting;
 import ONExBox.gateway.Gateway;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;
@@ -7,13 +8,13 @@ import org.apache.log4j.Logger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.*;
 
-public class DaemonServerUpHandler extends SimpleChannelHandler {
+public class BoxUpHandler extends SimpleChannelHandler {
 
-    private Logger log = Logger.getLogger(DaemonServerUpHandler.class);
+    private Logger log = Logger.getLogger(BoxUpHandler.class);
     private Gateway gateway;
     private ONExServerDaemon serverDaemon;
 
-    public DaemonServerUpHandler(Gateway gateway, ONExServerDaemon serverDaemon) {
+    public BoxUpHandler(Gateway gateway, ONExServerDaemon serverDaemon) {
         this.gateway = gateway;
         this.serverDaemon = serverDaemon;
     }
@@ -30,19 +31,20 @@ public class DaemonServerUpHandler extends SimpleChannelHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
-        log.debug("[server] Got message " + e.getMessage().toString());
         ONExPacket op = ONExProtocolFactory.parser(((ChannelBuffer) e.getMessage()).array());
+        log.debug("[server] Got message " + op.toString());
 
         switch(op.getINS()){
             case ONExPacket.SPARE_PACKET_IN:
                 log.debug("send to gateway spare");
-
+                op.setSrcHost(ONExSetting.getInstance().socketAddr);
                 gateway.sparePacketIn(op);
                 break;
 
             case ONExPacket.RES_SPARE_PACKET_IN:
                 // from client
                 // should be forward to its original place
+                log.debug("send to gateway res_spare");
                 gateway.sendBackPacketIn(op);
                 break;
 
@@ -63,8 +65,6 @@ public class DaemonServerUpHandler extends SimpleChannelHandler {
         }
 
         log.info(op.toString());
-        log.debug("[server] Echo sent");
-        ctx.getChannel().write(e.getMessage());
 
         try {
             super.messageReceived(ctx, e);

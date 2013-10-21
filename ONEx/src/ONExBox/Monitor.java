@@ -34,13 +34,13 @@ public class Monitor {
 
     // getCPUAccount
     public Map<String, Integer> getCPUAccount() {
-        List<String> apps = Settings.getInstance().appNameList;
+        List<String> apps = ONExSetting.getInstance().appNameList;
         for (String app : apps){
-            if (Settings.RANDOM_TEST){
+            if (ONExSetting.RANDOM_TEST){
                 CPUAccount.put(app, new Random().nextInt());
             }
             else {
-                long pid = Settings.getInstance().appPid.get(app);
+                long pid = ONExSetting.getInstance().appPid.get(app);
                 // TODO sigar.getProcCpu(pid).getPercent();
             }
         }
@@ -50,7 +50,7 @@ public class Monitor {
     // get Account by name
     public int getCpuAccountByName(String appName) {
 
-        if (Settings.RANDOM_TEST){
+        if (ONExSetting.RANDOM_TEST){
             return new Random().nextInt();
         }
         else {
@@ -66,7 +66,7 @@ public class Monitor {
             sysInfo.CPU_idle = sigar.getCpuPerc().getIdle();
             sysInfo.mem_free = sigar.getMem().getFreePercent();
 
-            long pid = Settings.getInstance().targetPid;
+            long pid = ONExSetting.getInstance().targetPid;
             if (pid != -1){
                 procInfo.CPU_used = sigar.getProcCpu(pid).getPercent();
                 procInfo.mem_used = sigar.getProcMem(pid).getSize()/sigar.getMem().getTotal();
@@ -81,7 +81,7 @@ public class Monitor {
     public boolean isBusy(){
         // an judgement taken all factors into consideration
 
-        if (Settings.RANDOM_TEST){
+        if (ONExSetting.RANDOM_TEST){
             boolean isBusy = new Random().nextBoolean();
             log.debug("[random test] isBusy=" + isBusy);
             return isBusy;
@@ -101,7 +101,7 @@ public class Monitor {
         log.info(sigar.getMem());
 
         // process
-        long pid = Settings.getInstance().targetPid;
+        long pid = ONExSetting.getInstance().targetPid;
         if (pid == -1){
             log.info("PID unset");
         }

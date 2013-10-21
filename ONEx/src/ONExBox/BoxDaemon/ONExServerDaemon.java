@@ -84,7 +84,7 @@ class IOServerPipelineFactory implements ChannelPipelineFactory{
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline p = Channels.pipeline();
         // upward
-        p.addLast("UpHandler", new DaemonServerUpHandler(gateway, serverDaemon));
+        p.addLast("UpHandler", new BoxUpHandler(gateway, serverDaemon));
         // downward
         return p;
     }

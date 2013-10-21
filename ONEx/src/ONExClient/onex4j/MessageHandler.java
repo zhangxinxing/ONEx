@@ -30,11 +30,11 @@ public class MessageHandler implements IPacketHandler {
 
     @Override
     public void onRemotePacketIn(OFMessage msg) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        //To change body of implemented methods use File | ONExSetting | File Templates.
     }
 
     @Override
     public void onRemotePacketOut(OFMessage msg) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        //To change body of implemented methods use File | ONExSetting | File Templates.
     }
 }
