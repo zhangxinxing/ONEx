@@ -1,11 +1,15 @@
 package ONExProtocol;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
 import ONExClient.Java.TLV;
 import org.apache.log4j.Logger;
+import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFPacketIn;
+import org.openflow.protocol.OFPacketOut;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,7 +17,7 @@ import org.apache.log4j.Logger;
  * Date: 13-10-19
  * Time: AM12:14
  */
-public class ONExPacket {
+public class ONExPacket implements Serializable {
     public static final int SPARE_PACKET_IN     = 0x00000000;
     public static final int RES_SPARE_PACKET_IN = 0x00000001;
     public static final int UPLOAD_LOCAL_TOPO   = 0x00000002;
@@ -59,11 +63,75 @@ public class ONExPacket {
         }
     }
 
+    public OFPacketIn getOFPacketIn(){
+        if (header.INS != SPARE_PACKET_IN){
+            log.error("this method should only be called in SPARE_PACKET_IN");
+            return null;
+        }
+
+        byte[] pi = null;
+        for(TLV tlv : TLVs){
+            if (tlv.getType() == TLV.Type.PACKET_IN){
+                pi = tlv.getValue();
+                break;
+            }
+        }
+        if (pi == null)
+            return null;
+        OFPacketIn ofpi = new OFPacketIn();
+        ofpi.readFrom(ByteBuffer.wrap(pi));
+        return ofpi;
+    }
+
+    public OFFlowMod getFlowMod(){
+        // TODO bitwise
+        if (header.INS != SC_FLOW_MOD && header.INS != RES_SPARE_PACKET_IN){
+            log.error("this method should only be called in SC_FLOW_MOD or RES_SPARE_PACKET_IN");
+            return null;
+        }
+        byte[] flowMod = null;
+        for(TLV tlv : TLVs){
+            if (tlv.getType() == TLV.Type.FLOW_MOD){
+                flowMod = tlv.getValue();
+                break;
+            }
+        }
+        if (flowMod == null)
+            return null;
+        OFFlowMod offm = new OFFlowMod();
+        offm.readFrom(ByteBuffer.wrap(flowMod));
+        return offm;
+    }
+
+    public OFPacketOut getOFPacketOut(){
+        // TODO bitwise
+        if (header.INS != RES_SPARE_PACKET_IN){
+            log.error("this method should only be called in RES_SPARE_PACKET_IN");
+            return null;
+        }
+        byte[] po = null;
+        for(TLV tlv : TLVs){
+            if (tlv.getType() == TLV.Type.PACKET_OUT){
+                po = tlv.getValue();
+                break;
+            }
+        }
+        if (po == null)
+            return null;
+        OFPacketOut ofpo = new OFPacketOut();
+        ofpo.readFrom(ByteBuffer.wrap(po));
+        return ofpo;
+    }
+
     public void writeTo(ByteBuffer ONExBB){
         header.writeTo(ONExBB);
         for (TLV tlv : TLVs){
             tlv.writeTo(ONExBB);
         }
+    }
+
+    public int getINS(){
+        return header.INS;
     }
 
     public int getLength(){

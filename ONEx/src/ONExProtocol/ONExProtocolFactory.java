@@ -42,7 +42,7 @@ public class ONExProtocolFactory {
         po.writeTo(POBB);
 
         op.setTLV(new TLV(
-                TLV.Type.FLOWMOD,
+                TLV.Type.FLOW_MOD,
                 flowMod.getLengthU(),
                 FMBB.array()
         ));
@@ -100,7 +100,7 @@ public class ONExProtocolFactory {
         ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLengthU());
         flowMod.writeTo(FMBB);
         op.setTLV(new TLV(
-                TLV.Type.FLOWMOD,
+                TLV.Type.FLOW_MOD,
                 flowMod.getLengthU(),
                 FMBB.array()
         ));
