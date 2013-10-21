@@ -20,11 +20,7 @@ public class Gateway {
     private IOServer ioServer;
     private Map<InetSocketAddress, IOClient> clientPool;
 
-    public Gateway(MessageHandler msgHandler) {
-        if (msgHandler == null){
-            log.error("Null past to constructor");
-            System.exit(-1);
-        }
+    public Gateway() {
         this.globalShare = new GlobalShare();
 
         this.clientPool = new HashMap<InetSocketAddress, IOClient>();

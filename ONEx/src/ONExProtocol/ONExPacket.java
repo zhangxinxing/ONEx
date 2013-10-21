@@ -98,9 +98,7 @@ public class ONExPacket implements Serializable {
             return null;
 
         byte[] addr = new byte[4];
-        for (int i = 0; i < 4; i++){
-            addr[i] = srcHost[0];
-        }
+        System.arraycopy(srcHost, 0, addr, 0, 4);
         try {
             InetAddress address = InetAddress.getByAddress(addr);
             int port = ByteBuffer.wrap(srcHost, 4, 4).getInt();

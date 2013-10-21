@@ -33,7 +33,7 @@ public class TONExProtocol {
         msgBB.flip();
         msg = ONExProtocolFactory.parser(msgBB);
         log(msg.toString());
-        log(msg.getSrcHost().toString());
+        log("extractd ipv4:" + msg.getSrcHost().toString());
 
         // 2
         OFFlowMod ofFlowMod = new OFFlowMod();

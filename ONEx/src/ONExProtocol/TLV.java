@@ -31,6 +31,8 @@ public class TLV{
     }
 
     public boolean isValid(){
+        if (value == null && type == Type.SRC_HOST)
+            return true;
         return (len == value.length);
     }
 

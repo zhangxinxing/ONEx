@@ -15,6 +15,7 @@
  */
 package ONExBox.BoxDaemon;
 
+import ONExBox.gateway.Gateway;
 import ONExProtocol.ONExPacket;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -32,7 +33,7 @@ public class ONExServerDaemon {
     private ServerBootstrap bootstrap;
     private Channel clientChannel;
 
-    public ONExServerDaemon(int port){
+    public ONExServerDaemon(Gateway gateway, int port){
         // Configure the server.
         bootstrap = new ServerBootstrap(
                 new OioServerSocketChannelFactory(
@@ -40,7 +41,7 @@ public class ONExServerDaemon {
                         Executors.newSingleThreadExecutor()));
 
         // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(new IOServerPipelineFactory());
+        bootstrap.setPipelineFactory(new IOServerPipelineFactory(gateway, this));
 
         // Bind and start to accept incoming connections.
         clientChannel = bootstrap.bind(new InetSocketAddress(port));
@@ -72,15 +73,18 @@ public class ONExServerDaemon {
 }
 
 class IOServerPipelineFactory implements ChannelPipelineFactory{
-    public IOServerPipelineFactory() {
-
+    private Gateway gateway;
+    private ONExServerDaemon serverDaemon;
+    public IOServerPipelineFactory(Gateway gateway, ONExServerDaemon serverDaemon) {
+        this.gateway = gateway;
+        this.serverDaemon = serverDaemon;
     }
 
     @Override
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline p = Channels.pipeline();
         // upward
-        p.addLast("UpHandler", new DaemonServerUpHandler());
+        p.addLast("UpHandler", new DaemonServerUpHandler(gateway, serverDaemon));
         // downward
         return p;
     }

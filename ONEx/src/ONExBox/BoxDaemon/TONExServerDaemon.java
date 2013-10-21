@@ -1,5 +1,7 @@
 package ONExBox.BoxDaemon;
 
+import ONExBox.gateway.Gateway;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Fan
@@ -8,6 +10,7 @@ package ONExBox.BoxDaemon;
  */
 public class TONExServerDaemon {
     public static void main(String[] args){
-        ONExServerDaemon serverDamon = new ONExServerDaemon(12345);
+        Gateway gateway = new Gateway();
+        ONExServerDaemon serverDamon = new ONExServerDaemon(gateway, 12345);
     }
 }
