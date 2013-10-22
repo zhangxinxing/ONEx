@@ -2,6 +2,7 @@ package ONExClient.onex4j;
 
 import ONExClient.onex4j.SDKDaemon.SDKDaemon;
 import ONExClient.onex4j.Interface.ITopology;
+import ONExProtocol.LocalTopo;
 
 /**
  * Created with IntelliJ IDEA.

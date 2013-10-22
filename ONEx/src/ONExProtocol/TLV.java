@@ -72,7 +72,9 @@ public class TLV implements Serializable{
 
     public String toString(){
         assert len == value.length;
-        return String.format("[TLV]len=%d/%d", len, getLength());
+        String to = String.format("[TLV,T=%d,L=%d/%d,V=", getType(), len, getLength());
+        to +=  (value != null) ? value.length : "null";
+        return to += "]";
     }
 
     public class Type{

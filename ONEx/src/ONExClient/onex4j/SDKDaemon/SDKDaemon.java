@@ -64,7 +64,7 @@ public class SDKDaemon implements IONExDaemon {
         sendRaw(op.toByteBuffer().array());
     }
 
-    public void sendRaw(byte[] array){
+    private void sendRaw(byte[] array){
         ChannelFuture future = channel.write(ChannelBuffers.copiedBuffer(array));
         future.awaitUninterruptibly();
     }

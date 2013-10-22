@@ -1,12 +1,13 @@
 package ONExProtocol;
 
 import ONExClient.onex4j.GlobalTopo;
-import ONExClient.onex4j.LocalTopo;
 import org.openflow.protocol.*;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.factory.BasicFactory;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import org.apache.log4j.Logger;
@@ -57,13 +58,39 @@ public class TONExProtocol {
         log.info(msg.getOFPacketOut());
 
         // 3
-        LocalTopo topo = new LocalTopo();
-        msg = ONExProtocolFactory.ONExUploadLocalTopo(topo);
-        log.info(msg.toString());
+        InetAddress addr = null;
+        try {
+            addr = InetAddress.getByAddress(new byte[]{56,57,58,59});
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        LocalTopo localTopo = new LocalTopo();
+        localTopo.addOrUpdateSwitch(12345L);
+        localTopo.udpatePortInfo(
+                12345L,
+                (short)123,
+                LocalTopo.Status.HOST,
+                addr,
+                new byte[] {1,2,3,4,5,6}
+        );
+        localTopo.udpatePortInfo(
+                12345L,
+                (short)1243,
+                LocalTopo.Status.HOST,
+                addr,
+                new byte[] {1,2,3,4,5,6}
+        );
+
+        msg = ONExProtocolFactory.ONExUploadLocalTopo(localTopo);
+        log.info(msg);
+        log.info(msg.getLocalTopo());
         msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log.info(ONExProtocolFactory.parser(msgBB).toString());
+        msg = ONExProtocolFactory.parser(msgBB);
+        log.info(msg);
+        log.info(msg.getLocalTopo());
 
         // 4
         msg = ONExProtocolFactory.ONExGetGlobalTopo();

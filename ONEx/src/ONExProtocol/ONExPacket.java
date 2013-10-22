@@ -12,9 +12,6 @@ import org.apache.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
-import org.openflow.protocol.action.OFAction;
-import org.openflow.protocol.action.OFActionType;
-import org.openflow.protocol.factory.OFActionFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -81,7 +78,6 @@ public class ONExPacket implements Serializable {
         buf.putInt(address.getPort());
 
         boolean ok = false;
-
         for (TLV tlv : TLVs){
             if (tlv.getType() == TLV.Type.SRC_HOST){
                 tlv.setValue(buf.array());
@@ -143,7 +139,7 @@ public class ONExPacket implements Serializable {
         if (pi == null)
             return null;
         OFPacketIn ofpi = new OFPacketIn();
-        ofpi.readFrom(ByteBuffer.wrap(pi));
+        // TODO ofpi.readFrom(ByteBuffer.wrap(pi));
         return ofpi;
     }
 
@@ -187,6 +183,26 @@ public class ONExPacket implements Serializable {
         return ofpo;
     }
 
+    public LocalTopo getLocalTopo(){
+        if (header.INS != UPLOAD_LOCAL_TOPO){
+            log.error("this method should only be called in UPLOAD_LOCAL_TOPO");
+            return null;
+        }
+        TLV topo = null;
+        for(TLV tlv : TLVs){
+            if (tlv.getType() == TLV.Type.LOCAL_TOPO){
+                topo = tlv;
+                break;
+            }
+        }
+        if (topo == null){
+            log.error("LOCAL_TOPO not found");
+            return null;
+        }
+
+        return new LocalTopo(topo);
+    }
+
     public void writeTo(ByteBuffer ONExBB){
         header.writeTo(ONExBB);
         for (TLV tlv : TLVs){
@@ -226,7 +242,7 @@ public class ONExPacket implements Serializable {
 
     @Override
     public String toString(){
-        String tostring = "[ONExPacket, length=" + getLength() +
+        String tostring = "ONExPacket [length=" + getLength() +
                 "]" + header.toString();
         tostring += String.format("[TLVs, #=%d]", TLVs.size());
         for (TLV tlv : TLVs){

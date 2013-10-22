@@ -1,7 +1,6 @@
 package ONExProtocol;
 
 import ONExClient.onex4j.GlobalTopo;
-import ONExClient.onex4j.LocalTopo;
 import ONExClient.onex4j.ONExGate;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;

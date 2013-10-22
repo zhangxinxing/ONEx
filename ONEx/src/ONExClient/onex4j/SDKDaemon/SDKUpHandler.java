@@ -41,9 +41,9 @@ class SDKUpHandler extends SimpleChannelUpstreamHandler {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e){
         // Close the connection when an exception is raised.
-        log.error("Exception:", e.getCause());
+        log.error("Exception:" + e.getCause());
         e.getChannel().close();
     }
 }
