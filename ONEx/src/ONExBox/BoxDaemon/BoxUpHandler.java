@@ -8,31 +8,43 @@ import org.apache.log4j.Logger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.*;
 
-public class BoxUpHandler extends SimpleChannelHandler {
+class BoxUpHandler extends SimpleChannelHandler {
 
     private Logger log = Logger.getLogger(BoxUpHandler.class);
     private Gateway gateway;
-    private ONExServerDaemon serverDaemon;
+    private BoxDaemon boxDaemon;
 
-    public BoxUpHandler(Gateway gateway, ONExServerDaemon serverDaemon) {
+    public BoxUpHandler(Gateway gateway, BoxDaemon boxDaemon) {
         this.gateway = gateway;
-        this.serverDaemon = serverDaemon;
+        this.boxDaemon = boxDaemon;
     }
 
     @Override
     public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
         if (e instanceof ChannelStateEvent &&
                 ((ChannelStateEvent) e).getState() != ChannelState.INTEREST_OPS) {
-            log.trace(e.toString());
+            log.debug(e.toString());
         }
         super.handleUpstream(ctx, e);
+    }
+
+    @Override
+    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
+        Channel chan = ctx.getChannel();
+        boxDaemon.setClientChannel(e.getChannel());
+        log.debug("[BoxDaemon] connected with " + chan.getRemoteAddress().toString());
     }
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
         ONExPacket op = ONExProtocolFactory.parser(((ChannelBuffer) e.getMessage()).array());
-        log.debug("[server] Got message " + op.toString());
+        log.debug("[BoxDaemon] Got message " + op.toString());
+
+        if (!op.isValid()){
+            log.error("Error in parsing wired ONExProtocol");
+            return;
+        }
 
         switch(op.getINS()){
             case ONExPacket.SPARE_PACKET_IN:
@@ -64,8 +76,6 @@ public class BoxUpHandler extends SimpleChannelHandler {
                 log.error("should not be received on client");
         }
 
-        log.info(op.toString());
-
         try {
             super.messageReceived(ctx, e);
         } catch (Exception e1) {
@@ -77,7 +87,8 @@ public class BoxUpHandler extends SimpleChannelHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
         // Close the connection when an exception is raised.
-        log.error("Exception from downstream.", e.getCause());
+        log.error("Exception:");
+        System.err.print(e.getCause().getMessage());
         e.getChannel().close();
     }
 }

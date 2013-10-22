@@ -7,7 +7,7 @@ import org.jboss.netty.channel.*;
 public class GatewayClientUpHandler extends SimpleChannelUpstreamHandler {
     private static Logger log;
 
-    public GatewayClientUpHandler(MessageHandler msgHandler) {
+    public GatewayClientUpHandler() {
         log = Logger.getLogger(GatewayClientUpHandler.class);
     }
 

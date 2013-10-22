@@ -15,7 +15,7 @@
  */
 package ONExBox.gateway.Port;
 
-import ONExBox.BoxDaemon.ONExServerDaemon;
+import ONExBox.BoxDaemon.BoxDaemon;
 import ONExProtocol.ONExPacket;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;
@@ -24,9 +24,10 @@ public class GatewayServerUpHandler extends SimpleChannelHandler {
 
     private Logger log = Logger.getLogger(GatewayServerUpHandler.class);
 
-    private ONExServerDaemon serverDaemon;
+    private BoxDaemon serverDaemon;
 
-    public GatewayServerUpHandler() {
+    public GatewayServerUpHandler(BoxDaemon serverDaemon){
+        this.serverDaemon = serverDaemon;
     }
 
     @Override

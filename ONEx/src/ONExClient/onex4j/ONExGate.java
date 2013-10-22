@@ -1,6 +1,6 @@
 package ONExClient.onex4j;
 
-import ONExClient.onex4j.Daemon.ONExDaemon;
+import ONExClient.onex4j.SDKDaemon.SDKDaemon;
 import org.apache.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
@@ -15,7 +15,7 @@ public class ONExGate {
     public static int ID;
 
     private MessageHandler messageHandler;
-    private ONExDaemon onExDaemon;
+    private SDKDaemon SDKDaemon;
     private TopologyDealer topologyDealer;
     private SwitchDealer switchDealer;
 
@@ -23,15 +23,15 @@ public class ONExGate {
         this.messageHandler = msgHandler;
         this.switchDealer = new SwitchDealer();
         this.topologyDealer = new TopologyDealer(switchDealer);
-        this.onExDaemon = new ONExDaemon(msgHandler, topologyDealer, switchDealer);
-        topologyDealer.setDaemon(onExDaemon);
+        this.SDKDaemon = new SDKDaemon(12345, msgHandler, topologyDealer, switchDealer);
+        topologyDealer.setDaemon(SDKDaemon);
     }
 
     public void dispatchOFMessage(OFMessage msg){
         switch(msg.getType()){
             case PACKET_IN:
                 if (ONExClient.onex4j.Monitor.isBusy()){
-                    onExDaemon.sparePacketIn(msg);
+                    SDKDaemon.sparePacketIn(msg);
                 }
                 else{
                     messageHandler.onLocalPacketIn(msg);

@@ -2,8 +2,9 @@ package ONExBox.gateway;
 
 // STEP build Gateway module first to get familiar with socket as well as onex4j
 
+import ONExBox.BoxDaemon.BoxDaemon;
+import ONExBox.ONExSetting;
 import ONExBox.Sharing.GlobalShare;
-import ONExClient.onex4j.MessageHandler;
 import ONExBox.gateway.Port.IOClient;
 import ONExBox.gateway.Port.IOServer;
 import ONExProtocol.ONExPacket;
@@ -20,17 +21,14 @@ public class Gateway {
     private IOServer ioServer;
     private Map<InetSocketAddress, IOClient> clientPool;
 
+    private BoxDaemon serverDaemon;
+
     public Gateway() {
         this.globalShare = new GlobalShare();
-
+        this.serverDaemon = new BoxDaemon(this, ONExSetting.DAEMON_PORT);
         this.clientPool = new HashMap<InetSocketAddress, IOClient>();
-        ioServer = new IOServer();
-        ioServer.init();
+        ioServer = new IOServer(serverDaemon);
         log.info("Gateway Server set up");
-    }
-
-    public GlobalShare getGlobalShare(){
-        return globalShare;
     }
 
     public InetSocketAddress sparePacketIn(ONExPacket op){
@@ -47,8 +45,8 @@ public class Gateway {
     }
 
     public void sendBackPacketIn(ONExPacket op){
-        log.info("Send packet back to " + op.getSrcHost().toString());
-        // ADD src field in OPSpearPacketIN
+        // TODO ADD src field in OPSpearPacketIN
+        log.info("sending back to " + op.getSrcHost().toString());
 
     }
 
@@ -59,7 +57,6 @@ public class Gateway {
         }
         else{
             client = new IOClient(addr);
-            client.init();
             clientPool.put(addr, client);
         }
 

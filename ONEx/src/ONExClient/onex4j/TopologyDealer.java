@@ -1,6 +1,6 @@
 package ONExClient.onex4j;
 
-import ONExClient.onex4j.Daemon.ONExDaemon;
+import ONExClient.onex4j.SDKDaemon.SDKDaemon;
 import ONExClient.onex4j.Interface.ITopology;
 
 /**
@@ -13,14 +13,14 @@ public class TopologyDealer implements ITopology {
     LocalTopo localTopo;
 
     SwitchDealer switchDealer;
-    ONExDaemon onExDaemon;
+    SDKDaemon SDKDaemon;
 
     public TopologyDealer(SwitchDealer sw_h) {
         this.switchDealer = sw_h;
     }
 
-    public void setDaemon(ONExDaemon daemon){
-        this.onExDaemon = daemon;
+    public void setDaemon(SDKDaemon daemon){
+        this.SDKDaemon = daemon;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class TopologyDealer implements ITopology {
 
     @Override
     public void updateLocalTopo() {
-        onExDaemon.sendONEx(null);
+        SDKDaemon.sendONEx(null);
     }
 
     @Override

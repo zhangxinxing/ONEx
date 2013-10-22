@@ -190,6 +190,11 @@ public class ONExPacket implements Serializable {
         return length;
     }
 
+    public boolean isValid(){
+        // TODO
+        return true;
+    }
+
     public byte[] toByteArray(){
         ByteBuffer buf = toByteBuffer();
         return buf.array();
@@ -212,7 +217,7 @@ public class ONExPacket implements Serializable {
         return tostring;
     }
 
-    class ONExHeader {
+    class ONExHeader implements Serializable{
 
         /* static final */
         private static final int HEADER_LENGTH = 1 + 4 + 4 + 4;

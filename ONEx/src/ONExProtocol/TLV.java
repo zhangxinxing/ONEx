@@ -1,5 +1,6 @@
 package ONExProtocol;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 /**
@@ -8,7 +9,7 @@ import java.nio.ByteBuffer;
  * Date: 13-10-19
  * Time: AM8:54
  */
-public class TLV{
+public class TLV implements Serializable{
     private static final int HEADER_LENGTH = 5;
     private byte type;
     private int len;

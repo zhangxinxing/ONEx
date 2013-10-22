@@ -1,13 +1,19 @@
-package ONExClient.onex4j.Daemon;
+package ONExClient.onex4j.SDKDaemon;
 
+import MyDebugger.Dumper;
+import ONExProtocol.ONExPacket;
+import ONExProtocol.ONExProtocolFactory;
 import org.apache.log4j.Logger;
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.*;
 
-public class CubeDaemonUpHandler extends SimpleChannelUpstreamHandler {
+class SDKUpHandler extends SimpleChannelUpstreamHandler {
     private static Logger log;
+    private SDKDaemon daemon;
 
-    public CubeDaemonUpHandler() {
-        log = Logger.getLogger(CubeDaemonUpHandler.class);
+    public SDKUpHandler(SDKDaemon daemon) {
+        log = Logger.getLogger(SDKUpHandler.class);
+        this.daemon = daemon;
     }
 
     @Override
@@ -21,14 +27,18 @@ public class CubeDaemonUpHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
         Channel chan = ctx.getChannel();
-        log.debug("[client] connected with " + chan.getRemoteAddress().toString());
+        log.debug("[SDKDaemon] connected with " + chan.getRemoteAddress().toString()
+                + "at: " + chan.getLocalAddress().toString());
     }
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
-        log.debug("[client] Get message " + e.getMessage().toString());
-        // TODO parse ONExProtocol here
+        log.debug("[SDKDaemon] Get message " + e.getMessage().toString());
+        ChannelBuffer buf = (ChannelBuffer)e.getMessage();
+        System.err.println(Dumper.byteArray(buf.array()));
+        ONExPacket op = ONExProtocolFactory.parser(buf.array());
+        daemon.dispatchONEx(op);
     }
 
     @Override

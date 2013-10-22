@@ -24,6 +24,7 @@ public class ONExSetting {
     public static String    BUSYTABLE_MAP;
     public static String    TOPO_MAP;
     public static int       PORT;
+    public static int       DAEMON_PORT;
     public static int       BUSY_UPDATE_INT;//ms
     public static boolean   PKTGEN;
 
@@ -75,6 +76,7 @@ public class ONExSetting {
         BUSYTABLE_MAP   = config.getProperty("BUSYTABLE_MAP");
         TOPO_MAP        = config.getProperty("TOPO_MAP");
         PORT            = Integer.parseInt(config.getProperty("PORT"));
+        DAEMON_PORT     = Integer.parseInt(config.getProperty("DAEMON_PORT"));
         PKTGEN          = Boolean.parseBoolean(config.getProperty("PKTGEN"));
         APPNAME         = config.getProperty("nameOfApps");
         SIZE_OF_POOL    = Integer.parseInt(config.getProperty("SIZE_OF_POOL"));

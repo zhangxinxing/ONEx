@@ -28,12 +28,12 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
 
-public class ONExServerDaemon {
-    private static Logger log = Logger.getLogger(ONExServerDaemon.class);
+public class BoxDaemon {
+    private static Logger log = Logger.getLogger(BoxDaemon.class);
     private ServerBootstrap bootstrap;
     private Channel clientChannel;
 
-    public ONExServerDaemon(Gateway gateway, int port){
+    public BoxDaemon(Gateway gateway, int port){
         // Configure the server.
         bootstrap = new ServerBootstrap(
                 new OioServerSocketChannelFactory(
@@ -41,51 +41,51 @@ public class ONExServerDaemon {
                         Executors.newSingleThreadExecutor()));
 
         // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(new IOServerPipelineFactory(gateway, this));
+        bootstrap.setPipelineFactory(new BoxPipelineFactory(gateway, this));
 
         // Bind and start to accept incoming connections.
-        clientChannel = bootstrap.bind(new InetSocketAddress(port));
-        log.debug("Bind to " + port);
+        Channel serverChannel = bootstrap.bind(new InetSocketAddress(port));
+        if (clientChannel != null && !clientChannel.isBound()){
+            clientChannel.close().awaitUninterruptibly();
+        }
+        log.info("[BoxDaemon] bind: " + serverChannel.toString());
     }
 
-    public void sendONEx(ONExPacket ONExP){
-        ByteBuffer buf = ByteBuffer.allocate(ONExP.getLength());
+    public void setClientChannel(Channel channel){
+        assert channel != null;
+        this.clientChannel = channel;
+        log.debug("ClientChannel set: " + channel.toString());
+    }
+
+    public void sendONEx(ONExPacket op){
+        ByteBuffer buf = ByteBuffer.allocate(op.getLength());
+        op.writeTo(buf);
         sendRaw(buf.array());
     }
 
     public void sendRaw(byte[] array){
+        assert clientChannel != null;
         ChannelBuffer buf = ChannelBuffers.copiedBuffer(array);
         ChannelFuture cf= clientChannel.write(buf);
-        cf.awaitUninterruptibly();
-        if (!cf.isSuccess()){
-            log.error("Failed to send " + buf.toString());
-            destroy();
-        }
-        else{
-            log.debug(buf.toString() + " sent");
-        }
+        cf.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture cf) throws Exception {
+                if (!cf.isSuccess()){
+                    log.error("[BoxDaemon]Failed to send to SDK");
+                    destroy();
+                }
+                else{
+                    log.debug("[BoxDaemon]sent to SDK");
+                }
+            }
+        });
+
     }
 
 
     public void destroy(){
+        clientChannel.close();
         bootstrap.releaseExternalResources();
     }
 }
 
-class IOServerPipelineFactory implements ChannelPipelineFactory{
-    private Gateway gateway;
-    private ONExServerDaemon serverDaemon;
-    public IOServerPipelineFactory(Gateway gateway, ONExServerDaemon serverDaemon) {
-        this.gateway = gateway;
-        this.serverDaemon = serverDaemon;
-    }
-
-    @Override
-    public ChannelPipeline getPipeline() throws Exception {
-        ChannelPipeline p = Channels.pipeline();
-        // upward
-        p.addLast("UpHandler", new BoxUpHandler(gateway, serverDaemon));
-        // downward
-        return p;
-    }
-}

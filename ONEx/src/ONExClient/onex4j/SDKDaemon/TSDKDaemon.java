@@ -1,5 +1,6 @@
-package ONExClient.onex4j.Daemon;
+package ONExClient.onex4j.SDKDaemon;
 
+import MyDebugger.Dumper;
 import ONExClient.onex4j.MessageHandler;
 import ONExClient.onex4j.SwitchDealer;
 import ONExClient.onex4j.TopologyDealer;
@@ -13,9 +14,10 @@ import org.openflow.protocol.OFPacketIn;
  * Date: 13-10-19
  * Time: AM12:41
  */
-public class TONExDaemon {
+public class TSDKDaemon {
     public static void main(String[] args) {
-        ONExDaemon daemon = new ONExDaemon(
+        SDKDaemon daemon = new SDKDaemon(
+                12345,
                 new MessageHandler(),
                 new TopologyDealer(new SwitchDealer()),
                 new SwitchDealer()
@@ -27,6 +29,7 @@ public class TONExDaemon {
         pi.setPacketData(ba);
         ONExPacket msg = ONExProtocolFactory.ONExSparePI(pi);
 
+        System.err.println(Dumper.byteArray(msg.toByteArray()));
         daemon.sendONEx(msg);
 
     }

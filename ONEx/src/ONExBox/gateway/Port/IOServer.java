@@ -15,6 +15,7 @@
  */
 package ONExBox.gateway.Port;
 
+import ONExBox.BoxDaemon.BoxDaemon;
 import ONExBox.ONExSetting;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -38,11 +39,8 @@ public class IOServer {
     private static Logger log = Logger.getLogger(IOServer.class);
     private ServerBootstrap bootstrap;
 
-    public IOServer(){
+    public IOServer(BoxDaemon serverDaemon){
         this.port = ONExSetting.PORT;
-    }
-
-    public void init() {
         // Configure the server.
         bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
@@ -50,7 +48,7 @@ public class IOServer {
                         Executors.newCachedThreadPool()));
 
         // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(new IOServerPipelineFactory());
+        bootstrap.setPipelineFactory(new IOServerPipelineFactory(serverDaemon));
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
@@ -63,7 +61,10 @@ public class IOServer {
 
 class IOServerPipelineFactory implements ChannelPipelineFactory{
 
-    public IOServerPipelineFactory() {
+    BoxDaemon serverDaemon;
+    public IOServerPipelineFactory(BoxDaemon serverDaemon) {
+        this.serverDaemon = serverDaemon;
+
     }
 
     @Override
@@ -74,7 +75,7 @@ class IOServerPipelineFactory implements ChannelPipelineFactory{
                 ClassResolvers.cacheDisabled(
                         getClass().getClassLoader())
         ));
-        p.addLast("UpHandler", new GatewayServerUpHandler());
+        p.addLast("UpHandler", new GatewayServerUpHandler(serverDaemon));
 
         // downward
         p.addLast("Encoder", new ObjectEncoder());

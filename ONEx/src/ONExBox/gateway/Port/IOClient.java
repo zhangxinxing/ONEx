@@ -15,7 +15,6 @@
  */
 package ONExBox.gateway.Port;
 
-import ONExClient.onex4j.MessageHandler;
 import ONExProtocol.ONExPacket;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.*;
@@ -27,24 +26,22 @@ import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
+import org.apache.log4j.Logger;
 public class IOClient {
 
-    private InetSocketAddress address;
+
     private Channel channel;
     private ClientBootstrap bootstrap;
-    private MessageHandler msgHandler;
+    private static Logger log = Logger.getLogger(IOClient.class);
 
     public IOClient(InetSocketAddress address) {
-        this.address = address;
-        this.msgHandler = msgHandler;
-    }
 
-    public void init() {
-        // Configure the client.
-        bootstrap = new ClientBootstrap(
+        bootstrap = new ClientBootstrap();
+        bootstrap.setFactory(
                 new NioClientSocketChannelFactory(
                         Executors.newCachedThreadPool(),
-                        Executors.newCachedThreadPool()));
+                        Executors.newCachedThreadPool())
+        );
 
         // Set up the pipeline factory.
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
@@ -56,7 +53,7 @@ public class IOClient {
                         ClassResolvers.cacheDisabled(
                                 getClass().getClassLoader())
                 ));
-                p.addLast("UpHandler", new GatewayClientUpHandler(msgHandler));
+                p.addLast("UpHandler", new GatewayClientUpHandler());
 
                 // downward
                 p.addLast("ObjectEncoder", new ObjectEncoder());
@@ -65,17 +62,32 @@ public class IOClient {
         });
 
         ChannelFuture future = bootstrap.connect(address);
-        channel = future.awaitUninterruptibly().getChannel();
-
-        if (!future.isSuccess()) {
-            future.getCause().printStackTrace();
-            bootstrap.releaseExternalResources();
-        }
+        channel = future.getChannel();
+        future.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                if (!future.isSuccess()) {
+                    log.error(future.getCause());
+                    bootstrap.releaseExternalResources();
+                }
+            }
+        });
     }
 
     public void send(ONExPacket msg){
+        if(!channel.isWritable()){
+            log.error("[Gateway, Client]Channel not writable");
+            System.exit(-1);
+        }
         ChannelFuture future = channel.write(msg);
-        future.awaitUninterruptibly();
+        future.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                if (!channelFuture.isSuccess()){
+                    log.error("[Gateway Client] sending fails");
+                }
+            }
+        });
     }
 
     public void destroy(){

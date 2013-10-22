@@ -1,4 +1,4 @@
-package ONExClient.onex4j.Daemon;
+package ONExClient.onex4j.SDKDaemon;
 
 import ONExClient.onex4j.Interface.IONExDaemon;
 import ONExClient.onex4j.MessageHandler;
@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
  * Date: 13-10-18
  * Time: PM11:47
  */
-public class ONExDaemon implements IONExDaemon {
+public class SDKDaemon implements IONExDaemon {
     private static final String host = "localhost";
     private Channel channel;
     private ClientBootstrap bootstrap;
@@ -33,9 +33,9 @@ public class ONExDaemon implements IONExDaemon {
     private MessageHandler messageHandler;
     private TopologyDealer topologyDealer;
     private SwitchDealer switchDealer;
-    private Logger log = Logger.getLogger(ONExDaemon.class);
+    private Logger log = Logger.getLogger(SDKDaemon.class);
 
-    public ONExDaemon(int port, MessageHandler msg_h, TopologyDealer topo_h, SwitchDealer sw_h) {
+    public SDKDaemon(int port, MessageHandler msg_h, TopologyDealer topo_h, SwitchDealer sw_h) {
         if (msg_h == null || topo_h == null || sw_h == null){
             log.error("Null arguments");
         }
@@ -44,28 +44,24 @@ public class ONExDaemon implements IONExDaemon {
         this.switchDealer = sw_h;
 
         // Configure the client.
-        bootstrap = new ClientBootstrap(
+        bootstrap = new ClientBootstrap();
+        bootstrap.setFactory(
                 new OioClientSocketChannelFactory(
-                        Executors.newSingleThreadExecutor(),
-                        ThreadNameDeterminer.CURRENT)
+                        Executors.newSingleThreadExecutor()
+                )
         );
 
-        // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(new pipelineFactory());
-        // connect
+        bootstrap.setPipelineFactory(new SDKPipelineFactory(this));
         ChannelFuture future = bootstrap.connect(new InetSocketAddress(host, port));
         channel = future.awaitUninterruptibly().getChannel();
 
-        if (!future.isSuccess()) {
-            destroy();
-            return;
-        }
         log.debug(String.format("connected with %s:%d", host, port));
     }
 
     @Override
-    public void sendONEx(ONExPacket OP) {
-        sendRaw(OP.toByteBuffer().array());
+    public void sendONEx(ONExPacket op) {
+        log.debug("send: " + op.toString());
+        sendRaw(op.toByteBuffer().array());
     }
 
     public void sendRaw(byte[] array){
@@ -85,6 +81,7 @@ public class ONExDaemon implements IONExDaemon {
     public void dispatchONEx(ONExPacket op) {
         switch(op.getINS()){
             case ONExPacket.SPARE_PACKET_IN:
+                log.debug("dispatching SPARE_PACKET_IN");
                 messageHandler.onRemotePacketIn(op.getOFPacketIn());
                 break;
 
@@ -138,14 +135,3 @@ public class ONExDaemon implements IONExDaemon {
     }
 }
 
-class pipelineFactory implements ChannelPipelineFactory{
-
-    @Override
-    public ChannelPipeline getPipeline() throws Exception {
-        ChannelPipeline p = Channels.pipeline();
-        // upward
-        p.addLast("UpHandler", new CubeDaemonUpHandler());
-        // downward
-        return p;
-    }
-}

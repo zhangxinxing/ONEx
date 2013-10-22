@@ -132,8 +132,6 @@ public class ONExProtocolFactory {
 
     public static ONExPacket parser(byte[] array){
         ByteBuffer buf = ByteBuffer.wrap(array);
-        log.debug(buf.toString());
-//        return null;
         return parser(ByteBuffer.wrap(array));
     }
 }
