@@ -54,7 +54,7 @@ public class BoxDaemon {
     public void setClientChannel(Channel channel){
         assert channel != null;
         this.clientChannel = channel;
-        log.debug("ClientChannel set: " + channel.toString());
+        log.debug("ClientChannel set, from: " + channel.getLocalAddress().toString());
     }
 
     public void sendONEx(ONExPacket op){
@@ -71,11 +71,11 @@ public class BoxDaemon {
             @Override
             public void operationComplete(ChannelFuture cf) throws Exception {
                 if (!cf.isSuccess()){
-                    log.error("[BoxDaemon]Failed to send to SDK");
+                    log.error("Failed to send to SDK");
                     destroy();
                 }
                 else{
-                    log.debug("[BoxDaemon]sent to SDK");
+                    log.debug("sent to SDK");
                 }
             }
         });

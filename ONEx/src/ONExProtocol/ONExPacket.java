@@ -12,6 +12,9 @@ import org.apache.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionType;
+import org.openflow.protocol.factory.OFActionFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -66,8 +69,10 @@ public class ONExPacket implements Serializable {
     }
 
     public void setSrcHost(InetSocketAddress address){
-        if (header.INS != SPARE_PACKET_IN && header.INS != RES_SPARE_PACKET_IN)
+        if (header.INS != SPARE_PACKET_IN && header.INS != RES_SPARE_PACKET_IN){
+            log.error("Error: Wrong type");
             return;
+        }
         ByteBuffer buf = ByteBuffer.allocate(8);
         byte[] addr = address.getAddress().getAddress();
         for (byte i : addr){
@@ -75,27 +80,39 @@ public class ONExPacket implements Serializable {
         }
         buf.putInt(address.getPort());
 
+        boolean ok = false;
+
         for (TLV tlv : TLVs){
             if (tlv.getType() == TLV.Type.SRC_HOST){
                 tlv.setValue(buf.array());
+                ok = true;
+                break;
             }
+        }
+        if (!ok){
+            log.error(this.toString() + " doesnt contain TLV SRC_HOST");
         }
     }
 
     public InetSocketAddress getSrcHost(){
-        if (header.INS != SPARE_PACKET_IN && header.INS != RES_SPARE_PACKET_IN)
+        if (header.INS != SPARE_PACKET_IN && header.INS != RES_SPARE_PACKET_IN){
+            log.error("Error: wrong type");
             return null;
+        }
 
         byte[] srcHost = null;
 
         for (TLV tlv : TLVs){
             if (tlv.getType() == TLV.Type.SRC_HOST){
                 srcHost = tlv.getValue();
+                break;
             }
         }
 
-        if (srcHost == null)
+        if (srcHost == null){
+            log.error("src == null");
             return null;
+        }
 
         byte[] addr = new byte[4];
         System.arraycopy(srcHost, 0, addr, 0, 4);
@@ -106,6 +123,7 @@ public class ONExPacket implements Serializable {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
+        log.error("dont know why here");
         return null;
     }
 
@@ -145,7 +163,7 @@ public class ONExPacket implements Serializable {
         if (flowMod == null)
             return null;
         OFFlowMod offm = new OFFlowMod();
-        offm.readFrom(ByteBuffer.wrap(flowMod));
+        // TODO offm.readFrom(ByteBuffer.wrap(flowMod));
         return offm;
     }
 
@@ -165,7 +183,7 @@ public class ONExPacket implements Serializable {
         if (po == null)
             return null;
         OFPacketOut ofpo = new OFPacketOut();
-        ofpo.readFrom(ByteBuffer.wrap(po));
+        // TODO ofpo.readFrom(ByteBuffer.wrap(po));
         return ofpo;
     }
 

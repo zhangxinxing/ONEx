@@ -2,6 +2,7 @@ package ONExProtocol;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import org.apache.log4j.Logger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,6 +11,7 @@ import java.nio.ByteBuffer;
  * Time: AM8:54
  */
 public class TLV implements Serializable{
+    private static Logger log = Logger.getLogger(TLV.class);
     private static final int HEADER_LENGTH = 5;
     private byte type;
     private int len;
@@ -55,6 +57,9 @@ public class TLV implements Serializable{
         TLVBB.putInt(len);
         if(value != null) {
             TLVBB.put(value);
+        }
+        else{
+            log.error("uninitialized TLV" + toString());
         }
     }
 

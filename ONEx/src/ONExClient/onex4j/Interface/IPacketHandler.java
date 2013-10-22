@@ -1,5 +1,6 @@
 package ONExClient.onex4j.Interface;
 
+import ONExProtocol.ONExPacket;
 import org.openflow.protocol.OFMessage;
 
 /**
@@ -11,7 +12,7 @@ import org.openflow.protocol.OFMessage;
 public interface IPacketHandler {
     void onLocalPacketIn(OFMessage msg);
 
-    void onRemotePacketIn(OFMessage msg);
+    void onRemotePacketIn(ONExPacket msg);
 
     void onRemotePacketOut(OFMessage msg);
 

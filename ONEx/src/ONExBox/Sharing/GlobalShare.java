@@ -145,7 +145,7 @@ public class GlobalShare{
             map.put(localAddr, localBt);
         }
         else{
-            log.debug("update busyTable for " + localAddr);
+            log.trace("update busyTable for " + localAddr);
             map.replace(localAddr, localBt);
         }
 

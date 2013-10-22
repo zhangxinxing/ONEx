@@ -58,6 +58,12 @@ public class ONExProtocolFactory {
                 POBB.array()
         ));
 
+        op.setTLV(new TLV(
+                TLV.Type.SRC_HOST,
+                8,
+                null // to be filled when Server daemon dispatch it
+        ));
+
         return op;
     }
 

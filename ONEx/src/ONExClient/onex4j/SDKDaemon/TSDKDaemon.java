@@ -18,7 +18,6 @@ public class TSDKDaemon {
     public static void main(String[] args) {
         SDKDaemon daemon = new SDKDaemon(
                 12345,
-                new MessageHandler(),
                 new TopologyDealer(new SwitchDealer()),
                 new SwitchDealer()
         );
@@ -29,7 +28,6 @@ public class TSDKDaemon {
         pi.setPacketData(ba);
         ONExPacket msg = ONExProtocolFactory.ONExSparePI(pi);
 
-        System.err.println(Dumper.byteArray(msg.toByteArray()));
         daemon.sendONEx(msg);
 
     }

@@ -23,7 +23,7 @@ class BoxUpHandler extends SimpleChannelHandler {
     public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
         if (e instanceof ChannelStateEvent &&
                 ((ChannelStateEvent) e).getState() != ChannelState.INTEREST_OPS) {
-            log.debug(e.toString());
+            log.debug(e.getChannel().toString() + ":" +  ((ChannelStateEvent) e).getState());
         }
         super.handleUpstream(ctx, e);
     }
@@ -48,8 +48,10 @@ class BoxUpHandler extends SimpleChannelHandler {
 
         switch(op.getINS()){
             case ONExPacket.SPARE_PACKET_IN:
-                log.debug("send to gateway spare");
+                log.debug("send to gateway SPARE_PACKET_IN");
                 op.setSrcHost(ONExSetting.getInstance().socketAddr);
+                log.debug("after add src: " + op.toString());
+                log.debug(op.getSrcHost());
                 gateway.sparePacketIn(op);
                 break;
 
@@ -88,7 +90,7 @@ class BoxUpHandler extends SimpleChannelHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
         // Close the connection when an exception is raised.
         log.error("Exception:");
-        System.err.print(e.getCause().getMessage());
+        e.getCause().printStackTrace();
         e.getChannel().close();
     }
 }

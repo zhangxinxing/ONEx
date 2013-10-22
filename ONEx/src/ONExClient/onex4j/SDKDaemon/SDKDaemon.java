@@ -35,11 +35,11 @@ public class SDKDaemon implements IONExDaemon {
     private SwitchDealer switchDealer;
     private Logger log = Logger.getLogger(SDKDaemon.class);
 
-    public SDKDaemon(int port, MessageHandler msg_h, TopologyDealer topo_h, SwitchDealer sw_h) {
-        if (msg_h == null || topo_h == null || sw_h == null){
+    public SDKDaemon(int port, TopologyDealer topo_h, SwitchDealer sw_h) {
+        if (topo_h == null || sw_h == null){
             log.error("Null arguments");
         }
-        this.messageHandler = msg_h;
+        this.messageHandler = new MessageHandler(this);
         this.topologyDealer = topo_h;
         this.switchDealer = sw_h;
 
@@ -82,7 +82,7 @@ public class SDKDaemon implements IONExDaemon {
         switch(op.getINS()){
             case ONExPacket.SPARE_PACKET_IN:
                 log.debug("dispatching SPARE_PACKET_IN");
-                messageHandler.onRemotePacketIn(op.getOFPacketIn());
+                messageHandler.onRemotePacketIn(op);
                 break;
 
             case ONExPacket.RES_SPARE_PACKET_IN:
@@ -90,10 +90,13 @@ public class SDKDaemon implements IONExDaemon {
                 OFFlowMod ofFlowMod = op.getFlowMod();
                 OFPacketOut ofPacketOut = op.getOFPacketOut();
 
+                assert ofPacketOut != null;
+                assert ofFlowMod != null;
+                log.debug(" get ofFlowMod " + ofFlowMod.toString());
+                log.debug(" and ofPacketOut " + ofPacketOut.toString());
                 if (op.getFlowMod() != null){
                     switchDealer.sendFlowMod(ofFlowMod);
                 }
-                assert ofPacketOut != null;
                 messageHandler.onRemotePacketOut(ofPacketOut);
                 break;
 

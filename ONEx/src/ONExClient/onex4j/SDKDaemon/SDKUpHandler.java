@@ -28,23 +28,22 @@ class SDKUpHandler extends SimpleChannelUpstreamHandler {
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
         Channel chan = ctx.getChannel();
         log.debug("[SDKDaemon] connected with " + chan.getRemoteAddress().toString()
-                + "at: " + chan.getLocalAddress().toString());
+                + " at: " + chan.getLocalAddress().toString());
     }
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
-        log.debug("[SDKDaemon] Get message " + e.getMessage().toString());
         ChannelBuffer buf = (ChannelBuffer)e.getMessage();
-        System.err.println(Dumper.byteArray(buf.array()));
         ONExPacket op = ONExProtocolFactory.parser(buf.array());
+        log.debug("Get message " + op.toString());
         daemon.dispatchONEx(op);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
         // Close the connection when an exception is raised.
-        log.error("Unexpected exception from downstream.", e.getCause());
+        log.error("Exception:", e.getCause());
         e.getChannel().close();
     }
 }

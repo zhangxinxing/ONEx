@@ -24,10 +24,10 @@ public class GatewayServerUpHandler extends SimpleChannelHandler {
 
     private Logger log = Logger.getLogger(GatewayServerUpHandler.class);
 
-    private BoxDaemon serverDaemon;
+    private BoxDaemon boxDaemon;
 
-    public GatewayServerUpHandler(BoxDaemon serverDaemon){
-        this.serverDaemon = serverDaemon;
+    public GatewayServerUpHandler(BoxDaemon boxDaemon){
+        this.boxDaemon = boxDaemon;
     }
 
     @Override
@@ -43,19 +43,21 @@ public class GatewayServerUpHandler extends SimpleChannelHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
-        log.debug("[server] Got message " + e.getMessage().toString());
+        log.debug("Got message " + e.getMessage().toString()
+                + " from: " + e.getRemoteAddress().toString());
         ONExPacket op = (ONExPacket)e.getMessage();
         switch(op.getINS()){
             case ONExPacket.SPARE_PACKET_IN:
                 // packet in from other server
                 // should be sent to client
-                log.debug("send to client daemon");
-                serverDaemon.sendONEx(op);
+                log.debug("send to SDKDaemon");
+                boxDaemon.sendONEx(op);
                 break;
 
             case ONExPacket.RES_SPARE_PACKET_IN:
                 // from other server, stupid forward
-                serverDaemon.sendONEx(op);
+                log.debug("get RES_SPARE_PACKET_IN, send back to BoxDaemon");
+                boxDaemon.sendONEx(op);
                 break;
             default:
                 log.error("should not be received on client");

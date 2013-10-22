@@ -23,7 +23,7 @@ public class ONExGate {
         this.messageHandler = msgHandler;
         this.switchDealer = new SwitchDealer();
         this.topologyDealer = new TopologyDealer(switchDealer);
-        this.SDKDaemon = new SDKDaemon(12345, msgHandler, topologyDealer, switchDealer);
+        this.SDKDaemon = new SDKDaemon(12345, topologyDealer, switchDealer);
         topologyDealer.setDaemon(SDKDaemon);
     }
 

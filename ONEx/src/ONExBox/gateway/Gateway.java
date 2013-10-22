@@ -39,14 +39,23 @@ public class Gateway {
         // TODO
         InetSocketAddress target = globalShare.getWhoIsIdle().get(0);
         assert target != null;
-        log.debug("idle target " + target.toString());
+        log.debug(">>>idle target " + target.toString());
         send(target, op);
         return target;
     }
 
     public void sendBackPacketIn(ONExPacket op){
         // TODO ADD src field in OPSpearPacketIN
-        log.info("sending back to " + op.getSrcHost().toString());
+        assert op != null;
+        assert op.getINS() == ONExPacket.RES_SPARE_PACKET_IN;
+        InetSocketAddress src = op.getSrcHost();
+        if(src == null){
+            log.error("src not set");
+        }
+        else{
+            log.info("sending back to " + op.getSrcHost().toString());
+            send(src, op);
+        }
 
     }
 
