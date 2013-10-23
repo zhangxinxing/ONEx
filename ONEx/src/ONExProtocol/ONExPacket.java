@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
+import ONExClient.onex4j.GlobalTopo;
 import org.apache.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;
@@ -24,7 +25,7 @@ public class ONExPacket implements Serializable {
     public static final int RES_SPARE_PACKET_IN = 0x00000001;
     public static final int UPLOAD_LOCAL_TOPO   = 0x00000002;
     public static final int GET_GLOBAL_TOPO     = 0x00000003;
-    public static final int RES_GET_GLOBAL_TOPO = 0x00000004;
+    public static final int RETURN_GLOBAL_TOPO = 0x00000004;
     public static final int REQ_GLOBAL_FLOW_MOD = 0x00000005;
     public static final int SC_FLOW_MOD         = 0x00000006;
     public static final int ONEX_INS_MAX        = SC_FLOW_MOD;
@@ -201,6 +202,25 @@ public class ONExPacket implements Serializable {
         }
 
         return new LocalTopo(topo);
+    }
+
+    public GlobalTopo getGlobalTopo(){
+        if (header.INS != RETURN_GLOBAL_TOPO){
+            log.error("this method should only be called in RETURN_GLOBAL_TOPO");
+            return null;
+        }
+        TLV topo = null;
+        for(TLV tlv : TLVs){
+            if (tlv.getType() == TLV.Type.GLOBAL_TOPO){
+                topo = tlv;
+                break;
+            }
+        }
+        if (topo == null){
+            log.error("GLOBAL_TOPO not found");
+            return null;
+        }
+        return new GlobalTopo(topo);
     }
 
     public void writeTo(ByteBuffer ONExBB){

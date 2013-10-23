@@ -10,7 +10,6 @@ import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
-import org.jboss.netty.util.ThreadNameDeterminer;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketOut;
@@ -108,7 +107,7 @@ public class SDKDaemon implements IONExDaemon {
                 log.error("Wrong type");
                 break;
 
-            case ONExPacket.RES_GET_GLOBAL_TOPO:
+            case ONExPacket.RETURN_GLOBAL_TOPO:
                 topologyDealer.parseGlobalTopo();
                 break;
 

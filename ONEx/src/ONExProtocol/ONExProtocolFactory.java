@@ -76,23 +76,18 @@ public class ONExProtocolFactory {
         return op;
     }
 
-    public static ONExPacket ONExGetGlobalTopo(){
+    public static ONExPacket ONExRequestGlobalTopo(){
         ONExPacket op = new ONExPacket(ONExPacket.GET_GLOBAL_TOPO, ONExGate.ID);
         return op;
     }
 
     public static ONExPacket ONExResGlobalTopo(GlobalTopo globalTopo){
         // S -> C
-        ONExPacket op = new ONExPacket(ONExPacket.GET_GLOBAL_TOPO, ONExGate.ID);
+        ONExPacket op = new ONExPacket(ONExPacket.RETURN_GLOBAL_TOPO, ONExGate.ID);
         op.setTLV(new TLV(
-                TLV.Type.GLOBAL_HOST_TOPO,
-                globalTopo.getHostListLength(),
-                globalTopo.hostToBuffer().array()
-        ));
-        op.setTLV(new TLV(
-                TLV.Type.GLOBAL_SW_TOPO,
-                globalTopo.getSwTopoLength(),
-                globalTopo.swToBuffer().array()
+                TLV.Type.GLOBAL_TOPO,
+                globalTopo.getLength(),
+                globalTopo.toByteBuffer().array()
         ));
 
         return op;

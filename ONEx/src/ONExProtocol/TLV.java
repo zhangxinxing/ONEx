@@ -82,8 +82,7 @@ public class TLV implements Serializable{
         public static final byte FLOW_MOD = 0x01;
         public static final byte PACKET_OUT         = 0x02;
         public static final byte LOCAL_TOPO         = 0x03;
-        public static final byte GLOBAL_SW_TOPO     = 0x04;
-        public static final byte GLOBAL_HOST_TOPO   = 0x05;
+        public static final byte GLOBAL_TOPO     = 0x04;
         public static final byte SRC_HOST   = 0x06;
     }
 

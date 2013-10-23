@@ -25,7 +25,7 @@ public class TONExProtocol {
     public static void main(String[] args){
         BasicFactory factory = new BasicFactory();
 
-        // 1
+        // 1 ONExSparePI
         byte[] ba = {0x01,0x01,0x01};
         OFPacketIn pi = new OFPacketIn();
         pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
@@ -41,7 +41,7 @@ public class TONExProtocol {
         log.info(msg.toString());
         log.info("extractd ipv4:" + msg.getSrcHost().toString());
 
-        // 2
+        // 2 ONExResSparePI
         OFFlowMod ofFlowMod = new OFFlowMod();
         ofFlowMod.setMatch(new OFMatch());
         OFPacketOut po = new OFPacketOut();
@@ -57,7 +57,7 @@ public class TONExProtocol {
         log.info(msg.getFlowMod());//get flowmod
         log.info(msg.getOFPacketOut());
 
-        // 3
+        // 3 ONExUploadLocalTopo
         InetAddress addr = null;
         try {
             addr = InetAddress.getByAddress(new byte[]{56,57,58,59});
@@ -92,24 +92,29 @@ public class TONExProtocol {
         log.info(msg);
         log.info(msg.getLocalTopo());
 
-        // 4
-        msg = ONExProtocolFactory.ONExGetGlobalTopo();
+        // 4  ONExRequestGlobalTopo
+        msg = ONExProtocolFactory.ONExRequestGlobalTopo();
         log.info(msg.toString());
         msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
         log.info(ONExProtocolFactory.parser(msgBB).toString());
 
-        // 5
+        // 5 ONExResGlobalTopo
         GlobalTopo globalTopo = new GlobalTopo();
+        globalTopo.addHostEntry(123L,(short)1, 123, new byte[] {1,2,3,4,5,6});
+        globalTopo.addSwitchLink(123L, (short)123, 124L, (short)124);
         msg = ONExProtocolFactory.ONExResGlobalTopo(globalTopo);
         log.info(msg.toString());
+        log.info(msg.getGlobalTopo());
         msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log.info(ONExProtocolFactory.parser(msgBB).toString());
+        msg = ONExProtocolFactory.parser(msgBB);
+        log.info(msg.toString());
+        log.info(msg.getGlobalTopo());
 
-        // 6
+        // 6  ONExReqGlobalFlowMod
         msg = ONExProtocolFactory.ONExReqGlobalFlowMod();
         log.info(msg.toString());
         msgBB = ByteBuffer.allocate(msg.getLength());
@@ -117,7 +122,7 @@ public class TONExProtocol {
         msgBB.flip();
         log.info(ONExProtocolFactory.parser(msgBB).toString());
 
-        // 7
+        // 7  ONExSCFlowMod
         msg = ONExProtocolFactory.ONExSCFlowMod(ofFlowMod);
         log.info(msg.toString());
         msgBB = ByteBuffer.allocate(msg.getLength());
