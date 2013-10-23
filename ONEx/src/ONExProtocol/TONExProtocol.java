@@ -115,12 +115,21 @@ public class TONExProtocol {
         log.info(msg.getGlobalTopo());
 
         // 6  ONExReqGlobalFlowMod
-        msg = ONExProtocolFactory.ONExReqGlobalFlowMod();
+        ofFlowMod = new OFFlowMod();
+        ofFlowMod.setMatch(new OFMatch());
+
+        GlobalFlowMod globalFlowMod = new GlobalFlowMod();
+        globalFlowMod.addGlobalFlowModEntry(123L, ofFlowMod);
+        globalFlowMod.zip();
+
+        msg = ONExProtocolFactory.ONExReqGlobalFlowMod(globalFlowMod);
         log.info(msg.toString());
         msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log.info(ONExProtocolFactory.parser(msgBB).toString());
+        msg = ONExProtocolFactory.parser(msgBB);
+        // TODO msg.getGlobalFlowMod();
+        log.info(msg.toString());
 
         // 7  ONExSCFlowMod
         msg = ONExProtocolFactory.ONExSCFlowMod(ofFlowMod);

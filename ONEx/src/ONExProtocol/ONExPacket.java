@@ -223,6 +223,27 @@ public class ONExPacket implements Serializable {
         return new GlobalTopo(topo);
     }
 
+    public GlobalFlowMod getGlobalFlowMod(){
+        if (getINS() != ONExPacket.REQ_GLOBAL_FLOW_MOD){
+            log.error("this method should only be called in REQ_GLOBAL_FLOW_MOD");
+            return null;
+        }
+
+        TLV globalFMtlv = null;
+        for(TLV tlv : TLVs){
+            if (tlv.getType() == TLV.Type.GLOBAL_FLOW_MOD){
+                globalFMtlv = tlv;
+                break;
+            }
+        }
+        if (globalFMtlv == null){
+            log.error("GLOBAL_FLOW_MOD not found");
+            return null;
+        }
+        //TODO GlobalFlowMod globalFlowMod = (GlobalFlowMod)globalFMtlv;
+        return null;//globalFlowMod.unzip();
+    }
+
     public void writeTo(ByteBuffer ONExBB){
         header.writeTo(ONExBB);
         for (TLV tlv : TLVs){

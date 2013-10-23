@@ -97,9 +97,13 @@ public class ONExProtocolFactory {
         return op;
     }
 
-    public static ONExPacket ONExReqGlobalFlowMod(){
+    public static ONExPacket ONExReqGlobalFlowMod(GlobalFlowMod globalFlowMod){
         ONExPacket op = new ONExPacket(ONExPacket.REQ_GLOBAL_FLOW_MOD, ONExGate.ID);
-        // TODO provide further information
+        if (!globalFlowMod.isValid()){
+            log.error("GlobalFlowMod is not complete");
+            return null;
+        }
+        op.setTLV(globalFlowMod);
         return op;
 
     }

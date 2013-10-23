@@ -11,11 +11,12 @@ import org.apache.log4j.Logger;
  * Time: AM8:54
  */
 public class TLV implements Serializable{
-    private static Logger log = Logger.getLogger(TLV.class);
+    protected static Logger log = Logger.getLogger(TLV.class);
     private static final int HEADER_LENGTH = 5;
-    private byte type;
-    private int len;
-    private byte[] value;
+    protected byte type;
+    protected int len;
+    protected byte[] value;
+
 
     public TLV(byte Type, int len, byte[] values){
         this.type = Type;
@@ -34,8 +35,9 @@ public class TLV implements Serializable{
     }
 
     public boolean isValid(){
-        if (value == null && type == Type.SRC_HOST)
-            return true;
+        if (value == null){
+            return (type == Type.SRC_HOST);
+        }
         return (len == value.length);
     }
 
@@ -52,7 +54,6 @@ public class TLV implements Serializable{
     }
 
     public void writeTo(ByteBuffer TLVBB){
-        assert TLVBB.limit() - TLVBB.position() >= getLength();
         TLVBB.put(type);
         TLVBB.putInt(len);
         if(value != null) {
@@ -70,6 +71,11 @@ public class TLV implements Serializable{
         return len + HEADER_LENGTH;
     }
 
+    public TLV unzip(){
+        // from byte[] to POJO
+        return null;
+    }
+
     public String toString(){
         assert len == value.length;
         String to = String.format("[TLV,T=%d,L=%d/%d,V=", getType(), len, getLength());
@@ -84,6 +90,7 @@ public class TLV implements Serializable{
         public static final byte LOCAL_TOPO         = 0x03;
         public static final byte GLOBAL_TOPO     = 0x04;
         public static final byte SRC_HOST   = 0x06;
+        public static final byte GLOBAL_FLOW_MOD = 0x07;
     }
 
 }
