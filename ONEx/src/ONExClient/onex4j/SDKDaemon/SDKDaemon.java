@@ -103,11 +103,12 @@ public class SDKDaemon implements IONExDaemon {
                 log.error("Wrong type");
                 break;
 
-            case ONExPacket.GET_GLOBAL_TOPO:
+            case ONExPacket.REQUEST_GLOBAL_TOPO:
                 log.error("Wrong type");
                 break;
 
             case ONExPacket.RETURN_GLOBAL_TOPO:
+                log.info("Global topology got: " + op.getGlobalTopo());
                 topologyDealer.parseGlobalTopo();
                 break;
 

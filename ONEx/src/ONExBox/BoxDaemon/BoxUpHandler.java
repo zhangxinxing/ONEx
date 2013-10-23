@@ -2,6 +2,7 @@ package ONExBox.BoxDaemon;
 
 import ONExBox.ONExSetting;
 import ONExBox.gateway.Gateway;
+import ONExClient.onex4j.GlobalTopo;
 import ONExProtocol.LocalTopo;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;
@@ -71,8 +72,10 @@ class BoxUpHandler extends SimpleChannelHandler {
                 log.info(localTopo);
                 break;
 
-            case ONExPacket.GET_GLOBAL_TOPO:
-                // TODO handle topology stuff
+            case ONExPacket.REQUEST_GLOBAL_TOPO:
+                // should give back RETURN_GLOBAL_TOPO
+                GlobalTopo topo = gateway.getGlobalTopo();
+                boxDaemon.returnGlobalTopo(topo);
                 break;
 
             case ONExPacket.REQ_GLOBAL_FLOW_MOD:

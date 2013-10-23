@@ -137,7 +137,7 @@ class HostEntry {
 
     public String toString(){
         return String.format(
-                "[hostEntry, %d, %d, %d, %s]",
+                "[hostEntry, dpid=%d, port=%d, ipv4=%d, MAC=%s]",
                 dpid,
                 port,
                 IPv4,

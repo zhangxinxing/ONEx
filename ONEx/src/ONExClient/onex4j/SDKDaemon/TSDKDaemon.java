@@ -31,24 +31,27 @@ public class TSDKDaemon {
 //
 //        daemon.sendONEx(msg);
 
-        InetAddress addr = null;
-        try {
-            addr = InetAddress.getByAddress(new byte[]{56,57,58,59});
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+//        InetAddress addr = null;
+//        try {
+//            addr = InetAddress.getByAddress(new byte[]{56,57,58,59});
+//        } catch (UnknownHostException e) {
+//            e.printStackTrace();
+//        }
+//
+//        LocalTopo localTopo = new LocalTopo();
+//        localTopo.addOrUpdateSwitch(12345L);
+//        localTopo.udpatePortInfo(
+//                12345L,
+//                (short)123,
+//                LocalTopo.Status.HOST,
+//                addr,
+//                new byte[] {1,2,3,4,5,6}
+//        );
+//
+//        ONExPacket msg = ONExProtocolFactory.ONExUploadLocalTopo(localTopo);
+//        daemon.sendONEx(msg);
 
-        LocalTopo localTopo = new LocalTopo();
-        localTopo.addOrUpdateSwitch(12345L);
-        localTopo.udpatePortInfo(
-                12345L,
-                (short)123,
-                LocalTopo.Status.HOST,
-                addr,
-                new byte[] {1,2,3,4,5,6}
-        );
-
-        ONExPacket msg = ONExProtocolFactory.ONExUploadLocalTopo(localTopo);
+        ONExPacket msg = ONExProtocolFactory.ONExRequestGlobalTopo();
         daemon.sendONEx(msg);
 
     }

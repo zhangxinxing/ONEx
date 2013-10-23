@@ -16,7 +16,9 @@
 package ONExBox.BoxDaemon;
 
 import ONExBox.gateway.Gateway;
+import ONExClient.onex4j.GlobalTopo;
 import ONExProtocol.ONExPacket;
+import ONExProtocol.ONExProtocolFactory;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -80,6 +82,12 @@ public class BoxDaemon {
             }
         });
 
+    }
+
+    public void returnGlobalTopo(GlobalTopo topo){
+        log.debug("return global topo");
+        ONExPacket op = ONExProtocolFactory.ONExResGlobalTopo(topo);
+        sendONEx(op);
     }
 
 

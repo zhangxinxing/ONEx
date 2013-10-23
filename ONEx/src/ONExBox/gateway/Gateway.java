@@ -7,6 +7,7 @@ import ONExBox.ONExSetting;
 import ONExBox.Sharing.GlobalShare;
 import ONExBox.gateway.Port.IOClient;
 import ONExBox.gateway.Port.IOServer;
+import ONExClient.onex4j.GlobalTopo;
 import ONExProtocol.ONExPacket;
 import org.apache.log4j.Logger;
 
@@ -57,6 +58,14 @@ public class Gateway {
             send(src, op);
         }
 
+    }
+
+    public GlobalTopo getGlobalTopo(){
+        // TODO for test only
+        GlobalTopo globalTopo = new GlobalTopo();
+        globalTopo.addHostEntry(123L,(short)1, 123, new byte[] {1,2,3,4,5,6});
+        globalTopo.addSwitchLink(123L, (short)123, 124L, (short)124);
+        return globalTopo;
     }
 
     private void send(InetSocketAddress addr, ONExPacket op){
