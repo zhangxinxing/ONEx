@@ -120,7 +120,6 @@ public class TONExProtocol {
 
         GlobalFlowMod globalFlowMod = new GlobalFlowMod();
         globalFlowMod.addGlobalFlowModEntry(123L, ofFlowMod);
-        globalFlowMod.zip();
 
         msg = ONExProtocolFactory.ONExReqGlobalFlowMod(globalFlowMod);
         log.info(msg.toString());
@@ -128,8 +127,9 @@ public class TONExProtocol {
         msg.writeTo(msgBB);
         msgBB.flip();
         msg = ONExProtocolFactory.parser(msgBB);
-        // TODO msg.getGlobalFlowMod();
+        GlobalFlowMod g = msg.getGlobalFlowMod();
         log.info(msg.toString());
+        log.info(g.toString());
 
         // 7  ONExSCFlowMod
         msg = ONExProtocolFactory.ONExSCFlowMod(ofFlowMod);

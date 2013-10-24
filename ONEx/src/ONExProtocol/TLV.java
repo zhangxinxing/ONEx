@@ -11,11 +11,11 @@ import org.apache.log4j.Logger;
  * Time: AM8:54
  */
 public class TLV implements Serializable{
-    protected static Logger log = Logger.getLogger(TLV.class);
+    private static Logger log = Logger.getLogger(TLV.class);
     private static final int HEADER_LENGTH = 5;
-    protected byte type;
-    protected int len;
-    protected byte[] value;
+    private byte type;
+    private int len;
+    private byte[] value;
 
 
     public TLV(byte Type, int len, byte[] values){

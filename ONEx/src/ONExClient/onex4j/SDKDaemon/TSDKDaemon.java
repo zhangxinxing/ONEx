@@ -1,10 +1,13 @@
 package ONExClient.onex4j.SDKDaemon;
 
+import ONExProtocol.GlobalFlowMod;
 import ONExProtocol.LocalTopo;
 import ONExClient.onex4j.SwitchDealer;
 import ONExClient.onex4j.TopologyDealer;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;
+import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFMatch;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -51,7 +54,13 @@ public class TSDKDaemon {
 //        ONExPacket msg = ONExProtocolFactory.ONExUploadLocalTopo(localTopo);
 //        daemon.sendONEx(msg);
 
-        ONExPacket msg = ONExProtocolFactory.ONExRequestGlobalTopo();
+        OFFlowMod ofFlowMod = new OFFlowMod();
+        ofFlowMod.setMatch(new OFMatch());
+
+        GlobalFlowMod globalFlowMod = new GlobalFlowMod();
+        globalFlowMod.addGlobalFlowModEntry(123L, ofFlowMod);
+
+        ONExPacket msg = ONExProtocolFactory.ONExReqGlobalFlowMod(globalFlowMod);
         daemon.sendONEx(msg);
 
     }

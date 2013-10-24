@@ -11,13 +11,21 @@ import java.util.List;
  * Date: 13-10-23
  * Time: PM9:20
  */
-public class GlobalFlowMod extends TLV{
-
+public class GlobalFlowMod implements ITLV{
     private List<GlobalFlowModEntry> flowModEntries;
 
     public GlobalFlowMod(){
-        super(Type.GLOBAL_FLOW_MOD, 0, null);
         this.flowModEntries = new LinkedList<GlobalFlowModEntry>();
+    }
+
+    public GlobalFlowMod(TLV tlv){
+        this.flowModEntries = new LinkedList<GlobalFlowModEntry>();
+        ByteBuffer buf = ByteBuffer.wrap(tlv.getValue());
+        while(buf.hasRemaining()){
+            flowModEntries.add(
+                    new GlobalFlowModEntry(buf)
+            );
+        }
     }
 
     public void addGlobalFlowModEntry(long dpid, OFFlowMod ofFlowMod){
@@ -27,38 +35,36 @@ public class GlobalFlowMod extends TLV{
                 ofFlowMod
         );
         flowModEntries.add(newEntry);
-        len += newEntry.getLength();
     }
 
-    public void zip(){
-        ByteBuffer buf = ByteBuffer.allocate(len);
+    @Override
+    public ByteBuffer toByteBuffer() {
+        ByteBuffer buf = ByteBuffer.allocate(getLength());
         for (GlobalFlowModEntry entry : flowModEntries){
             entry.writeTo(buf);
         }
-        value = buf.array();
-        if (!isValid()){
-            log.error(String.format(
-                    "GlobalFlowMod zip not valid: except=%d, get=%d",
-                    len,
-                    value.length
-            ));
-        }
+        return buf;
     }
 
-    public GlobalFlowMod unzip(){
-        ByteBuffer buf = ByteBuffer.wrap(value);
-        while(buf.hasRemaining()){
-            flowModEntries.add(new GlobalFlowModEntry(buf));
-        }
-        return null;
-    }
-
-    public void writeTo(ByteBuffer buf){
-        buf.put(type);
-        buf.putInt(len);
+    @Override
+    public int getLength() {
+        int len = 0;
         for (GlobalFlowModEntry entry : flowModEntries){
-            entry.writeTo(buf);
+            len += entry.getLength();
         }
+        return len;
+    }
+
+    public String toString(){
+        String to = String.format(
+                "[GlobalFlowMod, #entry=%d]",
+                flowModEntries.size()
+                );
+        for (GlobalFlowModEntry entry : flowModEntries){
+            to += entry.toString();
+        }
+
+        return to;
     }
 
 }
@@ -91,6 +97,15 @@ class GlobalFlowModEntry{
 
     public int getLength(){
         return 8 + 4 + ofFlowMod.getLengthU();
+    }
+
+    public String toString(){
+        return String.format(
+                "[GlobalFlowModEntry, dpid=%d, ,len_ofm=%d, ofm=%s]",
+                dpid,
+                len_OFM,
+                (ofFlowMod==null)? "null" : ofFlowMod.toString()
+        );
     }
 
 }

@@ -77,6 +77,7 @@ public class ONExProtocolFactory {
     }
 
     public static ONExPacket ONExRequestGlobalTopo(){
+        // with no TLV
         ONExPacket op = new ONExPacket(ONExPacket.REQUEST_GLOBAL_TOPO, ONExGate.ID);
         return op;
     }
@@ -98,12 +99,16 @@ public class ONExProtocolFactory {
     }
 
     public static ONExPacket ONExReqGlobalFlowMod(GlobalFlowMod globalFlowMod){
-        ONExPacket op = new ONExPacket(ONExPacket.REQ_GLOBAL_FLOW_MOD, ONExGate.ID);
-        if (!globalFlowMod.isValid()){
-            log.error("GlobalFlowMod is not complete");
+        if (globalFlowMod == null){
+            log.error("globalFlowMod cannot be null");
             return null;
         }
-        op.setTLV(globalFlowMod);
+        ONExPacket op = new ONExPacket(ONExPacket.REQ_GLOBAL_FLOW_MOD, ONExGate.ID);
+        op.setTLV(new TLV(
+                TLV.Type.GLOBAL_FLOW_MOD,
+                globalFlowMod.getLength(),
+                globalFlowMod.toByteBuffer().array()
+        ));
         return op;
 
     }

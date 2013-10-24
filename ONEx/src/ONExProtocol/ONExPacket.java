@@ -240,8 +240,7 @@ public class ONExPacket implements Serializable {
             log.error("GLOBAL_FLOW_MOD not found");
             return null;
         }
-        //TODO GlobalFlowMod globalFlowMod = (GlobalFlowMod)globalFMtlv;
-        return null;//globalFlowMod.unzip();
+        return new GlobalFlowMod(globalFMtlv);
     }
 
     public void writeTo(ByteBuffer ONExBB){
@@ -268,11 +267,6 @@ public class ONExPacket implements Serializable {
     public boolean isValid(){
         // TODO
         return true;
-    }
-
-    public byte[] toByteArray(){
-        ByteBuffer buf = toByteBuffer();
-        return buf.array();
     }
 
     public ByteBuffer toByteBuffer(){

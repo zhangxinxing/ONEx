@@ -79,7 +79,7 @@ class BoxUpHandler extends SimpleChannelHandler {
                 break;
 
             case ONExPacket.REQ_GLOBAL_FLOW_MOD:
-                // TODO handle topology stuff
+                log.debug(op.getGlobalFlowMod().toString());
                 break;
 
             default:
