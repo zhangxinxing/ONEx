@@ -1,14 +1,14 @@
 package ONExClient.onex4j.SDKDaemon;
 
-import ONExClient.onex4j.Interface.IONExDaemon;
 import ONExClient.onex4j.MessageHandler;
-import ONExProtocol.ONExPacket;
 import ONExClient.onex4j.SwitchDealer;
 import ONExClient.onex4j.TopologyDealer;
+import ONExProtocol.ONExPacket;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.*;
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMessage;
@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
  * Date: 13-10-18
  * Time: PM11:47
  */
-public class SDKDaemon implements IONExDaemon {
+public class SDKDaemon {
     private static final String host = "localhost";
     private Channel channel;
     private ClientBootstrap bootstrap;
@@ -34,13 +34,15 @@ public class SDKDaemon implements IONExDaemon {
     private SwitchDealer switchDealer;
     private Logger log = Logger.getLogger(SDKDaemon.class);
 
-    public SDKDaemon(int port, TopologyDealer topo_h, SwitchDealer sw_h) {
-        if (topo_h == null || sw_h == null){
+    public SDKDaemon(MessageHandler msgHandler, int port, TopologyDealer topology, SwitchDealer switches) {
+        if (topologyDealer == null || switches == null){
             log.error("Null arguments");
         }
-        this.messageHandler = new MessageHandler(this);
-        this.topologyDealer = topo_h;
-        this.switchDealer = sw_h;
+        messageHandler = msgHandler;
+        messageHandler.setDaemon(this);
+        topologyDealer = topology;
+        topologyDealer.setDaemon(this);
+        switchDealer = switches;
 
         // Configure the client.
         bootstrap = new ClientBootstrap();
@@ -57,7 +59,6 @@ public class SDKDaemon implements IONExDaemon {
         log.debug(String.format("connected with %s:%d", host, port));
     }
 
-    @Override
     public void sendONEx(ONExPacket op) {
         log.debug("send: " + op.toString());
         sendRaw(op.toByteBuffer().array());
@@ -68,7 +69,6 @@ public class SDKDaemon implements IONExDaemon {
         future.awaitUninterruptibly();
     }
 
-    @Override
     public void sparePacketIn(OFMessage msg) {
         ByteBuffer MsgBB = ByteBuffer.allocate(msg.getLengthU());
         log.info(MsgBB.toString());
@@ -76,7 +76,6 @@ public class SDKDaemon implements IONExDaemon {
         log.info(MsgBB.toString());
     }
 
-    @Override
     public void dispatchONEx(ONExPacket op) {
         switch(op.getINS()){
             case ONExPacket.SPARE_PACKET_IN:
@@ -109,7 +108,7 @@ public class SDKDaemon implements IONExDaemon {
 
             case ONExPacket.RETURN_GLOBAL_TOPO:
                 log.info("Global topology got: " + op.getGlobalTopo());
-                topologyDealer.parseGlobalTopo();
+                topologyDealer.parseGlobalTopo(op.getGlobalTopo());
                 break;
 
             case ONExPacket.REQ_GLOBAL_FLOW_MOD:

@@ -16,7 +16,7 @@
 package ONExBox.BoxDaemon;
 
 import ONExBox.gateway.Gateway;
-import ONExClient.onex4j.GlobalTopo;
+import ONExProtocol.GlobalTopo;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;
 import org.apache.log4j.Logger;

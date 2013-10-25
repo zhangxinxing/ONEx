@@ -20,11 +20,11 @@ import java.net.UnknownHostException;
  */
 public class TSDKDaemon {
     public static void main(String[] args) {
-        SDKDaemon daemon = new SDKDaemon(
-                12345,
-                new TopologyDealer(new SwitchDealer()),
-                new SwitchDealer()
-        );
+//        SDKDaemon daemon = new SDKDaemon(
+//                12345,
+//                new TopologyDealer(new SwitchDealer()),
+//                new SwitchDealer()
+//        );
 
 //        byte[] ba = {0x01,0x01,0x01};
 //        OFPacketIn pi = new OFPacketIn();
@@ -54,14 +54,14 @@ public class TSDKDaemon {
 //        ONExPacket msg = ONExProtocolFactory.ONExUploadLocalTopo(localTopo);
 //        daemon.sendONEx(msg);
 
-        OFFlowMod ofFlowMod = new OFFlowMod();
-        ofFlowMod.setMatch(new OFMatch());
-
-        GlobalFlowMod globalFlowMod = new GlobalFlowMod();
-        globalFlowMod.addGlobalFlowModEntry(123L, ofFlowMod);
-
-        ONExPacket msg = ONExProtocolFactory.ONExReqGlobalFlowMod(globalFlowMod);
-        daemon.sendONEx(msg);
+//        OFFlowMod ofFlowMod = new OFFlowMod();
+//        ofFlowMod.setMatch(new OFMatch());
+//
+//        GlobalFlowMod globalFlowMod = new GlobalFlowMod();
+//        globalFlowMod.addGlobalFlowModEntry(123L, ofFlowMod);
+//
+//        ONExPacket msg = ONExProtocolFactory.ONExReqGlobalFlowMod(globalFlowMod);
+//        daemon.sendONEx(msg);
 
     }
 

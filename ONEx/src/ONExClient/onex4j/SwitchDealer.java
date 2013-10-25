@@ -1,6 +1,5 @@
 package ONExClient.onex4j;
 
-import ONExClient.onex4j.Interface.ISwitchDealer;
 import org.openflow.protocol.OFFlowMod;
 
 /**
@@ -10,15 +9,9 @@ import org.openflow.protocol.OFFlowMod;
  * Time: AM12:32
  * To change this template use File | ONExSetting | File Templates.
  */
-public class SwitchDealer implements ISwitchDealer {
-    @Override
-    public void getTopo() {
-        //To change body of implemented methods use File | ONExSetting | File Templates.
-    }
+public abstract class SwitchDealer {
 
-    @Override
-    public void sendFlowMod(OFFlowMod off) {
+    public abstract void getTopo();
 
-        //To change body of implemented methods use File | ONExSetting | File Templates.
-    }
+    public abstract void sendFlowMod(OFFlowMod ofFlowMod);
 }

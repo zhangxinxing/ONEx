@@ -1,6 +1,5 @@
 package ONExProtocol;
 
-import ONExClient.onex4j.GlobalTopo;
 import org.openflow.protocol.*;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.factory.BasicFactory;

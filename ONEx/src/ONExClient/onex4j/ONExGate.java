@@ -16,15 +16,13 @@ public class ONExGate {
 
     private MessageHandler messageHandler;
     private SDKDaemon SDKDaemon;
-    private TopologyDealer topologyDealer;
-    private SwitchDealer switchDealer;
 
-    public ONExGate(MessageHandler msgHandler) {
+    /*
+        ONExGate is the entrance of ONEx
+     */
+    public ONExGate(MessageHandler msgHandler, TopologyDealer topo, SwitchDealer swDealer, int port) {
         this.messageHandler = msgHandler;
-        this.switchDealer = new SwitchDealer();
-        this.topologyDealer = new TopologyDealer(switchDealer);
-        this.SDKDaemon = new SDKDaemon(12345, topologyDealer, switchDealer);
-        topologyDealer.setDaemon(SDKDaemon);
+        this.SDKDaemon = new SDKDaemon(msgHandler, port, topo, swDealer);
     }
 
     public void dispatchOFMessage(OFMessage msg){

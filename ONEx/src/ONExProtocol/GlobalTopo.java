@@ -1,10 +1,9 @@
-package ONExClient.onex4j;
+package ONExProtocol;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
-import ONExProtocol.TLV;
 import org.apache.log4j.Logger;
 
 /**

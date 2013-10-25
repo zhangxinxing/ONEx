@@ -2,7 +2,7 @@ package ONExBox.BoxDaemon;
 
 import ONExBox.ONExSetting;
 import ONExBox.gateway.Gateway;
-import ONExClient.onex4j.GlobalTopo;
+import ONExProtocol.GlobalTopo;
 import ONExProtocol.LocalTopo;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;

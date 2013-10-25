@@ -7,7 +7,7 @@ import ONExBox.ONExSetting;
 import ONExBox.Sharing.GlobalShare;
 import ONExBox.gateway.Port.IOClient;
 import ONExBox.gateway.Port.IOServer;
-import ONExClient.onex4j.GlobalTopo;
+import ONExProtocol.GlobalTopo;
 import ONExProtocol.ONExPacket;
 import org.apache.log4j.Logger;
 

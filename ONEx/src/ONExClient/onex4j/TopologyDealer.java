@@ -1,7 +1,7 @@
 package ONExClient.onex4j;
 
 import ONExClient.onex4j.SDKDaemon.SDKDaemon;
-import ONExClient.onex4j.Interface.ITopology;
+import ONExProtocol.GlobalTopo;
 import ONExProtocol.LocalTopo;
 
 /**
@@ -10,37 +10,23 @@ import ONExProtocol.LocalTopo;
  * Date: 13-10-18
  * Time: PM11:46
  */
-public class TopologyDealer implements ITopology {
+public abstract class TopologyDealer {
     LocalTopo localTopo;
-
-    SwitchDealer switchDealer;
     SDKDaemon SDKDaemon;
 
-    public TopologyDealer(SwitchDealer sw_h) {
-        this.switchDealer = sw_h;
+    public TopologyDealer() {
+        localTopo = new LocalTopo();
     }
 
     public void setDaemon(SDKDaemon daemon){
         this.SDKDaemon = daemon;
     }
 
-    @Override
-    public void getGlobalTopo() {
-        //To change body of implemented methods use File | ONExSetting | File Templates.
-    }
+    public abstract void getGlobalTopo();
 
-    @Override
-    public void getLocalTopo() {
-        switchDealer.getTopo();
-    }
+    public abstract LocalTopo getLocalTopo();
 
-    @Override
-    public void updateLocalTopo() {
-        SDKDaemon.sendONEx(null);
-    }
+    public abstract void updateLocalTopo();
 
-    @Override
-    public void parseGlobalTopo() {
-        //To change body of implemented methods use File | ONExSetting | File Templates.
-    }
+    public abstract void parseGlobalTopo(GlobalTopo topo);
 }
