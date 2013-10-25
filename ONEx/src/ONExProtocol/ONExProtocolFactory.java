@@ -1,6 +1,5 @@
 package ONExProtocol;
 
-import ONExClient.onex4j.ONExGate;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
@@ -19,7 +18,7 @@ public class ONExProtocolFactory {
     private static Logger log = Logger.getLogger(ONExProtocolFactory.class);
 
     public static ONExPacket ONExSparePI(OFPacketIn pi){
-        ONExPacket op = new ONExPacket(ONExPacket.SPARE_PACKET_IN, ONExGate.ID);
+        ONExPacket op = new ONExPacket(ONExPacket.SPARE_PACKET_IN, -1);
         ByteBuffer PIBB = ByteBuffer.allocate(pi.getLengthU());
         pi.writeTo(PIBB);
         op.setTLV(new TLV(
@@ -37,7 +36,7 @@ public class ONExProtocolFactory {
     }
 
     public static ONExPacket ONExResSparePI(OFFlowMod flowMod, OFPacketOut po){
-        ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, ONExGate.ID);
+        ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, -1);
         ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLengthU());
         flowMod.writeTo(FMBB);
 
@@ -66,7 +65,7 @@ public class ONExProtocolFactory {
     }
 
     public static ONExPacket ONExUploadLocalTopo(LocalTopo topo){
-        ONExPacket op = new ONExPacket(ONExPacket.UPLOAD_LOCAL_TOPO, ONExGate.ID);
+        ONExPacket op = new ONExPacket(ONExPacket.UPLOAD_LOCAL_TOPO, -1);
         op.setTLV(new TLV(
                 TLV.Type.LOCAL_TOPO,
                 topo.getLength(),
@@ -77,7 +76,7 @@ public class ONExProtocolFactory {
 
     public static ONExPacket ONExRequestGlobalTopo(){
         // with no TLV
-        ONExPacket op = new ONExPacket(ONExPacket.REQUEST_GLOBAL_TOPO, ONExGate.ID);
+        ONExPacket op = new ONExPacket(ONExPacket.REQUEST_GLOBAL_TOPO, -1);
         return op;
     }
 
@@ -87,7 +86,7 @@ public class ONExProtocolFactory {
             log.error("globalTopo cannot be null");
             return null;
         }
-        ONExPacket op = new ONExPacket(ONExPacket.RETURN_GLOBAL_TOPO, ONExGate.ID);
+        ONExPacket op = new ONExPacket(ONExPacket.RETURN_GLOBAL_TOPO, -1);
         op.setTLV(new TLV(
                 TLV.Type.GLOBAL_TOPO,
                 globalTopo.getLength(),
@@ -102,7 +101,7 @@ public class ONExProtocolFactory {
             log.error("globalFlowMod cannot be null");
             return null;
         }
-        ONExPacket op = new ONExPacket(ONExPacket.REQ_GLOBAL_FLOW_MOD, ONExGate.ID);
+        ONExPacket op = new ONExPacket(ONExPacket.REQ_GLOBAL_FLOW_MOD, -1);
         op.setTLV(new TLV(
                 TLV.Type.GLOBAL_FLOW_MOD,
                 globalFlowMod.getLength(),
@@ -113,7 +112,7 @@ public class ONExProtocolFactory {
     }
 
     public static ONExPacket ONExSCFlowMod(OFFlowMod flowMod){
-        ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, ONExGate.ID);
+        ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, -1);
         ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLengthU());
         flowMod.writeTo(FMBB);
         op.setTLV(new TLV(
@@ -131,7 +130,7 @@ public class ONExProtocolFactory {
             return null;
         }
         if(msg.hasRemaining()){
-            ONExPacket op = new ONExPacket(0xFFFFFFFF, ONExGate.ID);
+            ONExPacket op = new ONExPacket(0xFFFFFFFF, -1);
             op.setHeader(msg);
             op.setTLVs(msg);
             return op;
