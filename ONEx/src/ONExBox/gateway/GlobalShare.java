@@ -1,6 +1,7 @@
-package ONExBox.Sharing;
+package ONExBox.gateway;
 
 import ONExBox.ONExSetting;
+import ONExProtocol.GlobalTopo;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -36,7 +37,8 @@ public class GlobalShare{
 
     // local Data
     private BusyTableEntry localBt;
-    private List<TopologyTableEntry> localTopology;
+    //private List<TopologyTableEntry> localTopology;
+    private GlobalTopo globalTopo;
 
     public GlobalShare(){
         log = Logger.getLogger(GlobalShare.class.getName());
@@ -50,7 +52,8 @@ public class GlobalShare{
 
         // initialization
         this.localBt = new BusyTableEntry(ONExSetting.getInstance().socketAddr);
-        this.localTopology = new LinkedList<TopologyTableEntry>();
+        this.globalTopo = new GlobalTopo();
+        //this.localTopology = new LinkedList<TopologyTableEntry>();
 
         // important
         updateBusyTable();
@@ -160,13 +163,9 @@ public class GlobalShare{
     }
 
     private boolean updateRemoteTopology() {
-        MultiMap<InetAddress, TopologyTableEntry> map = hz.getMultiMap(ONExSetting.TOPO_MAP);
-
-        log.debug("update remote topology #" + this.localTopology.size());
-        for (TopologyTableEntry entry : this.localTopology){
-            map.put(entry.getSrc(), entry);
-        }
-        return true;
+        List<GlobalTopo> globalTopos = hz.getList(ONExSetting.TOPO_MAP);
+        // TODO
+        return false;
     }
 
     public void shutdown(){

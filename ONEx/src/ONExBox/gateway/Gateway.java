@@ -4,7 +4,6 @@ package ONExBox.gateway;
 
 import ONExBox.BoxDaemon.BoxDaemon;
 import ONExBox.ONExSetting;
-import ONExBox.Sharing.GlobalShare;
 import ONExBox.gateway.Port.IOClient;
 import ONExBox.gateway.Port.IOServer;
 import ONExProtocol.GlobalTopo;
@@ -79,6 +78,11 @@ public class Gateway {
         }
 
         client.send(op);
+
+    }
+
+    public void submitTopology(GlobalTopo topo){
+
 
     }
 

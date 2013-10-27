@@ -1,6 +1,6 @@
 package ONExBox.test;
 
-import ONExBox.Sharing.GlobalShare;
+import ONExBox.gateway.GlobalShare;
 
 /**
  * User: fan

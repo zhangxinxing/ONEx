@@ -3,7 +3,6 @@ package ONExBox.BoxDaemon;
 import ONExBox.ONExSetting;
 import ONExBox.gateway.Gateway;
 import ONExProtocol.GlobalTopo;
-import ONExProtocol.LocalTopo;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;
 import org.apache.log4j.Logger;
@@ -69,7 +68,8 @@ class BoxUpHandler extends SimpleChannelHandler {
                 // no reply
                 log.debug("get UPLOAD_LOCAL_TOPO");
                 GlobalTopo localGlobalTopo = op.getGlobalTopo();
-                log.info(localGlobalTopo);
+                log.info("Local Topo got: " + localGlobalTopo);
+                gateway.submitTopology(localGlobalTopo);
                 break;
 
             case ONExPacket.REQUEST_GLOBAL_TOPO:
