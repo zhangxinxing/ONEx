@@ -50,6 +50,7 @@ public class ONExPacket implements Serializable {
         }
         else {
             TLVs.add(tlv);
+            header.augmentLength(tlv.getLength());
         }
     }
 
@@ -237,13 +238,7 @@ public class ONExPacket implements Serializable {
     }
 
     public int getLength(){
-        int length = 0;
-        length += header.getLength();
-        for (TLV tlv : TLVs){
-            length += tlv.getLength();
-        }
-
-        return length;
+        return header.getLength();
     }
 
     public boolean isValid(){
@@ -301,7 +296,11 @@ public class ONExPacket implements Serializable {
         }
 
         public int getLength(){
-            return HEADER_LENGTH;
+            return LEN;
+        }
+
+        public void augmentLength(int cre){
+            this.LEN += cre;
         }
 
         @Override
