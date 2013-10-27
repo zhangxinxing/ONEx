@@ -24,7 +24,7 @@ class BoxUpHandler extends SimpleChannelHandler {
     public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
         if (e instanceof ChannelStateEvent &&
                 ((ChannelStateEvent) e).getState() != ChannelState.INTEREST_OPS) {
-            log.debug(e.getChannel().toString() + ":" +  ((ChannelStateEvent) e).getState());
+            log.trace(e.getChannel().toString() + ":" +  ((ChannelStateEvent) e).getState());
         }
         super.handleUpstream(ctx, e);
     }
@@ -32,15 +32,15 @@ class BoxUpHandler extends SimpleChannelHandler {
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
         Channel chan = ctx.getChannel();
-        boxDaemon.setClientChannel(e.getChannel());
-        log.debug("[BoxDaemon] connected with " + chan.getRemoteAddress().toString());
+        boxDaemon.setClientChannel(chan);
+        log.debug("connected with " + chan.getRemoteAddress());
     }
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
         ONExPacket op = ONExProtocolFactory.parser(((ChannelBuffer) e.getMessage()).array());
-        log.debug("[BoxDaemon] Got message " + op.toString());
+        log.debug("Got message " + op.toString());
 
         if (!op.isValid()){
             log.error("Error in parsing wired ONExProtocol");

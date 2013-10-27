@@ -1,18 +1,3 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package ONExBox.BoxDaemon;
 
 import ONExBox.gateway.Gateway;
@@ -56,10 +41,11 @@ public class BoxDaemon {
     public void setClientChannel(Channel channel){
         assert channel != null;
         this.clientChannel = channel;
-        log.debug("ClientChannel set, from: " + channel.getLocalAddress().toString());
+        log.debug("ClientChannel set, from: " + channel.getRemoteAddress());
     }
 
     public void sendONEx(ONExPacket op){
+        log.debug("Sending: " + op);
         ByteBuffer buf = ByteBuffer.allocate(op.getLength());
         op.writeTo(buf);
         sendRaw(buf.array());
@@ -72,12 +58,12 @@ public class BoxDaemon {
         cf.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture cf) throws Exception {
-                if (!cf.isSuccess()){
-                    log.error("Failed to send to SDK");
-                    destroy();
+                if (cf.isSuccess()){
+                    log.debug("sent to SDK: " + clientChannel.toString());
                 }
                 else{
-                    log.debug("sent to SDK");
+                    log.error("Failed to send to SDK");
+                    destroy();
                 }
             }
         });
@@ -85,7 +71,7 @@ public class BoxDaemon {
     }
 
     public void returnGlobalTopo(GlobalTopo topo){
-        log.debug("return global topo");
+        log.debug("return global topo: " + topo.toString());
         ONExPacket op = ONExProtocolFactory.ONExResGlobalTopo(topo);
         sendONEx(op);
     }

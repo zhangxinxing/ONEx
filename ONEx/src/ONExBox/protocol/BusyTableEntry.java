@@ -50,7 +50,7 @@ public class BusyTableEntry implements Serializable {
     @Override
     public String toString(){
         return String.format(
-                "ID:%d, sizeOfQ=%d, sizeOfA=%d",
+                "ID:%s, sizeOfQ=%d, sizeOfA=%d",
                 this.addr.toString(),
                 this.sizeOfQueueIn,
                 this.cpuAccountPerApp.size()

@@ -21,11 +21,9 @@ public class Gateway {
     private IOServer ioServer;
     private Map<InetSocketAddress, IOClient> clientPool;
 
-    private BoxDaemon serverDaemon;
-
     public Gateway() {
         this.globalShare = new GlobalShare();
-        this.serverDaemon = new BoxDaemon(this, ONExSetting.DAEMON_PORT);
+        BoxDaemon serverDaemon = new BoxDaemon(this, ONExSetting.DAEMON_PORT);
         this.clientPool = new HashMap<InetSocketAddress, IOClient>();
         ioServer = new IOServer(serverDaemon);
         log.info("Gateway Server set up");
@@ -45,7 +43,6 @@ public class Gateway {
     }
 
     public void sendBackPacketIn(ONExPacket op){
-        // TODO ADD src field in OPSpearPacketIN
         assert op != null;
         assert op.getINS() == ONExPacket.RES_SPARE_PACKET_IN;
         InetSocketAddress src = op.getSrcHost();
@@ -60,11 +57,7 @@ public class Gateway {
     }
 
     public GlobalTopo getGlobalTopo(){
-        // TODO for test only
-        GlobalTopo globalTopo = new GlobalTopo();
-        globalTopo.addHostEntry(123L,(short)1, 123, new byte[] {1,2,3,4,5,6});
-        globalTopo.addSwitchLink(123L, (short)123, 124L, (short)124);
-        return globalTopo;
+        return globalShare.getGlobalTopo();
     }
 
     private void send(InetSocketAddress addr, ONExPacket op){
@@ -82,8 +75,8 @@ public class Gateway {
     }
 
     public void submitTopology(GlobalTopo topo){
-
-
+        log.debug("submit topology");
+        globalShare.mergeTopology(topo);
     }
 
     public void halfShutdown(){

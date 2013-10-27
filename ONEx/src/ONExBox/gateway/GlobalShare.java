@@ -1,17 +1,17 @@
 package ONExBox.gateway;
 
+import ONExBox.Monitor;
 import ONExBox.ONExSetting;
+import ONExBox.protocol.BusyTableEntry;
 import ONExProtocol.GlobalTopo;
+import ONExProtocol.HostEntry;
+import ONExProtocol.SwitchLink;
+
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.MultiMap;
-import ONExBox.Monitor;
-import ONExBox.protocol.BusyTableEntry;
-import ONExBox.protocol.TopologyTableEntry;
 import org.apache.log4j.Logger;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,8 +37,10 @@ public class GlobalShare{
 
     // local Data
     private BusyTableEntry localBt;
-    //private List<TopologyTableEntry> localTopology;
-    private GlobalTopo globalTopo;
+
+    //
+    private static final String SWITCH_LINKS = "sw";
+    private static final String HOST_ENTRIES = "hosts";
 
     public GlobalShare(){
         log = Logger.getLogger(GlobalShare.class.getName());
@@ -52,8 +54,6 @@ public class GlobalShare{
 
         // initialization
         this.localBt = new BusyTableEntry(ONExSetting.getInstance().socketAddr);
-        this.globalTopo = new GlobalTopo();
-        //this.localTopology = new LinkedList<TopologyTableEntry>();
 
         // important
         updateBusyTable();
@@ -156,23 +156,39 @@ public class GlobalShare{
     }
 
     /* TOPOLOGY */
-    public boolean updateTopology(){
-        // TODO do sth
-        updateRemoteTopology();
+    public boolean mergeTopology(GlobalTopo topo){
+        // get remote objects
+        Set<HostEntry> hostEntries = hz.getSet(HOST_ENTRIES);
+        Set<SwitchLink> switchLinks = hz.getSet(SWITCH_LINKS);
+
+        // add new entries and links
+        log.debug("Merging topology with remote version");
+        hostEntries.addAll(topo.getHostList());
+        switchLinks.addAll(topo.getSwitchLinks());
+
         return true;
     }
 
-    private boolean updateRemoteTopology() {
-        List<GlobalTopo> globalTopos = hz.getList(ONExSetting.TOPO_MAP);
-        // TODO
-        return false;
+    public GlobalTopo getGlobalTopo(){
+        // get remote objects
+        Set<HostEntry> hostEntries = hz.getSet(HOST_ENTRIES);
+        Set<SwitchLink> switchLinks = hz.getSet(SWITCH_LINKS);
+
+        // detach
+        GlobalTopo globalTopo =  new GlobalTopo();
+        globalTopo.mergeHostList(hostEntries);
+        globalTopo.mergeSwitchLinks(switchLinks);
+
+        //
+        return globalTopo;
     }
+
 
     public void shutdown(){
         // step 1: shutdown daemon
         this.runningDaemon = false;
         try {
-            exec.awaitTermination(5, TimeUnit.SECONDS);
+            exec.awaitTermination(1, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
