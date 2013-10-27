@@ -93,12 +93,23 @@ public class TBoxDaemon {
             bos.write(op.toByteBuffer().array());
             bos.flush();
             assert bis!=null;
+            int idx = 0;
+            ByteBuffer buf = ByteBuffer.allocate(4);
+            int length = 0;
             while(true){
                 int temp = bis.read();
 
+                /* manually got length */
+                if (idx <= 4 && idx >= 1){
+                    buf.put((byte)temp);
+                    if (idx == 4){
+                        buf.flip();
+                        length = buf.getInt();
+                    }
+                }
+                idx += 1;
                 baos.write(temp);
-                //log.debug(String.format("%d: %d", baos.size(), temp));
-                if (baos.size() == 114)
+                if (baos.size() == length)
                     break;
 
             }
