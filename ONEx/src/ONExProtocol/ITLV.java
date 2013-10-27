@@ -1,4 +1,5 @@
 package ONExProtocol;
+import org.jboss.netty.buffer.ChannelBuffer;
 
 import java.nio.ByteBuffer;
 

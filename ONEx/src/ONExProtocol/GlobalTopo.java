@@ -1,10 +1,10 @@
 package ONExProtocol;
 
+import org.apache.log4j.Logger;
+
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.log4j.Logger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -54,10 +54,13 @@ public class GlobalTopo {
     }
 
     public void addSwitchLink(long srcDpid, short srcPort, long dstDpid, short dstPort){
-        switchLinks.add(new SwitchLink(
+        SwitchLink link = new SwitchLink(
                 srcDpid, srcPort, dstDpid, dstPort
-        ));
-        this.nSwitch += 1;
+        );
+        if (!switchLinks.contains(link)){
+            switchLinks.add(link);
+            this.nSwitch += 1;
+        }
 
     }
 
@@ -100,28 +103,28 @@ public class GlobalTopo {
 class HostEntry {
     long dpid;
     short port;
-    int IPv4;
+    int ipv4;
     byte[] MAC;
 
     public static int length = 8+2+4+6;
 
     public static Logger log = Logger.getLogger(HostEntry.class);
 
-    HostEntry(long dpid, short port, int IPv4, byte[] MAC) {
+    HostEntry(long dpid, short port, int ipv4, byte[] MAC) {
         if (MAC.length != 6){
             log.error("MAC.length != 6");
             return;
         }
         this.dpid = dpid;
         this.port = port;
-        this.IPv4 = IPv4;
+        this.ipv4 = ipv4;
         this.MAC = MAC;
     }
 
     public HostEntry(ByteBuffer buf){
         dpid = buf.getLong();
         port = buf.getShort();
-        IPv4 = buf.getInt();
+        ipv4 = buf.getInt();
         MAC = new byte[6];
         buf.get(MAC);
 
@@ -130,17 +133,17 @@ class HostEntry {
     public void writeTo(ByteBuffer BB){
         BB.putLong(dpid);
         BB.putShort(port);
-        BB.putInt(IPv4);
+        BB.putInt(ipv4);
         BB.put(MAC);
     }
 
     public String toString(){
         return String.format(
-                "[hostEntry, dpid=%d, port=%d, ipv4=%d, MAC=%s]",
+                "[hostEntry, dpid=%d, port=%d, ipv4=%s, MAC=%s]",
                 dpid,
                 port,
-                IPv4,
-                "TOBEDONE"
+                Util.ipToString(ipv4),
+                Util.macToString(MAC)
         );
     }
 
@@ -184,6 +187,20 @@ class SwitchLink {
                 dst_port
         );
 
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        if (obj != null && obj instanceof SwitchLink){
+            SwitchLink link = (SwitchLink) obj;
+            return this.src_dpid == link.src_dpid
+                            && this.src_port == link.src_port
+                            && this.dst_dpid == link.dst_dpid
+                            && this.dst_port == link.dst_port
+                    ;
+
+        }
+        return false;
     }
 
 }

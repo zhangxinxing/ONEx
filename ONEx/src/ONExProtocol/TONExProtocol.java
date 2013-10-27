@@ -1,15 +1,15 @@
 package ONExProtocol;
 
-import org.openflow.protocol.*;
+import org.apache.log4j.Logger;
+import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.OFPacketIn;
+import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.action.OFAction;
-import org.openflow.protocol.factory.BasicFactory;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
-import org.apache.log4j.Logger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,120 +22,147 @@ public class TONExProtocol {
     private static Logger log = Logger.getLogger(TONExProtocol.class);
 
     public static void main(String[] args){
-        BasicFactory factory = new BasicFactory();
 
-        // 1 ONExSparePI
+        TONExProtocol.ONExSparePI();
+        TONExProtocol.ONExResSparePI();
+
+        TONExProtocol.ONExUploadLocalTopo();
+
+        TONExProtocol.ONExRequestGlobalTopo();
+        TONExProtocol.ONExResGlobalTopo();
+
+        TONExProtocol.ONExReqGlobalFlowMod();
+        TONExProtocol.ONExSCFlowMod();
+    }
+
+    public static void ONExSparePI(){
         byte[] ba = {0x01,0x01,0x01};
         OFPacketIn pi = new OFPacketIn();
         pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
         pi.setPacketData(ba);
+        log.info("before:\t" + pi.toString());
         ONExPacket msg = ONExProtocolFactory.ONExSparePI(pi);
         msg.setSrcHost(new InetSocketAddress("127.1.2.3", 1234));
-        log.info(msg.toString());
+        log.info("build:\t" + msg.toString());
 
         ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
         msg = ONExProtocolFactory.parser(msgBB);
-        log.info(msg.toString());
-        log.info("extractd ipv4:" + msg.getSrcHost().toString());
+        log.info("rebuild:\t" + msg.toString());
+        log.info("getTLV:\t" + msg.getOFPacketIn().toString());
+        log.info("extracted ipv4:" + msg.getSrcHost().toString());
+    }
 
-        // 2 ONExResSparePI
+    public static void ONExResSparePI(){
+
         OFFlowMod ofFlowMod = new OFFlowMod();
         ofFlowMod.setMatch(new OFMatch());
         OFPacketOut po = new OFPacketOut();
+        po.setBufferId(1);
         po.setActions(new LinkedList<OFAction>());
+        log.info("before\t" + po.toString());
+        log.info("before\t" + ofFlowMod.toString());
 
-        msg = ONExProtocolFactory.ONExResSparePI(ofFlowMod, po);
+        ONExPacket msg = ONExProtocolFactory.ONExResSparePI(ofFlowMod, po);
         msg.setSrcHost(new InetSocketAddress("127.1.2.3", 1234));
-        log.info(msg.toString());
-        msgBB = ByteBuffer.allocate(msg.getLength());
+        log.info("build\t\t" + msg.toString());
+        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
-        log.info(ONExProtocolFactory.parser(msgBB).toString());
-        log.info(msg.getFlowMod());//get flowmod
-        log.info(msg.getOFPacketOut());
+        log.info("rebuild\t" + ONExProtocolFactory.parser(msgBB).toString());
+        log.info("after\t\t" + msg.getFlowMod());
+        log.info("after\t\t" + msg.getOFPacketOut());
 
-        // 3 ONExUploadLocalTopo
-        InetAddress addr = null;
-        try {
-            addr = InetAddress.getByAddress(new byte[]{56,57,58,59});
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+    }
 
-        LocalTopo localTopo = new LocalTopo();
-        localTopo.addOrUpdateSwitch(12345L);
-        localTopo.udpatePortInfo(
+    public static void ONExUploadLocalTopo(){
+        GlobalTopo globalTopo = new GlobalTopo();
+        globalTopo.addHostEntry(
                 12345L,
-                (short)123,
-                LocalTopo.Status.HOST,
-                addr,
-                new byte[] {1,2,3,4,5,6}
-        );
-        localTopo.udpatePortInfo(
-                12345L,
-                (short)1243,
-                LocalTopo.Status.HOST,
-                addr,
-                new byte[] {1,2,3,4,5,6}
+                (short) 123,
+                1234,
+                new byte[]{1,2,3,4,5,6}
         );
 
-        msg = ONExProtocolFactory.ONExUploadLocalTopo(localTopo);
-        log.info(msg);
-        log.info(msg.getLocalTopo());
-        msgBB = ByteBuffer.allocate(msg.getLength());
+        globalTopo.addSwitchLink(
+                1L,
+                (short)1,
+                2L,
+                (short)2
+        );
+        ONExPacket msg = ONExProtocolFactory.ONExUploadLocalTopo(globalTopo);
+//        log.info(msg);
+//        log.info(msg.getGlobalTopo());
+        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
         msg = ONExProtocolFactory.parser(msgBB);
-        log.info(msg);
-        log.info(msg.getLocalTopo());
+//        log.info(msg);
+        globalTopo = msg.getGlobalTopo();
+        log.info(globalTopo.toString());
+    }
 
+    public static void ONExRequestGlobalTopo(){
         // 4  ONExRequestGlobalTopo
-        msg = ONExProtocolFactory.ONExRequestGlobalTopo();
+        ONExPacket msg = ONExProtocolFactory.ONExRequestGlobalTopo();
         log.info(msg.toString());
-        msgBB = ByteBuffer.allocate(msg.getLength());
+        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
         log.info(ONExProtocolFactory.parser(msgBB).toString());
+    }
 
+
+    public static void ONExResGlobalTopo(){
         // 5 ONExResGlobalTopo
         GlobalTopo globalTopo = new GlobalTopo();
         globalTopo.addHostEntry(123L,(short)1, 123, new byte[] {1,2,3,4,5,6});
         globalTopo.addSwitchLink(123L, (short)123, 124L, (short)124);
-        msg = ONExProtocolFactory.ONExResGlobalTopo(globalTopo);
+        ONExPacket msg = ONExProtocolFactory.ONExResGlobalTopo(globalTopo);
         log.info(msg.toString());
         log.info(msg.getGlobalTopo());
-        msgBB = ByteBuffer.allocate(msg.getLength());
+        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
         msg = ONExProtocolFactory.parser(msgBB);
         log.info(msg.toString());
         log.info(msg.getGlobalTopo());
+    }
 
+    public static void ONExReqGlobalFlowMod(){
         // 6  ONExReqGlobalFlowMod
-        ofFlowMod = new OFFlowMod();
+        OFFlowMod ofFlowMod = new OFFlowMod();
         ofFlowMod.setMatch(new OFMatch());
 
         GlobalFlowMod globalFlowMod = new GlobalFlowMod();
         globalFlowMod.addGlobalFlowModEntry(123L, ofFlowMod);
 
-        msg = ONExProtocolFactory.ONExReqGlobalFlowMod(globalFlowMod);
+        ONExPacket msg = ONExProtocolFactory.ONExReqGlobalFlowMod(globalFlowMod);
         log.info(msg.toString());
-        msgBB = ByteBuffer.allocate(msg.getLength());
+        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
         msg = ONExProtocolFactory.parser(msgBB);
         GlobalFlowMod g = msg.getGlobalFlowMod();
         log.info(msg.toString());
         log.info(g.toString());
+    }
 
+    public static void ONExSCFlowMod() {
         // 7  ONExSCFlowMod
-        msg = ONExProtocolFactory.ONExSCFlowMod(ofFlowMod);
+        OFFlowMod ofFlowMod = new OFFlowMod();
+        ofFlowMod.setMatch(new OFMatch());
+
+        ONExPacket msg = ONExProtocolFactory.ONExSCFlowMod(ofFlowMod);
         log.info(msg.toString());
-        msgBB = ByteBuffer.allocate(msg.getLength());
+        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
         log.info(ONExProtocolFactory.parser(msgBB).toString());
+    }
+
+    public static void ln(){
+        System.out.println("");
     }
 }

@@ -1,12 +1,13 @@
 package ONExProtocol;
 
+import org.apache.log4j.Logger;
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 
 import java.nio.ByteBuffer;
-
-import org.apache.log4j.Logger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,7 +20,7 @@ public class ONExProtocolFactory {
 
     public static ONExPacket ONExSparePI(OFPacketIn pi){
         ONExPacket op = new ONExPacket(ONExPacket.SPARE_PACKET_IN, -1);
-        ByteBuffer PIBB = ByteBuffer.allocate(pi.getLengthU());
+        ByteBuffer PIBB = ByteBuffer.allocate(pi.getLength());
         pi.writeTo(PIBB);
         op.setTLV(new TLV(
                 TLV.Type.PACKET_IN,
@@ -37,10 +38,10 @@ public class ONExProtocolFactory {
 
     public static ONExPacket ONExResSparePI(OFFlowMod flowMod, OFPacketOut po){
         ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, -1);
-        ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLengthU());
+        ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLength());
         flowMod.writeTo(FMBB);
 
-        ByteBuffer POBB = ByteBuffer.allocate(po.getLengthU());
+        ByteBuffer POBB = ByteBuffer.allocate(po.getLength());
         po.writeTo(POBB);
 
         op.setTLV(new TLV(
@@ -64,10 +65,10 @@ public class ONExProtocolFactory {
         return op;
     }
 
-    public static ONExPacket ONExUploadLocalTopo(LocalTopo topo){
+    public static ONExPacket ONExUploadLocalTopo(GlobalTopo topo){
         ONExPacket op = new ONExPacket(ONExPacket.UPLOAD_LOCAL_TOPO, -1);
         op.setTLV(new TLV(
-                TLV.Type.LOCAL_TOPO,
+                TLV.Type.GLOBAL_TOPO,
                 topo.getLength(),
                 topo.toByteBuffer().array()
         ));
@@ -113,7 +114,7 @@ public class ONExProtocolFactory {
 
     public static ONExPacket ONExSCFlowMod(OFFlowMod flowMod){
         ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, -1);
-        ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLengthU());
+        ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLength());
         flowMod.writeTo(FMBB);
         op.setTLV(new TLV(
                 TLV.Type.FLOW_MOD,

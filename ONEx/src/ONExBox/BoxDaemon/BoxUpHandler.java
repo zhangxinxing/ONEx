@@ -68,8 +68,8 @@ class BoxUpHandler extends SimpleChannelHandler {
                 // from SDK
                 // no reply
                 log.debug("get UPLOAD_LOCAL_TOPO");
-                LocalTopo localTopo = op.getLocalTopo();
-                log.info(localTopo);
+                GlobalTopo localGlobalTopo = op.getGlobalTopo();
+                log.info(localGlobalTopo);
                 break;
 
             case ONExPacket.REQUEST_GLOBAL_TOPO:

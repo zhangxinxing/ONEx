@@ -1,5 +1,7 @@
 package ONExProtocol;
 
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.openflow.protocol.OFFlowMod;
 
 import java.nio.ByteBuffer;

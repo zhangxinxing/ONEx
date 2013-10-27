@@ -1,5 +1,12 @@
 package ONExProtocol;
 
+import org.apache.log4j.Logger;
+import org.jboss.netty.buffer.ChannelBuffers;
+import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFPacketIn;
+import org.openflow.protocol.OFPacketOut;
+import org.openflow.protocol.factory.BasicFactory;
+
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -7,11 +14,6 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.log4j.Logger;
-import org.openflow.protocol.OFFlowMod;
-import org.openflow.protocol.OFPacketIn;
-import org.openflow.protocol.OFPacketOut;
 
 /**
  * Created with IntelliJ IDEA.
@@ -139,7 +141,7 @@ public class ONExPacket implements Serializable {
         if (pi == null)
             return null;
         OFPacketIn ofpi = new OFPacketIn();
-        // TODO ofpi.readFrom(ByteBuffer.wrap(pi));
+        ofpi.readFrom(ByteBuffer.wrap(pi));
         return ofpi;
     }
 
@@ -159,7 +161,8 @@ public class ONExPacket implements Serializable {
         if (flowMod == null)
             return null;
         OFFlowMod offm = new OFFlowMod();
-        // TODO offm.readFrom(ByteBuffer.wrap(flowMod));
+        offm.setActionFactory(new BasicFactory().getActionFactory());
+        offm.readFrom(ByteBuffer.wrap(flowMod));
         return offm;
     }
 
@@ -179,32 +182,12 @@ public class ONExPacket implements Serializable {
         if (po == null)
             return null;
         OFPacketOut ofpo = new OFPacketOut();
-        // TODO ofpo.readFrom(ByteBuffer.wrap(po));
+        ofpo.setActionFactory(new BasicFactory().getActionFactory());
         return ofpo;
     }
 
-    public LocalTopo getLocalTopo(){
-        if (header.INS != UPLOAD_LOCAL_TOPO){
-            log.error("this method should only be called in UPLOAD_LOCAL_TOPO");
-            return null;
-        }
-        TLV topo = null;
-        for(TLV tlv : TLVs){
-            if (tlv.getType() == TLV.Type.LOCAL_TOPO){
-                topo = tlv;
-                break;
-            }
-        }
-        if (topo == null){
-            log.error("LOCAL_TOPO not found");
-            return null;
-        }
-
-        return new LocalTopo(topo);
-    }
-
     public GlobalTopo getGlobalTopo(){
-        if (header.INS != RETURN_GLOBAL_TOPO){
+        if (header.INS != RETURN_GLOBAL_TOPO && header.INS != UPLOAD_LOCAL_TOPO){
             log.error("this method should only be called in RETURN_GLOBAL_TOPO");
             return null;
         }

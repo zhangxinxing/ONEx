@@ -1,8 +1,9 @@
 package ONExProtocol;
 
+import org.apache.log4j.Logger;
+
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import org.apache.log4j.Logger;
 
 /**
  * Created with IntelliJ IDEA.

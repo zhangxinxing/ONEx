@@ -1,10 +1,11 @@
 package ONExProtocol;
 
+import org.apache.log4j.Logger;
+
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.*;
-
-import org.apache.log4j.Logger;
+import java.util.HashMap;
+import java.util.Map;
 /**
  * Created with IntelliJ IDEA.
  * User: Fan
@@ -44,7 +45,7 @@ public class LocalTopo {
     }
 
     public void udpatePortInfo(long dpid, short portID, byte status, InetAddress ipv4, byte[] MAC){
-        if (MAC.length != 6){
+        if (MAC == null || MAC.length != 6){
             log.error("errer MAC address");
         }
         SWInfo sw = addOrUpdateSwitch(dpid);
@@ -146,20 +147,20 @@ public class LocalTopo {
     class PortInfo{
         short portID;
         byte status;
-        int IPv4;
+        int ipv4;
         byte[] MAC;
 
-        PortInfo(short portID, byte status, int IPv4, byte[] MAC) {
+        PortInfo(short portID, byte status, int ipv4, byte[] MAC) {
             this.portID = portID;
             this.status = status;
-            this.IPv4 = IPv4;
+            this.ipv4 = ipv4;
             this.MAC = MAC;
         }
 
         PortInfo(ByteBuffer buf){
             this.portID = buf.getShort();
             this.status = buf.get();
-            this.IPv4 = buf.getInt();
+            this.ipv4 = buf.getInt();
             this.MAC = new byte[6];
             buf.get(MAC);
         }
@@ -170,25 +171,25 @@ public class LocalTopo {
 
         public void update(byte status, int IPv4, byte[] MAC){
             this.status = status;
-            this.IPv4 = IPv4;
+            this.ipv4 = IPv4;
             this.MAC = MAC;
         }
 
         public void writeTo(ByteBuffer portInfoBB){
             portInfoBB.putShort(portID);
             portInfoBB.put(status);
-            portInfoBB.putInt(IPv4);
+            portInfoBB.putInt(ipv4);
             assert MAC.length == 6;
             portInfoBB.put(MAC);
         }
 
         public String toString(){
             return String.format(
-                    "[portID=%d, status=%d, ip=%d, MAC=%s]",
+                    "[portID=%h, status=%d, ip=%s, MAC=%s]",
                     portID,
                     status,
-                    IPv4,
-                    "TOBEDONE"
+                    Util.ipToString(ipv4),
+                    Util.macToString(MAC)
             );
         }
     }
