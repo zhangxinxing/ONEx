@@ -41,9 +41,13 @@ public class TONExProtocol {
         pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
         pi.setPacketData(ba);
         log.info("before:\t" + pi.toString());
-        ONExPacket msg = ONExProtocolFactory.ONExSparePI(pi);
-        msg.setSrcHost(new InetSocketAddress("127.1.2.3", 1234));
+        ONExPacket msg = ONExProtocolFactory.ONExSparePI(
+                pi,
+                new InetSocketAddress("127.1.2.3", 1234),
+                1234567890L
+        );
         log.info("build:\t" + msg.toString());
+        log.info("dpid: " + msg.getSrcDpid());
 
         ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
@@ -64,8 +68,12 @@ public class TONExProtocol {
         log.info("before\t" + po.toString());
         log.info("before\t" + ofFlowMod.toString());
 
-        ONExPacket msg = ONExProtocolFactory.ONExResSparePI(ofFlowMod, po);
-        msg.setSrcHost(new InetSocketAddress("127.1.2.3", 1234));
+        ONExPacket msg = ONExProtocolFactory.ONExResSparePI(
+                ofFlowMod,
+                po,
+                new InetSocketAddress("127.1.2.3", 1234),
+                1234567890L
+        );
         log.info("build\t\t" + msg.toString());
         ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
@@ -154,7 +162,10 @@ public class TONExProtocol {
         OFFlowMod ofFlowMod = new OFFlowMod();
         ofFlowMod.setMatch(new OFMatch());
 
-        ONExPacket msg = ONExProtocolFactory.ONExSCFlowMod(ofFlowMod);
+        ONExPacket msg = ONExProtocolFactory.ONExSCFlowMod(
+                ofFlowMod,
+                1234567890L
+        );
         log.info(msg.toString());
         ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
