@@ -25,11 +25,14 @@ public class TONExProtocol {
 
         TONExProtocol.ONExSparePI();
         TONExProtocol.ONExResSparePI();
+        ln();
 
         TONExProtocol.ONExUploadLocalTopo();
+        ln();
 
         TONExProtocol.ONExRequestGlobalTopo();
         TONExProtocol.ONExResGlobalTopo();
+        ln();
 
         TONExProtocol.ONExReqGlobalFlowMod();
         TONExProtocol.ONExSCFlowMod();
@@ -99,14 +102,23 @@ public class TONExProtocol {
                 2L,
                 (short)2
         );
+
+        globalTopo.addForestEntry(
+                123,
+                (short)123,
+                1234567890L
+        );
+
+        log.info(globalTopo.toString());
+
         ONExPacket msg = ONExProtocolFactory.ONExUploadLocalTopo(globalTopo);
-//        log.info(msg);
-//        log.info(msg.getGlobalTopo());
+        log.info(msg);
+        log.info(msg.getGlobalTopo());
         ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
         msg = ONExProtocolFactory.parser(msgBB);
-//        log.info(msg);
+        log.info(msg);
         globalTopo = msg.getGlobalTopo();
         log.info(globalTopo.toString());
     }
