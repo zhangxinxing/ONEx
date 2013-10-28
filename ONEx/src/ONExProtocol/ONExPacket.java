@@ -1,7 +1,6 @@
 package ONExProtocol;
 
 import org.apache.log4j.Logger;
-import org.jboss.netty.buffer.ChannelBuffers;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
@@ -61,8 +60,10 @@ public class ONExPacket implements Serializable {
     }
 
     public void setHeader(ByteBuffer headerBB){
-        if(headerBB.hasRemaining())
+        if(headerBB.hasRemaining()){
             header.readFrom(headerBB);
+            header.resetLength();
+        }
         else{
             System.err.println("ByteBuffer sucks, " + headerBB.toString());
         }
@@ -355,6 +356,11 @@ public class ONExPacket implements Serializable {
 
         public void augmentLength(int cre){
             this.LEN += cre;
+        }
+
+        // used to avoid duplicated length calculation when set header&TLVs from bytes
+        public void resetLength(){
+            this.LEN = HEADER_LENGTH;
         }
 
         @Override
