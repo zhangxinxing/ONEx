@@ -126,6 +126,60 @@ public class ONExPacket implements Serializable {
         return null;
     }
 
+    public void setSrcDpid(long dpid){
+        if (!isType(new byte[]{SPARE_PACKET_IN, RES_SPARE_PACKET_IN, SC_FLOW_MOD})){
+            log.error("Error: Wrong type");
+            return;
+        }
+        byte[] dpidArray = Util.longToArray(dpid);
+
+        TLV tlv = findTLV(TLV.Type.SRC_DPID);
+        if (tlv == null){
+            log.error(this.toString() + " doesnt contain TLV SRC_DPID");
+        }
+        else{
+            tlv.setValue(dpidArray);
+        }
+    }
+
+
+    public long getSrcDpid(){
+        if (!isType(new byte[]{SPARE_PACKET_IN, RES_SPARE_PACKET_IN, SC_FLOW_MOD})){
+            log.error("Error: Wrong type");
+            return -1L;
+        }
+
+        TLV tlv = findTLV(TLV.Type.SRC_DPID);
+
+        if (tlv == null){
+            log.error(this.toString() + " doesnt contain TLV SRC_HOST");
+            return -1L;
+        }
+
+        return Util.arrayToLong(tlv.getValue());
+    }
+
+
+    private TLV findTLV(byte Type){
+        for (TLV tlv : TLVs){
+            if (tlv.getType() == Type){
+                return tlv;
+            }
+        }
+        return null;
+    }
+
+    private boolean isType(byte[] types){
+        for (byte type : types){
+            if (header.INS == type){
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
     public OFPacketIn getOFPacketIn(){
         if (header.INS != SPARE_PACKET_IN){
             log.error("this method should only be called in SPARE_PACKET_IN");

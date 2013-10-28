@@ -7,6 +7,7 @@ import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
 /**
@@ -18,7 +19,7 @@ import java.nio.ByteBuffer;
 public class ONExProtocolFactory {
     private static Logger log = Logger.getLogger(ONExProtocolFactory.class);
 
-    public static ONExPacket ONExSparePI(OFPacketIn pi){
+    public static ONExPacket ONExSparePI(OFPacketIn pi, InetSocketAddress srcHost, long srcDpid){
         ONExPacket op = new ONExPacket(ONExPacket.SPARE_PACKET_IN, -1);
         ByteBuffer PIBB = ByteBuffer.allocate(pi.getLength());
         pi.writeTo(PIBB);
@@ -33,10 +34,18 @@ public class ONExProtocolFactory {
                 8,
                 null // to be filled when Server daemon dispatch it
         ));
+
+        op.setTLV(new TLV(
+                TLV.Type.SRC_DPID,
+                8,
+                null
+        ));
+        op.setSrcHost(srcHost);
+        op.setSrcDpid(srcDpid);
         return op;
     }
 
-    public static ONExPacket ONExResSparePI(OFFlowMod flowMod, OFPacketOut po){
+    public static ONExPacket ONExResSparePI(OFFlowMod flowMod, OFPacketOut po, InetSocketAddress srcHost, long srcDpid){
         ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, -1);
         ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLength());
         flowMod.writeTo(FMBB);
@@ -62,6 +71,14 @@ public class ONExProtocolFactory {
                 null // to be filled when Server daemon dispatch it
         ));
 
+        op.setTLV(new TLV(
+                TLV.Type.SRC_DPID,
+                8,
+                null
+        ));
+
+        op.setSrcHost(srcHost);
+        op.setSrcDpid(srcDpid);
         return op;
     }
 
@@ -112,7 +129,7 @@ public class ONExProtocolFactory {
 
     }
 
-    public static ONExPacket ONExSCFlowMod(OFFlowMod flowMod){
+    public static ONExPacket ONExSCFlowMod(OFFlowMod flowMod, long srcDpid){
         ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, -1);
         ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLength());
         flowMod.writeTo(FMBB);
@@ -122,6 +139,13 @@ public class ONExProtocolFactory {
                 FMBB.array()
         ));
 
+        op.setTLV(new TLV(
+                TLV.Type.SRC_DPID,
+                8,
+                null
+        ));
+
+        op.setSrcDpid(srcDpid);
         return op;
     }
 

@@ -37,7 +37,7 @@ public class TLV implements Serializable{
 
     public boolean isValid(){
         if (value == null){
-            return (type == Type.SRC_HOST);
+            return (type == Type.SRC_HOST || type == Type.SRC_DPID);
         }
         return (len == value.length);
     }
@@ -86,12 +86,13 @@ public class TLV implements Serializable{
 
     public class Type{
         public static final byte PACKET_IN          = 0x00;
-        public static final byte FLOW_MOD = 0x01;
+        public static final byte FLOW_MOD           = 0x01;
         public static final byte PACKET_OUT         = 0x02;
         public static final byte LOCAL_TOPO         = 0x03;
-        public static final byte GLOBAL_TOPO     = 0x04;
-        public static final byte SRC_HOST   = 0x06;
-        public static final byte GLOBAL_FLOW_MOD = 0x07;
+        public static final byte GLOBAL_TOPO        = 0x04;
+        public static final byte SRC_HOST           = 0x06;
+        public static final byte SRC_DPID           = 0x08;// flowmod, spare_packet_in, res_spare_packet_in;
+        public static final byte GLOBAL_FLOW_MOD    = 0x07;
     }
 
 }
