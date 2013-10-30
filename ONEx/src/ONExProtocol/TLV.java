@@ -93,6 +93,7 @@ public class TLV implements Serializable{
         public static final byte SRC_HOST           = 0x06;
         public static final byte SRC_DPID           = 0x08;// flowmod, spare_packet_in, res_spare_packet_in;
         public static final byte GLOBAL_FLOW_MOD    = 0x07;
+        public static final byte FILE_NAME          = 0x09;
     }
 
 }

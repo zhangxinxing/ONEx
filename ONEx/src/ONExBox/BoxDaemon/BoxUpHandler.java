@@ -67,15 +67,12 @@ class BoxUpHandler extends SimpleChannelHandler {
                 // from SDK
                 // no reply
                 log.debug("get UPLOAD_LOCAL_TOPO");
-                GlobalTopo localGlobalTopo = op.getGlobalTopo();
-                log.info("Local Topo got: " + localGlobalTopo);
-                gateway.submitTopology(localGlobalTopo);
+                String fileName = op.getFileName();
+                log.info("DB name: " + fileName);
+                gateway.submitTopology(null);
                 break;
 
             case ONExPacket.REQUEST_GLOBAL_TOPO:
-                // should give back RETURN_GLOBAL_TOPO
-                GlobalTopo topo = gateway.getGlobalTopo();
-                boxDaemon.returnGlobalTopo(topo);
                 break;
 
             case ONExPacket.REQ_GLOBAL_FLOW_MOD:

@@ -163,8 +163,8 @@ public class GlobalShare{
 
         // add new entries and links
         log.debug("Merging topology with remote version");
-        hostEntries.addAll(topo.getHostList());
-        switchLinks.addAll(topo.getSwitchLinks());
+        hostEntries.addAll(topo.getHostEntrySet());
+        switchLinks.addAll(topo.getSwitchLinkSet());
 
         return true;
     }
@@ -175,12 +175,10 @@ public class GlobalShare{
         Set<SwitchLink> switchLinks = hz.getSet(SWITCH_LINKS);
 
         // detach
-        GlobalTopo globalTopo =  new GlobalTopo();
-        globalTopo.mergeHostList(hostEntries);
-        globalTopo.mergeSwitchLinks(switchLinks);
+        // TODO rewrite the logic
 
         //
-        return globalTopo;
+        return null;
     }
 
 

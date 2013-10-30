@@ -41,10 +41,12 @@ public class GlobalFlowMod implements ITLV{
 
     @Override
     public ByteBuffer toByteBuffer() {
+//        ChannelBuffer buf = ChannelBuffers.buffer(getLength());
         ByteBuffer buf = ByteBuffer.allocate(getLength());
         for (GlobalFlowModEntry entry : flowModEntries){
             entry.writeTo(buf);
         }
+//        return buf.toByteBuffer();
         return buf;
     }
 
@@ -90,6 +92,12 @@ class GlobalFlowModEntry{
         buf.get(ofm);
 
     }
+
+//    public void writeTo(ChannelBuffer buf){
+//        buf.writeLong(dpid);
+//        buf.writeInt(len_OFM);
+//        ofFlowMod.writeTo(buf);
+//    }
 
     public void writeTo(ByteBuffer buf){
         buf.putLong(dpid);

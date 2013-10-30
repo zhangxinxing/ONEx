@@ -31,7 +31,6 @@ public class TONExProtocol {
         ln();
 
         TONExProtocol.ONExRequestGlobalTopo();
-        TONExProtocol.ONExResGlobalTopo();
         ln();
 
         TONExProtocol.ONExReqGlobalFlowMod();
@@ -88,39 +87,16 @@ public class TONExProtocol {
     }
 
     public static void ONExUploadLocalTopo(){
-        GlobalTopo globalTopo = new GlobalTopo();
-        globalTopo.addHostEntry(
-                12345L,
-                (short) 123,
-                1234,
-                new byte[]{1,2,3,4,5,6}
-        );
 
-        globalTopo.addSwitchLink(
-                1L,
-                (short)1,
-                2L,
-                (short)2
-        );
-
-        globalTopo.addForestEntry(
-                123,
-                (short)123,
-                1234567890L
-        );
-
-        log.info(globalTopo.toString());
-
-        ONExPacket msg = ONExProtocolFactory.ONExUploadLocalTopo(globalTopo);
+        ONExPacket msg = ONExProtocolFactory.ONExUploadLocalTopo("/tmp/some.file");
         log.info(msg);
-        log.info(msg.getGlobalTopo());
+        log.info(msg.getFileName());
         ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
         msg.writeTo(msgBB);
         msgBB.flip();
         msg = ONExProtocolFactory.parser(msgBB);
         log.info(msg);
-        globalTopo = msg.getGlobalTopo();
-        log.info(globalTopo.toString());
+        log.info(msg.toString());
     }
 
     public static void ONExRequestGlobalTopo(){
@@ -134,21 +110,21 @@ public class TONExProtocol {
     }
 
 
-    public static void ONExResGlobalTopo(){
-        // 5 ONExResGlobalTopo
-        GlobalTopo globalTopo = new GlobalTopo();
-        globalTopo.addHostEntry(123L,(short)1, 123, new byte[] {1,2,3,4,5,6});
-        globalTopo.addSwitchLink(123L, (short)123, 124L, (short)124);
-        ONExPacket msg = ONExProtocolFactory.ONExResGlobalTopo(globalTopo);
-        log.info(msg.toString());
-        log.info(msg.getGlobalTopo());
-        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
-        msg.writeTo(msgBB);
-        msgBB.flip();
-        msg = ONExProtocolFactory.parser(msgBB);
-        log.info(msg.toString());
-        log.info(msg.getGlobalTopo());
-    }
+    /*
+        deprecated
+     */
+//    public static void ONExResGlobalTopo(){
+//        // 5 ONExResGlobalTopo
+//        ONExPacket msg = ONExProtocolFactory.ONExResGlobalTopo(null);
+//        log.info(msg.toString());
+//        log.info(msg.getGlobalTopo());
+//        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
+//        msg.writeTo(msgBB);
+//        msgBB.flip();
+//        msg = ONExProtocolFactory.parser(msgBB);
+//        log.info(msg.toString());
+//        log.info(msg.getGlobalTopo());
+//    }
 
     public static void ONExReqGlobalFlowMod(){
         // 6  ONExReqGlobalFlowMod

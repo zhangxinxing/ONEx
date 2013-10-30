@@ -21,12 +21,13 @@ public class ONExProtocolFactory {
 
     public static ONExPacket ONExSparePI(OFPacketIn pi, InetSocketAddress srcHost, long srcDpid){
         ONExPacket op = new ONExPacket(ONExPacket.SPARE_PACKET_IN, -1);
-        ByteBuffer PIBB = ByteBuffer.allocate(pi.getLength());
-        pi.writeTo(PIBB);
+        ByteBuffer buf = ByteBuffer.allocate(pi.getLength());
+//        ChannelBuffer buf = ChannelBuffers.buffer(pi.getLength());
+        pi.writeTo(buf);
         op.setTLV(new TLV(
                 TLV.Type.PACKET_IN,
                 pi.getLengthU(),
-                PIBB.array()
+                buf.array()
         ));
 
         op.setTLV(new TLV(
@@ -48,9 +49,11 @@ public class ONExProtocolFactory {
     public static ONExPacket ONExResSparePI(OFFlowMod flowMod, OFPacketOut po, InetSocketAddress srcHost, long srcDpid){
         ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, -1);
         ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLength());
+//        ChannelBuffer FMBB = ChannelBuffers.buffer(flowMod.getLength());
         flowMod.writeTo(FMBB);
 
         ByteBuffer POBB = ByteBuffer.allocate(po.getLength());
+//        ChannelBuffer POBB = ChannelBuffers.buffer(po.getLength());
         po.writeTo(POBB);
 
         op.setTLV(new TLV(
@@ -82,12 +85,12 @@ public class ONExProtocolFactory {
         return op;
     }
 
-    public static ONExPacket ONExUploadLocalTopo(GlobalTopo topo){
+    public static ONExPacket ONExUploadLocalTopo(String db){
         ONExPacket op = new ONExPacket(ONExPacket.UPLOAD_LOCAL_TOPO, -1);
         op.setTLV(new TLV(
-                TLV.Type.GLOBAL_TOPO,
-                topo.getLength(),
-                topo.toByteBuffer().array()
+                TLV.Type.FILE_NAME,
+                db.length(),
+                db.getBytes()
         ));
         return op;
     }
@@ -98,21 +101,24 @@ public class ONExProtocolFactory {
         return op;
     }
 
-    public static ONExPacket ONExResGlobalTopo(GlobalTopo globalTopo){
-        // S -> C
-        if(globalTopo == null){
-            log.error("globalTopo cannot be null");
-            return null;
-        }
-        ONExPacket op = new ONExPacket(ONExPacket.RETURN_GLOBAL_TOPO, -1);
-        op.setTLV(new TLV(
-                TLV.Type.GLOBAL_TOPO,
-                globalTopo.getLength(),
-                globalTopo.toByteBuffer().array()
-        ));
-
-        return op;
-    }
+    /*
+        deprecated
+     */
+//    public static ONExPacket ONExResGlobalTopo(GlobalTopo globalTopo){
+//        // S -> C
+//        if(globalTopo == null){
+//            log.error("globalTopo cannot be null");
+//            return null;
+//        }
+//        ONExPacket op = new ONExPacket(ONExPacket.RETURN_GLOBAL_TOPO, -1);
+//        op.setTLV(new TLV(
+//                TLV.Type.GLOBAL_TOPO,
+//                globalTopo.getLength(),
+//                globalTopo.toByteBuffer().array()
+//        ));
+//
+//        return op;
+//    }
 
     public static ONExPacket ONExReqGlobalFlowMod(GlobalFlowMod globalFlowMod){
         if (globalFlowMod == null){
@@ -132,6 +138,7 @@ public class ONExProtocolFactory {
     public static ONExPacket ONExSCFlowMod(OFFlowMod flowMod, long srcDpid){
         ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, -1);
         ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLength());
+//        ChannelBuffer FMBB = ChannelBuffers.buffer(flowMod.getLength());
         flowMod.writeTo(FMBB);
         op.setTLV(new TLV(
                 TLV.Type.FLOW_MOD,

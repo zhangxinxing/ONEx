@@ -70,12 +70,6 @@ public class BoxDaemon {
 
     }
 
-    public void returnGlobalTopo(GlobalTopo topo){
-        log.debug("return global topo: " + topo.toString());
-        ONExPacket op = ONExProtocolFactory.ONExResGlobalTopo(topo);
-        sendONEx(op);
-    }
-
 
     public void destroy(){
         clientChannel.close();

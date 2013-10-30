@@ -40,14 +40,36 @@ public class Util {
     }
 
     public static long arrayToLong(byte[] array){
-        long re = 0;
+        if (array.length > 8){
+            System.err.println("array must be <8-byte");
+        }
+        long re = 0L;
         long temp;
-        for (int i = 0; i < array.length; i++){
+        for (int i = array.length - 1; i >= 0; i--){
             temp = array[i];
-            re = re | (temp << (7-i)*8 & 0xFF << (7-i)*8);
-
+            re = re | ((temp << (array.length - 1 - i)*8 & 0xFFL << (array.length - 1 - i)*8));
         }
         return re;
+    }
+
+    public static long MACToLong(byte[] mac){
+        if (mac.length != 6){
+            System.err.println("error format MAC");
+            return -1L;
+        }
+        return arrayToLong(mac);
+    }
+
+    public static byte[] longToMAC(long mac){
+        ByteBuffer buf = ByteBuffer.allocate(8);
+        buf.putLong(mac);
+        buf.flip();
+        if (buf.getShort() != 0){
+            System.err.println("error in long");
+        }
+        byte[] MAC = new byte[6];
+        System.arraycopy(buf.array(), 2, MAC, 0, 6);
+        return MAC;
     }
 
     public static String dumpArray(Object obj){

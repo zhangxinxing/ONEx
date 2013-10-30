@@ -21,7 +21,7 @@ public class HostEntry implements Serializable{
 
     public static Logger log = Logger.getLogger(HostEntry.class);
 
-    HostEntry(long dpid, short port, int ipv4, byte[] MAC) {
+    public HostEntry(long dpid, short port, int ipv4, byte[] MAC) {
         if (MAC.length != 6){
             log.error("MAC.length != 6");
             return;
@@ -48,6 +48,36 @@ public class HostEntry implements Serializable{
         BB.put(MAC);
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 11;
+        int result = 1;
+        //result = prime * result + (int) (dpid ^ (dpid >>> 32));
+        //result = prime * result + (port ^ (port >>> 8));
+
+        for (byte b : MAC){
+            result = prime * result + (b ^ (b >>> 4));
+        }
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+
+        HostEntry other = (HostEntry) obj;
+
+        for (int i = 0; i < 6; i++)
+            if (this.MAC[i] != other.MAC[i])
+                return false;
+        return true;
+    }
+
     public String toString(){
         return String.format(
                 "[hostEntry, dpid=%d, port=%d, ipv4=%s, MAC=%s]",
@@ -58,4 +88,39 @@ public class HostEntry implements Serializable{
         );
     }
 
+    public long getDpid() {
+        return dpid;
+    }
+
+    public short getPort() {
+        return port;
+    }
+
+    public int getIpv4() {
+        return ipv4;
+    }
+
+    public byte[] getMAC() {
+        return MAC;
+    }
+
+    public String getMACString(){
+        return Util.macToString(MAC);
+    }
+
+    public void setMAC(byte[] MAC) {
+        this.MAC = MAC;
+    }
+
+    public void setIpv4(int ipv4) {
+        this.ipv4 = ipv4;
+    }
+
+    public void setPort(short port) {
+        this.port = port;
+    }
+
+    public void setDpid(long dpid) {
+        this.dpid = dpid;
+    }
 }

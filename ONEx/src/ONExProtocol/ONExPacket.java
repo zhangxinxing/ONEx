@@ -143,7 +143,6 @@ public class ONExPacket implements Serializable {
         }
     }
 
-
     public long getSrcDpid(){
         if (!isType(new byte[]{SPARE_PACKET_IN, RES_SPARE_PACKET_IN, SC_FLOW_MOD})){
             log.error("Error: Wrong type");
@@ -158,16 +157,6 @@ public class ONExPacket implements Serializable {
         }
 
         return Util.arrayToLong(tlv.getValue());
-    }
-
-
-    private TLV findTLV(byte Type){
-        for (TLV tlv : TLVs){
-            if (tlv.getType() == Type){
-                return tlv;
-            }
-        }
-        return null;
     }
 
     private boolean isType(byte[] types){
@@ -197,7 +186,9 @@ public class ONExPacket implements Serializable {
         if (pi == null)
             return null;
         OFPacketIn ofpi = new OFPacketIn();
-        ofpi.readFrom(ByteBuffer.wrap(pi));
+//        ChannelBuffer buf = ChannelBuffers.copiedBuffer(pi);
+        ByteBuffer buf = ByteBuffer.wrap(pi);
+        ofpi.readFrom(buf);
         return ofpi;
     }
 
@@ -217,8 +208,11 @@ public class ONExPacket implements Serializable {
         if (flowMod == null)
             return null;
         OFFlowMod offm = new OFFlowMod();
+//        offm.setActionFactory(BasicFactory.getInstance().getActionFactory());
         offm.setActionFactory(new BasicFactory().getActionFactory());
+//        offm.readFrom(ChannelBuffers.copiedBuffer(flowMod));
         offm.readFrom(ByteBuffer.wrap(flowMod));
+
         return offm;
     }
 
@@ -238,28 +232,53 @@ public class ONExPacket implements Serializable {
         if (po == null)
             return null;
         OFPacketOut ofpo = new OFPacketOut();
+//        ofpo.setActionFactory(BasicFactory.getInstance().getActionFactory());
         ofpo.setActionFactory(new BasicFactory().getActionFactory());
         return ofpo;
     }
 
-    public GlobalTopo getGlobalTopo(){
-        if (header.INS != RETURN_GLOBAL_TOPO && header.INS != UPLOAD_LOCAL_TOPO){
-            log.error("this method should only be called in RETURN_GLOBAL_TOPO");
+    public String getFileName(){
+        if (header.INS != UPLOAD_LOCAL_TOPO){
+            log.error("this method should only be called in UPLOAD_LOCAL_TOPO");
             return null;
         }
-        TLV topo = null;
-        for(TLV tlv : TLVs){
-            if (tlv.getType() == TLV.Type.GLOBAL_TOPO){
-                topo = tlv;
-                break;
+        TLV tlv = findTLV(TLV.Type.FILE_NAME);
+        if(tlv == null){
+            log.error("TLV named FILENAME doesn't exist");
+            return null;
+        }
+
+        byte[] string = tlv.getValue();
+        return new String(string);
+    }
+
+    private TLV findTLV(byte Type){
+        for (TLV tlv : TLVs){
+            if (tlv.getType() == Type){
+                return tlv;
             }
         }
-        if (topo == null){
-            log.error("GLOBAL_TOPO not found");
-            return null;
-        }
-        return new GlobalTopo(topo);
+        return null;
     }
+
+//    public GlobalTopo getGlobalTopo(){
+//        if (header.INS != RETURN_GLOBAL_TOPO && header.INS != UPLOAD_LOCAL_TOPO){
+//            log.error("this method should only be called in RETURN_GLOBAL_TOPO");
+//            return null;
+//        }
+//        TLV topo = null;
+//        for(TLV tlv : TLVs){
+//            if (tlv.getType() == TLV.Type.GLOBAL_TOPO){
+//                topo = tlv;
+//                break;
+//            }
+//        }
+//        if (topo == null){
+//            log.error("GLOBAL_TOPO not found");
+//            return null;
+//        }
+//        return new GlobalTopo(topo);
+//    }
 
     public GlobalFlowMod getGlobalFlowMod(){
         if (getINS() != ONExPacket.REQ_GLOBAL_FLOW_MOD){
@@ -343,7 +362,7 @@ public class ONExPacket implements Serializable {
         }
 
         public void readFrom(ByteBuffer headerBB){
-            VERSION = (byte)headerBB.get();
+            VERSION = headerBB.get();
             LEN = headerBB.getInt();
             INS = headerBB.getInt();
             ID = headerBB.getInt();

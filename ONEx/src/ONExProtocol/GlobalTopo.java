@@ -1,179 +1,175 @@
 package ONExProtocol;
 
-import org.apache.log4j.Logger;
-
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-/**
+/*
  * Created with IntelliJ IDEA.
  * User: Fan
  * Date: 13-10-19
  * Time: AM10:27
  */
-public class GlobalTopo {
-    private static Logger log = Logger.getLogger(GlobalTopo.class);
 
-    private long nHost;
-    Set<HostEntry> hostList;
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.DijkstraShortestPath;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleDirectedGraph;
 
-    private long nSwitch;
-    Set<SwitchLink> switchLinks;
+import java.io.File;
+import java.sql.*;
+import java.util.LinkedList;
+import java.util.List;
 
-    private long nForest;
-    Map<InetSocketAddress, ForestEntry> forestEntries;
+/*
+    A thread-safe class inherit from local topology
+  */
+public class GlobalTopo  extends LocalTopo{
+
+    DirectedGraph<Long, DefaultEdge> forestNodeGraph;
 
     public GlobalTopo() {
-        hostList = new HashSet<HostEntry>();
-        switchLinks = new HashSet<SwitchLink>();
-        forestEntries = new HashMap<InetSocketAddress, ForestEntry>();
+        super();
+        forestNodeGraph = new SimpleDirectedGraph<Long, DefaultEdge>(DefaultEdge.class);
     }
 
-    public GlobalTopo(TLV tlv){
-        if (tlv.getType() != TLV.Type.GLOBAL_TOPO){
-            log.error("Error type");
+    public synchronized void loadFromDB(String db){
+        if(!new File(db).exists()){
+            log.error("DB file "  + db + " does not exist");
+            return;
         }
-        else{
-            hostList = new HashSet<HostEntry>();
-            switchLinks = new HashSet<SwitchLink>();
-            forestEntries = new HashMap<InetSocketAddress, ForestEntry>();
-            ByteBuffer buf = ByteBuffer.wrap(tlv.getValue());
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
-            nHost = buf.getLong();
-            for(int i = 0; i < nHost; i++){
-                hostList.add(new HostEntry(buf));
+        Connection connection = null;
+        try
+        {
+            // create a database connection
+            connection = DriverManager.getConnection("jdbc:sqlite:" + db);
+            Statement statement = connection.createStatement();
+
+            ResultSet rs = statement.executeQuery(String.format("SELECT * FROM %s", SQLiteHelper.T_HOSTS));
+
+            while(rs.next()){
+                this.addHost(
+                        rs.getLong("dpid"),
+                        rs.getShort("port"),
+                        rs.getInt("ipv4"),
+                        Util.longToMAC(rs.getLong("MAC")));
             }
 
-            nSwitch = buf.getLong();
-            for(int i = 0; i < nSwitch; i++){
-                switchLinks.add(new SwitchLink(buf));
+            rs = statement.executeQuery(String.format("SELECT * FROM %s", SQLiteHelper.T_SWLINKS));
+            while(rs.next()){
+                this.addSwitchLink(
+                        rs.getLong("src"),
+                        rs.getShort("srcPort"),
+                        rs.getLong("dst"),
+                        rs.getShort("dstPort"));
+
             }
 
-            nForest = buf.getLong();
-            for(int i = 0; i < nForest; i++){
-                ForestEntry entry = new ForestEntry(buf);
-                forestEntries.put(entry.getInetSocketAddress(), entry);
+            rs = statement.executeQuery(String.format("SELECT * FROM %s", SQLiteHelper.T_FOREST));
+            while(rs.next()){
+                this.addForestEntry(
+                        rs.getInt("controllerIP"),
+                        rs.getShort("controllerPort"),
+                        rs.getLong("dpid"));
             }
         }
-    }
-
-    public Set<SwitchLink> getSwitchLinks(){
-        return switchLinks;
-    }
-
-    public void mergeSwitchLinks(Set<SwitchLink> switchLinks){
-        for(SwitchLink entry : switchLinks){
-            if(!this.switchLinks.contains(entry)){
-                this.switchLinks.add(entry);
-                this.nSwitch += 1;
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        finally{
+            try{
+                if(connection != null){
+                    connection.close();
+                }
+            }
+            catch(SQLException e){
+                System.err.println(e);
             }
         }
+
     }
 
-    public Set<HostEntry> getHostList(){
-        return hostList;
-    }
-
-    public void mergeHostList(Set<HostEntry> hostList){
-        for(HostEntry entry : hostList){
-            if(!this.hostList.contains(entry)){
-                this.hostList.add(entry);
-                this.nHost += 1;
+    public ForestEntry getForestByDpid(long dpid){
+        synchronized (forestEntrySet){
+            for(ForestEntry entry : forestEntrySet){
+                if(entry.getDpid() == dpid){
+                    return new ForestEntry(entry);
+                }
             }
         }
+        return null;
     }
 
-    public Map<InetSocketAddress, ForestEntry> getForestEntries(){
-        return forestEntries;
-    }
+    public List<SwitchLink> findGlobalWayToDpid(long src, long dst){
 
-    public void mergeForestEntry(Set<ForestEntry> forest){
-        for(ForestEntry entry : forest){
-            if(!forestEntries.containsValue(entry)){
-                forestEntries.put(entry.getInetSocketAddress(), entry);
-                this.nForest += 1;
+
+        ForestEntry srcForest = getForestByDpid(src);
+        ForestEntry dstForest = getForestByDpid(dst);
+
+        if (srcForest.getForestNode() == dstForest.getForestNode()){
+            log.error(src + " and " + dst
+                    + " are in the same Forest, should be detected early");
+            return null;
+        }
+
+        for (SwitchLink link : switchLinkSet){
+            long v1 = getForestByDpid(link.getSrcDpid()).getForestNode();
+            long v2 = getForestByDpid(link.getDstDpid()).getForestNode();
+
+            if (forestNodeGraph.getEdge(v1, v2) == null){
+                forestNodeGraph.addVertex(v1);
+                forestNodeGraph.addVertex(v2);
+                forestNodeGraph.addEdge(v1, v2);
+                forestNodeGraph.getEdge(v1, v2);
             }
+
         }
-    }
+        DijkstraShortestPath sp =
+                new DijkstraShortestPath(forestNodeGraph, srcForest.getForestNode(), dstForest.getForestNode());
 
-    public void addHostEntry(long dpid, short port, int IPv4, byte[] MAC){
-        hostList.add(new HostEntry(
-                dpid,
-                port,
-                IPv4,
-                MAC
-        ));
-        this.nHost += 1;
-    }
+        GraphPath path = sp.getPath();
+        DefaultEdge e = (DefaultEdge)path.getEdgeList().get(0);
 
-    public void addSwitchLink(long srcDpid, short srcPort, long dstDpid, short dstPort){
-        SwitchLink link = new SwitchLink(
-                srcDpid, srcPort, dstDpid, dstPort
-        );
-        if (!switchLinks.contains(link)){
-            switchLinks.add(link);
-            this.nSwitch += 1;
-        }
+        long nextForestNode = forestNodeGraph.getEdgeTarget(e);
 
-    }
 
-    public void addForestEntry(int ipv4, short tcpPort, long dpid){
-        ForestEntry entry = new ForestEntry(ipv4, tcpPort, dpid);
-        if (!forestEntries.containsValue(entry)){
-            forestEntries.put(entry.getInetSocketAddress(), entry);
-            this.nForest += 1;
-        }
-    }
+        /*
+            TODO, can be done by SQL
+         */
+        List<SwitchLink> links = new LinkedList<SwitchLink>();
+        for (SwitchLink link : switchLinkSet){
+            long v1 = getForestByDpid(link.getSrcDpid()).getForestNode();
+            long v2 = getForestByDpid(link.getDstDpid()).getForestNode();
 
-    public int getLength(){
-        return switchLinks.size() * SwitchLink.length +
-                hostList.size() * HostEntry.length +
-                forestEntries.size() * ForestEntry.getLength() +
-                8 + 8 + 8;
-    }
+            if (v1 == srcForest.getForestNode() && v2 == nextForestNode)
+                links.add(link);
 
-    public ByteBuffer toByteBuffer(){
-        ByteBuffer BB = ByteBuffer.allocate(getLength());
-        BB.putLong(nHost);
-        for (HostEntry ht : hostList){
-            ht.writeTo(BB);
-        }
-        BB.putLong(nSwitch);
-        for (SwitchLink sw : switchLinks){
-            sw.writeTo(BB);
         }
 
-        BB.putLong(nForest);
-        for (ForestEntry fr : forestEntries.values()){
-            fr.writeTo(BB);
-        }
-        return BB;
+        return links;
     }
 
     public String toString(){
         String to = String.format(
-                "[GlobalTopo, #host=%d, #switch=%d, #forest=%d, len=%d]",
-                nHost,
-                nSwitch,
-                nForest,
-                getLength()
+                "[GlobalTopo, #host=%d, #switch=%d, #forest=%d]",
+                hostEntryMap.size(),
+                switchLinkSet.size(),
+                forestEntrySet.size()
         );
-        for (HostEntry hostEntry : hostList){
+        for (HostEntry hostEntry : hostEntryMap.values()){
             to += hostEntry.toString();
         }
-        for (SwitchLink swLink : switchLinks){
+        for (SwitchLink swLink : switchLinkSet){
             to += swLink.toString();
         }
 
-        for (ForestEntry entry : forestEntries.values()){
+        for (ForestEntry entry : forestEntrySet){
             to += entry.toString();
         }
 
         return to;
     }
 }
-
