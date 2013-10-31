@@ -40,7 +40,7 @@ public class IOServer {
     private ServerBootstrap bootstrap;
 
     public IOServer(BoxDaemon serverDaemon){
-        this.port = ONExSetting.PORT;
+        this.port = ONExSetting.GATEWAT_SERVER_PORT;
         // Configure the server.
         bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(

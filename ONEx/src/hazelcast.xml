@@ -1,0 +1,18 @@
+<hazelcast>
+    <network>
+        <interfaces enabled="true">
+            <interface>127.0.0.1</interface>
+        </interfaces>
+        <port auto-increment="true">5701</port>
+        <join>
+            <multicast enabled="false">
+                <multicast-group>127.0.0.255</multicast-group>
+                <multicast-port>54327</multicast-port>
+            </multicast>
+            <tcp-ip enabled="true">
+                <member>127.0.0.1:5701</member>
+                <member>127.0.0.1:5702</member>
+            </tcp-ip>
+        </join>
+    </network>
+</hazelcast>

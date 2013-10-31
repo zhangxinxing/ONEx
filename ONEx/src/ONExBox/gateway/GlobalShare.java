@@ -6,6 +6,8 @@ import ONExBox.protocol.BusyTableEntry;
 import ONExProtocol.*;
 
 import com.hazelcast.config.Config;
+import com.hazelcast.config.JoinConfig;
+import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.apache.log4j.Logger;
@@ -48,8 +50,7 @@ public class GlobalShare{
         exec = Executors.newSingleThreadExecutor();
 
         /* HazelCast */
-        Config cfg = new Config();
-        this.hz = Hazelcast.newHazelcastInstance(cfg);
+        this.hz = Hazelcast.newHazelcastInstance(null);
 
         // initialization
         this.localBt = new BusyTableEntry(ONExSetting.getInstance().socketAddr);

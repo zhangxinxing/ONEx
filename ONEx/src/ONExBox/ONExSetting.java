@@ -23,12 +23,14 @@ public class ONExSetting {
 
     public static String    BUSYTABLE_MAP;
     public static String    TOPO_MAP;
-    public static int       PORT;
-    public static int       DAEMON_PORT;
     public static int       BUSY_UPDATE_INT;//ms
     public static boolean   PKTGEN;
 
     public static int       SIZE_OF_POOL;
+
+    public static int       GATEWAT_SERVER_PORT;
+    public static int       DAEMON_PORT;
+    public static int       HAZELCAST_PORT;
 
     private String          APPNAME;
 
@@ -45,7 +47,7 @@ public class ONExSetting {
         parseConfig();
         try {
             IP = new Sigar().getNetInterfaceConfig().getAddress();
-            socketAddr = new InetSocketAddress(IP, PORT);
+            socketAddr = new InetSocketAddress(IP, GATEWAT_SERVER_PORT);
         } catch (SigarException e) {
             e.printStackTrace();
         }
@@ -75,8 +77,11 @@ public class ONExSetting {
         BUSY_UPDATE_INT = Integer.parseInt(config.getProperty("BUSY_UPDATE_INT"));
         BUSYTABLE_MAP   = config.getProperty("BUSYTABLE_MAP");
         TOPO_MAP        = config.getProperty("TOPO_MAP");
-        PORT            = Integer.parseInt(config.getProperty("PORT"));
+
+        GATEWAT_SERVER_PORT = Integer.parseInt(config.getProperty("GATEWAY_SERVER_PORT"));
         DAEMON_PORT     = Integer.parseInt(config.getProperty("DAEMON_PORT"));
+        HAZELCAST_PORT  = Integer.parseInt(config.getProperty("HAZELCAST_PORT"));
+
         PKTGEN          = Boolean.parseBoolean(config.getProperty("PKTGEN"));
         APPNAME         = config.getProperty("nameOfApps");
         SIZE_OF_POOL    = Integer.parseInt(config.getProperty("SIZE_OF_POOL"));
