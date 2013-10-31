@@ -22,9 +22,9 @@ public class Gateway {
     private Map<InetSocketAddress, IOClient> clientPool;
 
     public Gateway() {
-        this.globalShare = new GlobalShare();
         BoxDaemon serverDaemon = new BoxDaemon(this, ONExSetting.DAEMON_PORT);
         this.clientPool = new HashMap<InetSocketAddress, IOClient>();
+        this.globalShare = new GlobalShare();
         ioServer = new IOServer(serverDaemon);
         log.info("Gateway Server set up");
     }
@@ -74,6 +74,7 @@ public class Gateway {
         log.debug("submit topology");
         GlobalTopo topo = new GlobalTopo();
         topo.loadFromDB(db);
+        log.debug("complete loading: " + topo.toString());
         globalShare.mergeTopology(topo);
     }
 

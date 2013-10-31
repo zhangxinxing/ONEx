@@ -24,7 +24,7 @@ class BoxUpHandler extends SimpleChannelHandler {
     public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
         if (e instanceof ChannelStateEvent &&
                 ((ChannelStateEvent) e).getState() != ChannelState.INTEREST_OPS) {
-            log.debug(e.getChannel().toString() + ":" + ((ChannelStateEvent) e).getState());
+            log.trace(e.getChannel().toString() + ":" + ((ChannelStateEvent) e).getState());
         }
         super.handleUpstream(ctx, e);
     }
@@ -39,7 +39,7 @@ class BoxUpHandler extends SimpleChannelHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
         byte[] msg = ((ChannelBuffer)e.getMessage()).array();
-        log.debug("msgReceived: " + Util.dumpArray(msg));
+        //log.debug("msgReceived: " + Util.dumpArray(msg));
 
         ONExPacket op = ONExProtocolFactory.parser(((ChannelBuffer) e.getMessage()).array());
 
@@ -67,9 +67,8 @@ class BoxUpHandler extends SimpleChannelHandler {
             case ONExPacket.UPLOAD_LOCAL_TOPO:
                 // from SDK
                 // no reply
-                log.debug("get UPLOAD_LOCAL_TOPO");
                 String fileName = op.getFileName();
-                log.info("DB name: " + fileName);
+                log.debug("get UPLOAD_LOCAL_TOPO, DB name: " + fileName );
                 gateway.submitTopology(fileName);
                 break;
 

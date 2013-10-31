@@ -155,27 +155,31 @@ public class GlobalShare{
     }
 
     /* TOPOLOGY */
-    public boolean mergeTopology(GlobalTopo topo){
+    public void mergeTopology(GlobalTopo topo){
         // get remote objects
-        Set<HostEntry> hostEntries = hz.getSet(HOST_ENTRIES);
-        Set<SwitchLink> switchLinks = hz.getSet(SWITCH_LINKS);
+        Set<HostEntry> hostEntrySet = hz.getSet(HOST_ENTRIES);
+        Set<SwitchLink> switchLinkSet = hz.getSet(SWITCH_LINKS);
         Set<ForestEntry> forestEntrySet = hz.getSet(FORESTS);
 
-        // add new entries and links
-        if (hostEntries.addAll(topo.getHostEntrySet()) ||
-                switchLinks.addAll(topo.getSwitchLinkSet()) ||
-                forestEntrySet.addAll(topo.getForestEntrySet())){
+        // first pull global
+        GlobalTopo globalTopo = new GlobalTopo();
+        globalTopo.addHostsAll(hostEntrySet);
+        globalTopo.addSwitchLinksAll(switchLinkSet);
+        globalTopo.addForestEntriesAll(forestEntrySet);
+        log.debug("Pulled:" + globalTopo.toString());
 
-            log.debug("Merged topology with remote version");
-            GlobalTopo globalTopo = new GlobalTopo();
-            globalTopo.addHostsAll(hostEntries);
-            globalTopo.addSwitchLinksAll(switchLinks);
-            globalTopo.addForestEntriesAll(forestEntrySet);
-            globalTopo.writeToDB("jdbc:sqlite:" + SQLiteHelper.SQLITE_DB_GLOBALTOPO);
-            return true;
-        }
+        // then, merge local to Global
+        globalTopo.addHostsAll(topo.getHostEntrySet());
+        globalTopo.addSwitchLinksAll(topo.getSwitchLinkSet());
+        globalTopo.addForestEntriesAll(topo.getForestEntrySet());
+        globalTopo.writeToDB(SQLiteHelper.SQLITE_DB_GLOBALTOPO);
 
-        return false;
+        // finally submit to network
+        hostEntrySet.addAll(topo.getHostEntrySet());
+        switchLinkSet.addAll(topo.getSwitchLinkSet());
+        forestEntrySet.addAll(topo.getForestEntrySet());
+
+        log.debug("Merged topology with remote version");
     }
 
 
