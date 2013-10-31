@@ -59,6 +59,10 @@ public class LocalTopo {
         }
     }
 
+    public boolean addHostsAll(Set<HostEntry> hostEntrySet){
+        return hostEntrySet.addAll(hostEntrySet);
+    }
+
     /*
         Part of IDeviceListener
      */
@@ -123,6 +127,10 @@ public class LocalTopo {
         }
     }
 
+    public boolean addSwitchLinksAll(Set<SwitchLink> switchLinkSet){
+        return this.switchLinkSet.addAll(switchLinkSet);
+    }
+
     public SwitchLink findSwitchLinkTo(long src, long dst){
         synchronized (switchLinkSet){
             for(SwitchLink link : switchLinkSet){
@@ -148,6 +156,10 @@ public class LocalTopo {
                 log.debug("addForest ignored: " + newEntry.toString());
             }
         }
+    }
+
+    public boolean addForestEntriesAll(Set<ForestEntry> forestEntrySet){
+        return forestEntrySet.addAll(forestEntrySet);
     }
 
     /*

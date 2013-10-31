@@ -56,10 +56,6 @@ public class Gateway {
 
     }
 
-    public GlobalTopo getGlobalTopo(){
-        return globalShare.getGlobalTopo();
-    }
-
     private void send(InetSocketAddress addr, ONExPacket op){
         IOClient client;
         if (clientPool.containsKey(addr)){
@@ -74,8 +70,10 @@ public class Gateway {
 
     }
 
-    public void submitTopology(GlobalTopo topo){
+    public void submitTopology(String db){
         log.debug("submit topology");
+        GlobalTopo topo = new GlobalTopo();
+        topo.loadFromDB(db);
         globalShare.mergeTopology(topo);
     }
 

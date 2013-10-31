@@ -2,7 +2,6 @@ package ONExBox.BoxDaemon;
 
 import ONExBox.ONExSetting;
 import ONExBox.gateway.Gateway;
-import ONExProtocol.GlobalTopo;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;
 import org.apache.log4j.Logger;
@@ -69,7 +68,7 @@ class BoxUpHandler extends SimpleChannelHandler {
                 log.debug("get UPLOAD_LOCAL_TOPO");
                 String fileName = op.getFileName();
                 log.info("DB name: " + fileName);
-                gateway.submitTopology(null);
+                gateway.submitTopology(fileName);
                 break;
 
             case ONExPacket.REQUEST_GLOBAL_TOPO:

@@ -3,9 +3,7 @@ package ONExBox.gateway;
 import ONExBox.Monitor;
 import ONExBox.ONExSetting;
 import ONExBox.protocol.BusyTableEntry;
-import ONExProtocol.GlobalTopo;
-import ONExProtocol.HostEntry;
-import ONExProtocol.SwitchLink;
+import ONExProtocol.*;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
@@ -41,6 +39,7 @@ public class GlobalShare{
     //
     private static final String SWITCH_LINKS = "sw";
     private static final String HOST_ENTRIES = "hosts";
+    private static final String FORESTS = "forest";
 
     public GlobalShare(){
         log = Logger.getLogger(GlobalShare.class.getName());
@@ -160,25 +159,23 @@ public class GlobalShare{
         // get remote objects
         Set<HostEntry> hostEntries = hz.getSet(HOST_ENTRIES);
         Set<SwitchLink> switchLinks = hz.getSet(SWITCH_LINKS);
+        Set<ForestEntry> forestEntrySet = hz.getSet(FORESTS);
 
         // add new entries and links
-        log.debug("Merging topology with remote version");
-        hostEntries.addAll(topo.getHostEntrySet());
-        switchLinks.addAll(topo.getSwitchLinkSet());
+        if (hostEntries.addAll(topo.getHostEntrySet()) ||
+                switchLinks.addAll(topo.getSwitchLinkSet()) ||
+                forestEntrySet.addAll(topo.getForestEntrySet())){
 
-        return true;
-    }
+            log.debug("Merged topology with remote version");
+            GlobalTopo globalTopo = new GlobalTopo();
+            globalTopo.addHostsAll(hostEntries);
+            globalTopo.addSwitchLinksAll(switchLinks);
+            globalTopo.addForestEntriesAll(forestEntrySet);
+            globalTopo.writeToDB("jdbc:sqlite:" + SQLiteHelper.SQLITE_DB_GLOBALTOPO);
+            return true;
+        }
 
-    public GlobalTopo getGlobalTopo(){
-        // get remote objects
-        Set<HostEntry> hostEntries = hz.getSet(HOST_ENTRIES);
-        Set<SwitchLink> switchLinks = hz.getSet(SWITCH_LINKS);
-
-        // detach
-        // TODO rewrite the logic
-
-        //
-        return null;
+        return false;
     }
 
 
