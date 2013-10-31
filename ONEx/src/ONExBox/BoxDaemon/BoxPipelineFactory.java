@@ -24,7 +24,7 @@ class BoxPipelineFactory implements ChannelPipelineFactory {
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline p = Channels.pipeline();
         // upward
-        //p.addLast("framing", new LengthFieldBasedFrameDecoder(5120, 1, 4));
+        p.addLast("framing", new LengthFieldBasedFrameDecoder(5120, 1, 4, -5 ,0));
         p.addLast("UpHandler", new BoxUpHandler(gateway, serverDaemon));
         // downward
         return p;

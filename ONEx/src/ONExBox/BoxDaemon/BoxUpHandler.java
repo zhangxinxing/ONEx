@@ -4,6 +4,7 @@ import ONExBox.ONExSetting;
 import ONExBox.gateway.Gateway;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;
+import ONExProtocol.Util;
 import org.apache.log4j.Logger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.*;
@@ -23,7 +24,7 @@ class BoxUpHandler extends SimpleChannelHandler {
     public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
         if (e instanceof ChannelStateEvent &&
                 ((ChannelStateEvent) e).getState() != ChannelState.INTEREST_OPS) {
-            log.trace(e.getChannel().toString() + ":" +  ((ChannelStateEvent) e).getState());
+            log.debug(e.getChannel().toString() + ":" + ((ChannelStateEvent) e).getState());
         }
         super.handleUpstream(ctx, e);
     }
@@ -37,9 +38,10 @@ class BoxUpHandler extends SimpleChannelHandler {
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-        // Send back the received message to the remote peer.
+        byte[] msg = ((ChannelBuffer)e.getMessage()).array();
+        log.debug("msgReceived: " + Util.dumpArray(msg));
+
         ONExPacket op = ONExProtocolFactory.parser(((ChannelBuffer) e.getMessage()).array());
-        log.debug("Got message " + op.toString());
 
         if (!op.isValid()){
             log.error("Error in parsing wired ONExProtocol");
