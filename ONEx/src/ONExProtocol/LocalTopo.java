@@ -60,7 +60,11 @@ public class LocalTopo {
     }
 
     public boolean addHostsAll(Set<HostEntry> hostEntrySet){
-        return hostEntrySet.addAll(hostEntrySet);
+        log.debug("addHostAll:" + hostEntrySet.size());
+        for(HostEntry entry : hostEntrySet){
+            this.hostEntryMap.put(entry.getDpid(), entry);
+        }
+        return true;
     }
 
     /*
@@ -128,6 +132,7 @@ public class LocalTopo {
     }
 
     public boolean addSwitchLinksAll(Set<SwitchLink> switchLinkSet){
+        log.debug("addSwitchLinksAll:" + switchLinkSet.size());
         return this.switchLinkSet.addAll(switchLinkSet);
     }
 
@@ -159,7 +164,8 @@ public class LocalTopo {
     }
 
     public boolean addForestEntriesAll(Set<ForestEntry> forestEntrySet){
-        return forestEntrySet.addAll(forestEntrySet);
+        log.debug("addForestEntriesAll:" + forestEntrySet.size());
+        return this.forestEntrySet.addAll(forestEntrySet);
     }
 
     /*
@@ -229,6 +235,7 @@ public class LocalTopo {
                         entry.getControllerONExPort(),
                         entry.getDpid()));
             }
+//            log.debug(statement.toString());
             statement.executeBatch();
         }
         catch(SQLException e){
