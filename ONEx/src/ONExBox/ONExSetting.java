@@ -30,7 +30,6 @@ public class ONExSetting {
 
     public static int       GATEWAT_SERVER_PORT;
     public static int       DAEMON_PORT;
-    public static int       HAZELCAST_PORT;
 
     private String          APPNAME;
 
@@ -80,7 +79,6 @@ public class ONExSetting {
 
         GATEWAT_SERVER_PORT = Integer.parseInt(config.getProperty("GATEWAY_SERVER_PORT"));
         DAEMON_PORT     = Integer.parseInt(config.getProperty("DAEMON_PORT"));
-        HAZELCAST_PORT  = Integer.parseInt(config.getProperty("HAZELCAST_PORT"));
 
         PKTGEN          = Boolean.parseBoolean(config.getProperty("PKTGEN"));
         APPNAME         = config.getProperty("nameOfApps");
