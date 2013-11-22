@@ -27,6 +27,7 @@
 *.iml
 out/
 build/
+release/
 
 # OS generated files #
 .DS_Store
