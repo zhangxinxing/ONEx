@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh -ex
 HOME_DIR=`pwd`
 
 while getopts "s:o:r:d:y" optname
@@ -43,12 +43,17 @@ ONEX_ROOT_DIR="/Users/Fan/dev/ONEx/ONEx"
 # files
 FLOODLIGHT_PROP_FILE=$FLOODLIGHT_ROOT_DIR"/src/main/resources/floodlightdefault.properties"
 FLOODLIGHT_TEST_SETTING_FILE=$FLOODLIGHT_ROOT_DIR"/src/main/java/ONExProtocol/TestSetting.java"
+FLOODLIGHT_LOG4J_CONFIG_FILE=$FLOODLIGHT_ROOT_DIR"/src/main/resources/log4j.properties"
 
 echo "+openflowport=$OPENFLOW_PORT"
 javal=`grep -n openflowport $FLOODLIGHT_PROP_FILE`
 javaln=`echo $javal | awk -F : '{ print $1;}'`
 javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`$OPENFLOW_PORT
 sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_PROP_FILE
+
+javal=`grep -n log4j.appender.FILE.File $FLOODLIGHT_LOG4J_CONFIG_FILE`
+javaln=`echo $javal | awk -F : '{ print $1;}'`
+sed -i.bak $javaln's/.*/'"log4j.appender.FILE.File=ONExBox"$OPENFLOW_PORT".log"'/' $FLOODLIGHT_LOG4J_CONFIG_FILE
 
 echo "+RestApiServer.port=$REST_PORT"
 javal=`grep -n 'RestApiServer.port' $FLOODLIGHT_PROP_FILE`
@@ -96,6 +101,7 @@ sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
 confirm(){
 	vim $FLOODLIGHT_PROP_FILE
 	vim $FLOODLIGHT_TEST_SETTING_FILE
+	vim $FLOODLIGHT_LOG4J_CONFIG_FILE
 }
 
 build(){
