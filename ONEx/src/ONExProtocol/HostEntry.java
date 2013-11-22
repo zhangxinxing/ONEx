@@ -11,18 +11,18 @@ import java.nio.ByteBuffer;
  * Date: 13-10-27
  * Time: PM6:17
  */
-public class HostEntry implements Serializable{
+public class HostEntry implements Serializable {
     long dpid;
     short port;
     int ipv4;
     byte[] MAC;
 
-    public static int length = 8+2+4+6;
+    public static int length = 8 + 2 + 4 + 6;
 
     public static Logger log = Logger.getLogger(HostEntry.class);
 
     public HostEntry(long dpid, short port, int ipv4, byte[] MAC) {
-        if (MAC.length != 6){
+        if (MAC.length != 6) {
             log.error("MAC.length != 6");
             return;
         }
@@ -32,7 +32,7 @@ public class HostEntry implements Serializable{
         this.MAC = MAC;
     }
 
-    public HostEntry(ByteBuffer buf){
+    public HostEntry(ByteBuffer buf) {
         dpid = buf.getLong();
         port = buf.getShort();
         ipv4 = buf.getInt();
@@ -41,7 +41,7 @@ public class HostEntry implements Serializable{
 
     }
 
-    public void writeTo(ByteBuffer BB){
+    public void writeTo(ByteBuffer BB) {
         BB.putLong(dpid);
         BB.putShort(port);
         BB.putInt(ipv4);
@@ -55,14 +55,14 @@ public class HostEntry implements Serializable{
         //result = prime * result + (int) (dpid ^ (dpid >>> 32));
         //result = prime * result + (port ^ (port >>> 8));
 
-        for (byte b : MAC){
+        for (byte b : MAC) {
             result = prime * result + (b ^ (b >>> 4));
         }
         return result;
     }
 
     @Override
-    public boolean equals(Object obj){
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
         if (obj == null)
@@ -78,13 +78,13 @@ public class HostEntry implements Serializable{
         return true;
     }
 
-    public String toString(){
+    public String toString() {
         return String.format(
                 "[hostEntry, dpid=%d, port=%d, ipv4=%s, MAC=%s]",
                 dpid,
                 port,
                 Util.ipToString(ipv4),
-                Util.macToString(MAC)
+                Util.MACToString(MAC)
         );
     }
 
@@ -104,8 +104,8 @@ public class HostEntry implements Serializable{
         return MAC;
     }
 
-    public String getMACString(){
-        return Util.macToString(MAC);
+    public String getMACString() {
+        return Util.MACToString(MAC);
     }
 
     public void setMAC(byte[] MAC) {

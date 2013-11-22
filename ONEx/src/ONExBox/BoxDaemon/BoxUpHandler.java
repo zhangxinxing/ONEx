@@ -4,7 +4,6 @@ import ONExBox.ONExSetting;
 import ONExBox.gateway.Gateway;
 import ONExProtocol.ONExPacket;
 import ONExProtocol.ONExProtocolFactory;
-import ONExProtocol.Util;
 import org.apache.log4j.Logger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.*;
@@ -33,27 +32,21 @@ class BoxUpHandler extends SimpleChannelHandler {
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
         Channel chan = ctx.getChannel();
         boxDaemon.setClientChannel(chan);
-        log.debug("connected with " + chan.getRemoteAddress());
+        log.info("connected with " + chan.getRemoteAddress());
     }
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-        byte[] msg = ((ChannelBuffer)e.getMessage()).array();
-        //log.debug("msgReceived: " + Util.dumpArray(msg));
-
         ONExPacket op = ONExProtocolFactory.parser(((ChannelBuffer) e.getMessage()).array());
-
-        if (!op.isValid()){
+        if (!op.isValid()) {
             log.error("Error in parsing wired ONExProtocol");
             return;
         }
-
-        switch(op.getINS()){
+        gateway.setControllerID(op.getControllerID());
+        switch (op.getINS()) {
             case ONExPacket.SPARE_PACKET_IN:
                 log.debug("send to gateway SPARE_PACKET_IN");
                 op.setSrcHost(ONExSetting.getInstance().socketAddr);
-                log.debug("after add src: " + op.toString());
-                log.debug(op.getSrcHost());
                 gateway.sparePacketIn(op);
                 break;
 
@@ -68,7 +61,7 @@ class BoxUpHandler extends SimpleChannelHandler {
                 // from SDK
                 // no reply
                 String fileName = op.getFileName();
-                log.debug("get UPLOAD_LOCAL_TOPO, DB name: " + fileName );
+                log.debug("get UPLOAD_LOCAL_TOPO, DB name: " + fileName);
                 gateway.submitTopology(fileName);
                 break;
 

@@ -3,7 +3,6 @@ package ONExProtocol;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
 /**
@@ -14,66 +13,54 @@ import java.nio.ByteBuffer;
  */
 public class ForestEntry implements Serializable {
     private static Logger log = Logger.getLogger(ForestEntry.class);
-    private int controllerIP;
-    private short controllerONExPort;
+    private long controllerID;
     private long dpid;
 
-    public ForestEntry(int ipv4, short port, long dpid) {
-        this.controllerIP = ipv4;
-        this.controllerONExPort = port;
+    public ForestEntry(Long controllerID, long dpid) {
+        this.controllerID = controllerID;
         this.dpid = dpid;
     }
 
-    public ForestEntry(ForestEntry old){
-        this.controllerIP = old.getControllerIP();
-        this.controllerONExPort = old.getControllerONExPort();
+    public ForestEntry(ForestEntry old) {
+        this.controllerID = old.getControllerID();
         this.dpid = old.getDpid();
     }
 
-    public ForestEntry(ByteBuffer buf){
-        if (buf.hasRemaining()){
-            controllerIP = buf.getInt();
+    public ForestEntry(ByteBuffer buf) {
+        if (buf.hasRemaining()) {
+            controllerID = buf.getLong();
             dpid = buf.getLong();
-        }
-        else{
+        } else {
             log.error("Buf is empty");
         }
     }
 
-    public void writeTo(ByteBuffer buf){
-        buf.putInt(controllerIP);
+    public void writeTo(ByteBuffer buf) {
+        buf.putLong(controllerID);
         buf.putLong(dpid);
     }
 
-    public static int getLength(){
-        return 4 + 2+ 8;
+    public static int getLength() {
+        return 8 + 8;
     }
 
-    public long getForestNode(){
-        ByteBuffer buf = ByteBuffer.allocate(8);
-        buf.putInt(controllerIP);
-        buf.putShort((short)0xABCD);
-        buf.putShort(controllerONExPort);
-        buf.flip();
-        return buf.getLong();
+    public long getForestNode() {
+        return controllerID;
     }
 
-    public int getControllerIP() {
-        return controllerIP;
+    public long getControllerID() {
+        return controllerID;
     }
 
-    public short getControllerONExPort() {
-        return controllerONExPort;
-    }
 
     public long getDpid() {
         return dpid;
     }
 
-    public String toString(){
+    public String toString() {
         return String.format(
-                "[Forest Entry][controller = %s, dpid = %d]",
-                Util.ipToString(controllerIP),
+                "[Forest Entry][controllerID = %d, dpid = %d]",
+                controllerID,
                 dpid
         );
     }
@@ -83,13 +70,12 @@ public class ForestEntry implements Serializable {
         final int prime = 11;
         int result = 1;
         result = prime * result + (int) (dpid ^ (dpid >>> 32));
-        result = prime * result + controllerIP;
-        result = prime * result + controllerONExPort;
+        result = prime * result + (int) controllerID;
         return result;
     }
 
     @Override
-    public boolean equals(Object obj){
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
         if (obj == null)
@@ -101,9 +87,7 @@ public class ForestEntry implements Serializable {
 
         if (this.dpid != other.dpid)
             return false;
-        if (this.controllerIP != other.controllerIP)
-            return false;
-        if (this.controllerONExPort != other.controllerONExPort)
+        if (this.controllerID != other.controllerID)
             return false;
         return true;
     }

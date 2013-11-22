@@ -21,27 +21,25 @@ public enum SQLiteHelper {
                     "port integer NOT NULL, " +
                     "ipv4 integer NOT NULL, " +
                     "MAC integer  NOT NULL PRIMARY KEY);" +
-            "create table IF NOT EXISTS %s (" +
+                    "create table IF NOT EXISTS %s (" +
                     "src integer NOT NULL, " +
                     "srcPort integer NOT NULL, " +
                     "dst integer NOT NULL, " +
                     "dstPort integer NOT NULL," +
                     "UNIQUE (src, srcPort, dst, dstPort) ON CONFLICT IGNORE);" +
-            "create table IF NOT EXISTS %s (" +
-                    "controllerIP integer NOT NULL, " +
-                    "controllerPort integer NOT NULL, " +
+                    "create table IF NOT EXISTS %s (" +
+                    "controllerID integer NOT NULL, " +
                     "dpid integer NOT NULL," +
-                    "UNIQUE(controllerIP, controllerPort, dpid) ON CONFLICT IGNORE);",
+                    "UNIQUE(controllerID, dpid) ON CONFLICT IGNORE);",
             T_HOSTS, T_SWLINKS, T_FOREST);
 
     public static final String DROP_ALL = String.format(
             "drop table if exists %s;" +
-            "drop table if exists %s;" +
-            "drop table if exists %s;",
+                    "drop table if exists %s;" +
+                    "drop table if exists %s;",
             T_HOSTS, T_SWLINKS, T_FOREST);
 
     public static final String INIT_ALL = DROP_ALL + CREATE_TABLES;
-
 
 
     private SQLiteHelper() {
@@ -51,7 +49,7 @@ public enum SQLiteHelper {
         return SINGLETON_INSTANCE;
     }
 
-    public void init(){
+    public void init() {
     }
 
 

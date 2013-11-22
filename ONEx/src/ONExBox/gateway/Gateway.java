@@ -3,7 +3,6 @@ package ONExBox.gateway;
 // STEP build Gateway module first to get familiar with socket as well as onex4j
 
 import ONExBox.BoxDaemon.BoxDaemon;
-import ONExBox.ONExSetting;
 import ONExBox.gateway.Port.IOClient;
 import ONExBox.gateway.Port.IOServer;
 import ONExProtocol.GlobalTopo;
@@ -29,8 +28,12 @@ public class Gateway {
         log.info("Gateway Server set up");
     }
 
-    public InetSocketAddress sparePacketIn(ONExPacket op){
-        if (op.getINS() != ONExPacket.SPARE_PACKET_IN){
+    public void setControllerID(Long ID) {
+        globalShare.setControllerID(ID);
+    }
+
+    public InetSocketAddress sparePacketIn(ONExPacket op) {
+        if (op.getINS() != ONExPacket.SPARE_PACKET_IN) {
             log.error("The method should only be called on SPARE_PACKET_IN");
             return null;
         }
@@ -42,26 +45,24 @@ public class Gateway {
         return target;
     }
 
-    public void sendBackPacketIn(ONExPacket op){
+    public void sendBackPacketIn(ONExPacket op) {
         assert op != null;
         assert op.getINS() == ONExPacket.RES_SPARE_PACKET_IN;
         InetSocketAddress src = op.getSrcHost();
-        if(src == null){
+        if (src == null) {
             log.error("src not set");
-        }
-        else{
-            log.info("sending back to " + op.getSrcHost().toString());
+        } else {
+            log.info("send handled PacketIn back to " + op.getSrcHost().toString());
             send(src, op);
         }
 
     }
 
-    private void send(InetSocketAddress addr, ONExPacket op){
+    private void send(InetSocketAddress addr, ONExPacket op) {
         IOClient client;
-        if (clientPool.containsKey(addr)){
+        if (clientPool.containsKey(addr)) {
             client = clientPool.get(addr);
-        }
-        else{
+        } else {
             client = new IOClient(addr);
             clientPool.put(addr, client);
         }
@@ -70,21 +71,20 @@ public class Gateway {
 
     }
 
-    public void submitTopology(String db){
-        log.debug("submit topology");
+    public void submitTopology(String db) {
         GlobalTopo topo = new GlobalTopo();
         topo.loadFromDB(db);
         log.debug("complete loading: " + topo.toString());
         globalShare.mergeTopology(topo);
     }
 
-    public void halfShutdown(){
-        for (IOClient client : this.clientPool.values()){
+    public void halfShutdown() {
+        for (IOClient client : this.clientPool.values()) {
             client.destroy();
         }
     }
 
-    public void fullShutdown(){
+    public void fullShutdown() {
         globalShare.shutdown();
         halfShutdown();
         ioServer.destroy();

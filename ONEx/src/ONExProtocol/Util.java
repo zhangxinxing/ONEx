@@ -9,11 +9,11 @@ import java.nio.ByteBuffer;
  * Time: PM4:31
  */
 public class Util {
-    public static String ipToString(int address){
+    public static String ipToString(int address) {
         StringBuilder sb = new StringBuilder();
-        int result = 0;
+        int result;
         for (int i = 0; i < 4; ++i) {
-            result = (address >> ((3-i)*8)) & 0xff;
+            result = (address >> ((3 - i) * 8)) & 0xff;
             sb.append(Integer.valueOf(result).toString());
             if (i != 3)
                 sb.append(".");
@@ -21,9 +21,22 @@ public class Util {
         return sb.toString();
     }
 
-    public static String macToString(byte[] mac){
+    public static int StringToIPInt(String ip) {
+        boolean yes = ip.contains(".");
+        String[] parts = ip.split("\\.");
+        ByteBuffer ipBB = ByteBuffer.allocate(4);
+        for (String part : parts) {
+            int tmp = Short.parseShort(part);
+            tmp = (tmp > 127) ? tmp - 255 : tmp;
+            ipBB.put((byte) tmp);
+        }
+        ipBB.flip();
+        return ipBB.getInt();
+    }
+
+    public static String MACToString(byte[] mac) {
         StringBuilder builder = new StringBuilder();
-        for (byte b: mac) {
+        for (byte b : mac) {
             if (builder.length() > 0) {
                 builder.append(":");
             }
@@ -32,39 +45,43 @@ public class Util {
         return builder.toString();
     }
 
-    public static byte[] longToArray(long n){
+    public static String MACToString(long mac) {
+        return MACToString(longToMAC(mac));
+    }
+
+    public static byte[] longToArray(long n) {
         ByteBuffer buf = ByteBuffer.allocate(8);
         buf.putLong(n);
         buf.flip();
         return buf.array();
     }
 
-    public static long arrayToLong(byte[] array){
-        if (array.length > 8){
+    public static long arrayToLong(byte[] array) {
+        if (array.length > 8) {
             System.err.println("array must be <8-byte");
         }
         long re = 0L;
         long temp;
-        for (int i = array.length - 1; i >= 0; i--){
+        for (int i = array.length - 1; i >= 0; i--) {
             temp = array[i];
-            re = re | ((temp << (array.length - 1 - i)*8 & 0xFFL << (array.length - 1 - i)*8));
+            re = re | ((temp << (array.length - 1 - i) * 8 & 0xFFL << (array.length - 1 - i) * 8));
         }
         return re;
     }
 
-    public static long MACToLong(byte[] mac){
-        if (mac.length != 6){
+    public static long MACToLong(byte[] mac) {
+        if (mac.length != 6) {
             System.err.println("error format MAC");
             return -1L;
         }
         return arrayToLong(mac);
     }
 
-    public static byte[] longToMAC(long mac){
+    public static byte[] longToMAC(long mac) {
         ByteBuffer buf = ByteBuffer.allocate(8);
         buf.putLong(mac);
         buf.flip();
-        if (buf.getShort() != 0){
+        if (buf.getShort() != 0) {
             System.err.println("error in long");
         }
         byte[] MAC = new byte[6];
@@ -72,16 +89,16 @@ public class Util {
         return MAC;
     }
 
-    public static String dumpArray(Object obj){
-        if (obj == null){
+    public static String dumpArray(Object obj) {
+        if (obj == null) {
             return "";
         }
-        if (obj instanceof byte[]){
-            byte[] array = (byte[])obj;
+        if (obj instanceof byte[]) {
+            byte[] array = (byte[]) obj;
             if (array.length == 0)
                 return "";
             String re = "[byte]{";
-            for(byte b : array){
+            for (byte b : array) {
                 re += b;
                 re += ", ";
             }
