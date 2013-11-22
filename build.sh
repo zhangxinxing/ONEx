@@ -1,6 +1,7 @@
 #!/bin/sh -ex
 HOME_DIR=`pwd`
 
+LOCAL_IP=`ifconfig en0 | grep inet | grep -v inet6 | awk '{print $2}'`
 while getopts "s:o:r:d:y" optname
 do
     case "$optname" in
@@ -33,7 +34,7 @@ REST_PORT=${REST_PORT-8080}
 ONEX_DAEMON_PORT=${ONEX_DAEMON_PORT-7888}
 
 temp=`mktemp -d /tmp/XXXXXX | cut -d '/' -f 3`
-CONTROLLER_IP=1
+CONTROLLER_IP=$LOCAL_IP
 DP_PATH='\/tmp\/'$temp
 # COMMON
 
@@ -71,7 +72,7 @@ echo ""
 echo "+controllerIP=$CONTROLLER_IP"
 javal=`grep -n controllerIP $FLOODLIGHT_TEST_SETTING_FILE`
 javaln=`echo $javal | awk -F : '{print $1;}'`
-javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"$CONTROLLER_IP;"
+javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"\"$CONTROLLER_IP\";"
 sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
 
 echo "+syncPort=$SYNC_PORT"
