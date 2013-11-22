@@ -13,7 +13,6 @@ public class Monitor {
 
     /* data */
     private Map<String, Integer> CPUAccount;
-    private int sizeOfQueueIn;
     private SysInfo sysInfo;
     private ProcInfo procInfo;
 
@@ -23,7 +22,6 @@ public class Monitor {
     // private constructor
     private Monitor(){
         this.CPUAccount = new HashMap<String, Integer>();
-        this.sizeOfQueueIn = 0;
         this.sysInfo = new SysInfo();
         this.procInfo = new ProcInfo();
     }

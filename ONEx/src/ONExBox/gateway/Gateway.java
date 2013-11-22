@@ -21,11 +21,11 @@ public class Gateway {
     private IOServer ioServer;
     private Map<InetSocketAddress, IOClient> clientPool;
 
-    public Gateway() {
-        BoxDaemon serverDaemon = new BoxDaemon(this, ONExSetting.DAEMON_PORT);
+    public Gateway(int daemonPort, int serverPort) {
+        BoxDaemon ONExDaemon = new BoxDaemon(this, daemonPort);
         this.clientPool = new HashMap<InetSocketAddress, IOClient>();
         this.globalShare = new GlobalShare();
-        ioServer = new IOServer(serverDaemon);
+        ioServer = new IOServer(ONExDaemon, serverPort);
         log.info("Gateway Server set up");
     }
 

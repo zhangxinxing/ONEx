@@ -45,6 +45,16 @@ public class Main {
                 System.err.println(e);
             }
         }
-        Gateway gateway = new Gateway();
+
+        if(args.length !=2 ){
+            System.err.println("Wrong parameters: DAEMON_PORT SERVER_PORT");
+            for (String s:args){
+                System.err.println(s);
+            }
+            System.exit(-1);
+        }
+        int DAEMON_PORT = Integer.parseInt(args[0]);
+        int SERVER_PORT = Integer.parseInt(args[1]);
+        new Gateway(DAEMON_PORT, SERVER_PORT);
     }
 }

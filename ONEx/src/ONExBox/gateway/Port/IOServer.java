@@ -34,13 +34,10 @@ import java.util.concurrent.Executors;
  * Echoes back any received data from a client.
  */
 public class IOServer {
-
-    private int port;
     private static Logger log = Logger.getLogger(IOServer.class);
     private ServerBootstrap bootstrap;
 
-    public IOServer(BoxDaemon serverDaemon){
-        this.port = ONExSetting.GATEWAT_SERVER_PORT;
+    public IOServer(BoxDaemon serverDaemon, int port){
         // Configure the server.
         bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
