@@ -48,38 +48,40 @@ public class ONExProtocolFactory {
 
     public static ONExPacket ONExResSparePI(OFFlowMod flowMod, OFPacketOut po, InetSocketAddress srcHost, long srcDpid){
         ONExPacket op = new ONExPacket(ONExPacket.RES_SPARE_PACKET_IN, -1);
-        ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLength());
-//        ChannelBuffer FMBB = ChannelBuffers.buffer(flowMod.getLength());
-        flowMod.writeTo(FMBB);
+        if (flowMod == null){
+            op.setTLV(new TLV(
+                    TLV.Type.FLOW_MOD,
+                    0,
+                    null
+            ));
+        }
+        else{
+            ByteBuffer FMBB = ByteBuffer.allocate(flowMod.getLength());
+            flowMod.writeTo(FMBB);
+            op.setTLV(new TLV(
+                    TLV.Type.FLOW_MOD,
+                    flowMod.getLengthU(),
+                    FMBB.array()
+            ));
+        }
 
         ByteBuffer POBB = ByteBuffer.allocate(po.getLength());
-//        ChannelBuffer POBB = ChannelBuffers.buffer(po.getLength());
         po.writeTo(POBB);
-
-        op.setTLV(new TLV(
-                TLV.Type.FLOW_MOD,
-                flowMod.getLengthU(),
-                FMBB.array()
-        ));
-
         op.setTLV(new TLV(
                 TLV.Type.PACKET_OUT,
                 po.getLengthU(),
                 POBB.array()
         ));
-
         op.setTLV(new TLV(
                 TLV.Type.SRC_HOST,
                 8,
                 null // to be filled when Server daemon dispatch it
         ));
-
         op.setTLV(new TLV(
                 TLV.Type.SRC_DPID,
                 8,
                 null
         ));
-
         op.setSrcHost(srcHost);
         op.setSrcDpid(srcDpid);
         return op;

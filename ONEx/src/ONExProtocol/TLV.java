@@ -28,16 +28,23 @@ public class TLV implements Serializable{
     public TLV(ByteBuffer TLVBB){
         this.type = TLVBB.get();
         this.len = TLVBB.getInt();
-        if (value == null){
-            value = new byte[len];
+        if (len == 0){
+            value = null;
         }
-        TLVBB.get(this.value, 0, this.len);
-        assert isValid();
+        else{
+            if (value == null){
+                value = new byte[len];
+            }
+            TLVBB.get(this.value, 0, this.len);
+        }
     }
 
     public boolean isValid(){
+        if (value == null && len == 0){
+            return true;
+        }
         if (value == null){
-            return (type == Type.SRC_HOST || type == Type.SRC_DPID);
+            return type == Type.SRC_HOST || type == Type.SRC_DPID;
         }
         return (len == value.length);
     }
@@ -59,9 +66,6 @@ public class TLV implements Serializable{
         TLVBB.putInt(len);
         if(value != null) {
             TLVBB.put(value);
-        }
-        else{
-            log.error("uninitialized TLV" + toString());
         }
     }
 

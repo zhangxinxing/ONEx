@@ -23,18 +23,12 @@ public class TONExProtocol {
 
     public static void main(String[] args){
 
-        TONExProtocol.ONExSparePI();
-        TONExProtocol.ONExResSparePI();
-        ln();
-
-        TONExProtocol.ONExUploadLocalTopo();
-        ln();
-
-        TONExProtocol.ONExRequestGlobalTopo();
-        ln();
-
-        TONExProtocol.ONExReqGlobalFlowMod();
-        TONExProtocol.ONExSCFlowMod();
+//        TONExProtocol.ONExSparePI();
+        TONExProtocol.ONExResSparePI_noFlowMod();
+//        TONExProtocol.ONExUploadLocalTopo();
+//        TONExProtocol.ONExRequestGlobalTopo();
+//        TONExProtocol.ONExReqGlobalFlowMod();
+        //TONExProtocol.ONExSCFlowMod();
     }
 
     public static void ONExSparePI(){
@@ -61,14 +55,13 @@ public class TONExProtocol {
     }
 
     public static void ONExResSparePI(){
-
         OFFlowMod ofFlowMod = new OFFlowMod();
         ofFlowMod.setMatch(new OFMatch());
         OFPacketOut po = new OFPacketOut();
         po.setBufferId(1);
         po.setActions(new LinkedList<OFAction>());
-        log.info("before\t" + po.toString());
-        log.info("before\t" + ofFlowMod.toString());
+        log.info(po.toString());
+        log.info(ofFlowMod.toString());
 
         ONExPacket msg = ONExProtocolFactory.ONExResSparePI(
                 ofFlowMod,
@@ -83,6 +76,26 @@ public class TONExProtocol {
         log.info("rebuild\t" + ONExProtocolFactory.parser(msgBB).toString());
         log.info("after\t\t" + msg.getFlowMod());
         log.info("after\t\t" + msg.getOFPacketOut());
+
+    }
+
+    public static void ONExResSparePI_noFlowMod(){
+        OFPacketOut po = new OFPacketOut();
+        po.setBufferId(1);
+        po.setActions(new LinkedList<OFAction>());
+
+        ONExPacket msg = ONExProtocolFactory.ONExResSparePI(
+                null,
+                po,
+                new InetSocketAddress("127.1.2.3", 1234),
+                1234567890L
+        );
+        log.info(msg.toString());
+        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
+        msg.writeTo(msgBB);
+        msgBB.flip();
+        log.info((msg.getFlowMod() == null ? "null" : msg.getFlowMod().toString()));
+        log.info(msg.toString());
 
     }
 

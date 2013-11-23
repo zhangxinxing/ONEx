@@ -195,15 +195,15 @@ public class ONExPacket implements Serializable {
             log.error("this method should only be called in SC_FLOW_MOD or RES_SPARE_PACKET_IN");
             return null;
         }
-        byte[] flowMod = null;
-        for (TLV tlv : TLVs) {
-            if (tlv.getType() == TLV.Type.FLOW_MOD) {
-                flowMod = tlv.getValue();
-                break;
-            }
-        }
-        if (flowMod == null)
+        TLV flowModTLV = findTLV(TLV.Type.FLOW_MOD);
+        if (flowModTLV == null){
+            log.error("NO FLOWMOD FOUND in this ONEx Packet");
             return null;
+        }
+        byte[] flowMod = flowModTLV.getValue();
+        if (flowMod == null) {
+            return null;
+        }
         OFFlowMod offm = new OFFlowMod();
 //        offm.setActionFactory(BasicFactory.getInstance().getActionFactory());
         offm.setActionFactory(new BasicFactory().getActionFactory());
