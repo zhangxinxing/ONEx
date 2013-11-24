@@ -5,12 +5,12 @@
     <property name="classes.dir" value="${build.dir}/classes"/>
     <property name="jar.dir"     value="${build.dir}/jar"/>
     <property name="main-class"  value="ONExBox.Main"/>
+    <property name="test-main-class"  value="ONExBox.TGlobalSharing"/>
     <property name="lib.dir"     value="lib"/>
 
     <path id="classpath">
         <fileset dir="${lib.dir}" includes="*.jar"/>
     </path>
-
 
     <target name="clean">
         <delete dir="${build.dir}"/>
@@ -23,6 +23,18 @@
             <fileset dir="${src.dir}" excludes="**/*.java"/>
         </copy>
     </target>
+
+    <target name="test" depends="compile">
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.dir}/${ant.project.name}-test.jar" basedir="${classes.dir}">
+            <zipgroupfileset dir="${lib.dir}" includes="*.jar"/>
+            <fileset dir="${lib.dir}"  includes="*.so"/>
+            <fileset dir="${lib.dir}" includes="*.dylib"/>
+            <manifest>
+                <attribute name="Main-Class" value="${test-main-class}"/>
+            </manifest>
+        </jar>
+    </target>    
 
     <target name="jar" depends="compile">
         <mkdir dir="${jar.dir}"/>
