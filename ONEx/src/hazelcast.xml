@@ -21,4 +21,8 @@
             </tcp-ip>
         </join>
     </network>
+
+    <properties>
+        <property name="hazelcast.logging.type">log4j</property>
+    </properties>
 </hazelcast>
