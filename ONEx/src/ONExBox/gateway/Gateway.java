@@ -23,7 +23,7 @@ public class Gateway {
     public Gateway(int daemonPort, int serverPort) {
         BoxDaemon ONExDaemon = new BoxDaemon(this, daemonPort);
         this.clientPool = new HashMap<InetSocketAddress, IOClient>();
-        this.globalShare = new GlobalShare();
+        this.globalShare = new GlobalShare(false);
         ioServer = new IOServer(ONExDaemon, serverPort);
         log.info("Gateway Server set up");
     }

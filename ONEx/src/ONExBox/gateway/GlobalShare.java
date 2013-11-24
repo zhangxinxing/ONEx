@@ -4,8 +4,9 @@ import ONExBox.Monitor;
 import ONExBox.ONExSetting;
 import ONExBox.protocol.BusyTableEntry;
 import ONExProtocol.*;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.*;
+import com.hazelcast.logging.LogEvent;
+import com.hazelcast.logging.LogListener;
 import org.apache.log4j.Logger;
 
 import java.net.InetSocketAddress;
@@ -17,13 +18,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * User: fan
  * Date: 13-10-3
  * Time: PM8:19
  */
-public class GlobalShare {
+public class GlobalShare implements ItemListener, EntryListener{
     /* */
     private HazelcastInstance hz;
     private static Logger log;
@@ -40,9 +42,12 @@ public class GlobalShare {
     private static final String FORESTS = "forest";
     private static final String ID2ONEx = "controllerID";
 
+    private boolean isTest;
 
-    public GlobalShare() {
+
+    public GlobalShare(boolean isTest) {
         log = Logger.getLogger(GlobalShare.class.getName());
+        this.isTest = isTest;
         mn = Monitor.getInstance();
 
         exec = Executors.newSingleThreadExecutor();
@@ -54,24 +59,33 @@ public class GlobalShare {
         this.localBt = new BusyTableEntry(ONExSetting.getInstance().socketAddr);
         updateBusyTable();
 
-        exec.execute(new Runnable() {
-            @Override
-            public void run() {
-                while (runningDaemon) {
-                    try {
-                        Thread.sleep(ONExSetting.BUSY_UPDATE_INT);
-                        if (!runningDaemon) {
+        // add listener
+        hz.getMap(ID2ONEx).addEntryListener(this, true);
+        hz.getMap(ONExSetting.BUSYTABLE_MAP).addEntryListener(this, true);
+        hz.getSet(HOST_ENTRIES).addItemListener(this, true);
+        hz.getSet(SWITCH_LINKS).addItemListener(this, true);
+        hz.getSet(FORESTS).addItemListener(this, true);
+
+        if(!isTest){
+            exec.execute(new Runnable() {
+                @Override
+                public void run() {
+                    while (runningDaemon) {
+                        try {
+                            Thread.sleep(ONExSetting.BUSY_UPDATE_INT);
+                            if (!runningDaemon) {
+                                break;
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                             break;
                         }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        break;
+                        // every 1s
+                        updateBusyTable();
                     }
-                    // every 1s
-                    updateBusyTable();
                 }
-            }
-        });
+            });
+        }
     }
 
     public void setControllerID(Long ID) {
@@ -142,16 +156,11 @@ public class GlobalShare {
 
     public boolean updateBusyTable() {
         localBt.setCpuAccount(mn.getCPUAccount());
-        updateRemoteBusyTable();
-        return true;
-    }
-
-    private boolean updateRemoteBusyTable() {
         ConcurrentMap<InetSocketAddress, BusyTableEntry> map = hz.getMap(ONExSetting.BUSYTABLE_MAP);
         InetSocketAddress localAddr = ONExSetting.getInstance().socketAddr;
         if (localAddr == null) {
             log.error("Error in config: socketAddr == null");
-            System.exit(-1);
+            return false;
         }
         if (map.get(localAddr) == null) {
             log.info("Put new entry into busyTable for " + localAddr);
@@ -162,6 +171,7 @@ public class GlobalShare {
         }
         return true;
     }
+
 
     /* TOPOLOGY */
     public void mergeTopology(GlobalTopo topo) {
@@ -190,6 +200,31 @@ public class GlobalShare {
         log.info("Updated topology: " + globalTopo.toString());
     }
 
+    public void mergeTopologyTest(GlobalTopo topo) {
+        // get remote objects
+        Long totalSize = (long)8 + 2 +4 + 8;
+        Long begin = System.currentTimeMillis();
+        Set<HostEntry> hostEntrySet = hz.getSet(HOST_ENTRIES);
+        Set<SwitchLink> switchLinkSet = hz.getSet(SWITCH_LINKS);
+        Set<ForestEntry> forestEntrySet = hz.getSet(FORESTS);
+
+        // finally submit to network
+        for (HostEntry entry : topo.getHostEntrySet()){
+            hostEntrySet.add(entry);
+        }
+//        hostEntrySet.addAll(topo.getHostEntrySet());
+//        switchLinkSet.addAll(topo.getSwitchLinkSet());
+//        forestEntrySet.addAll(topo.getForestEntrySet());
+
+        Long end = System.currentTimeMillis();
+
+        log.info(String.format("Complete Merge: [%d Byte] %d -> %d, during %d",
+                totalSize*topo.getHostEntrySet().size(),
+                begin,
+                end,
+                end-begin));// + topo.toString());
+    }
+
 
     public void shutdown() {
         // step 1: shutdown daemon
@@ -202,5 +237,52 @@ public class GlobalShare {
 
         // step2 close hazelcast
         Hazelcast.shutdownAll();
+    }
+
+    @Override
+    public void entryAdded(EntryEvent entryEvent) {
+        log.info(logEvent(entryEvent));
+    }
+
+    @Override
+    public void entryRemoved(EntryEvent entryEvent) {
+        log.info(logEvent(entryEvent));
+    }
+
+    @Override
+    public void entryUpdated(EntryEvent entryEvent) {
+        log.info(logEvent(entryEvent));
+    }
+
+    @Override
+    public void entryEvicted(EntryEvent entryEvent) {
+        log.info(logEvent(entryEvent));
+    }
+
+
+    @Override
+    public void itemAdded(ItemEvent itemEvent) {
+        log.info(logEvent(itemEvent));
+    }
+
+    @Override
+    public void itemRemoved(ItemEvent itemEvent) {
+        log.info(logEvent(itemEvent));
+    }
+
+    public String logEvent(EntryEvent entryEvent){
+        return String.format("%s [%s] %s",
+                entryEvent.getMember().getInetSocketAddress(),
+                entryEvent.getEventType().toString(),
+                entryEvent.getValue()
+        );
+    }
+
+    public String logEvent(ItemEvent itemEvent){
+        return String.format("%s [%s] %s",
+                itemEvent.getMember().getInetSocketAddress(),
+                itemEvent.getEventType().toString(),
+                itemEvent.getItem()
+        );
     }
 }

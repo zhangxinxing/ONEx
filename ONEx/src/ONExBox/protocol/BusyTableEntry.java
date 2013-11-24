@@ -14,12 +14,12 @@ public class BusyTableEntry implements Serializable {
     // per controller
     private InetSocketAddress addr;
     private int sizeOfQueueIn;
-    private Map<String, Integer> cpuAccountPerApp;
+    private Map<String, Double> cpuAccount;
 
     public BusyTableEntry(InetSocketAddress addr) {
         this.addr = addr;
         this.sizeOfQueueIn = 0;
-        this.cpuAccountPerApp = new HashMap<String, Integer>();
+        this.cpuAccount = new HashMap<String, Double>();
     }
 
     public int getSizeOfQueueIn() {
@@ -30,30 +30,30 @@ public class BusyTableEntry implements Serializable {
         this.sizeOfQueueIn = sizeOfQueueIn;
     }
 
-    public Map<String, Integer> getCpuAccountPerApp() {
-        return cpuAccountPerApp;
+    public Map<String, Double> getCpuAccount() {
+        return cpuAccount;
     }
 
-    public void setCpuAccountPerApp(String id, int time) {
-        if (this.cpuAccountPerApp.containsKey(id)){
-            cpuAccountPerApp.put(id, time);
+    public void setCpuAccountByApp(String id, Double time) {
+        if (this.cpuAccount.containsKey(id)){
+            cpuAccount.put(id, time);
         }
         else{
-            cpuAccountPerApp.put(id, time);
+            cpuAccount.put(id, time);
         }
     }
 
-    public void setCpuAccount(Map<String, Integer> account){
-        this.cpuAccountPerApp = account;
+    public void setCpuAccount(Map<String, Double> account){
+        this.cpuAccount = account;
     }
 
     @Override
     public String toString(){
         return String.format(
-                "ID:%s, sizeOfQ=%d, sizeOfA=%d",
+                "ID:%s, size=%d, cpu=%1.2f",
                 this.addr.toString(),
-                this.sizeOfQueueIn,
-                this.cpuAccountPerApp.size()
+                this.cpuAccount.size(),
+                this.cpuAccount.get("all")
         );
     }
 }

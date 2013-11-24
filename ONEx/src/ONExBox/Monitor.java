@@ -12,7 +12,7 @@ public class Monitor {
     private static Logger log = Logger.getLogger(Monitor.class);
 
     /* data */
-    private Map<String, Integer> CPUAccount;
+    private Map<String, Double> CPUAccount;
     private SysInfo sysInfo;
     private ProcInfo procInfo;
 
@@ -21,7 +21,7 @@ public class Monitor {
 
     // private constructor
     private Monitor(){
-        this.CPUAccount = new HashMap<String, Integer>();
+        this.CPUAccount = new HashMap<String, Double>();
         this.sysInfo = new SysInfo();
         this.procInfo = new ProcInfo();
     }
@@ -31,14 +31,19 @@ public class Monitor {
     }
 
     // getCPUAccount
-    public Map<String, Integer> getCPUAccount() {
+    public Map<String, Double> getCPUAccount() {
         List<String> apps = ONExSetting.getInstance().appNameList;
         for (String app : apps){
             if (ONExSetting.RANDOM_TEST){
-                CPUAccount.put(app, new Random().nextInt());
+                CPUAccount.put(app, new Random().nextDouble());
             }
             else {
                 long pid = ONExSetting.getInstance().appPid.get(app);
+                try {
+                    CPUAccount.put("all", sigar.getCpuPerc().getCombined());
+                } catch (SigarException e) {
+                    e.printStackTrace();
+                }
                 // TODO sigar.getProcCpu(pid).getPercent();
             }
         }
@@ -46,10 +51,10 @@ public class Monitor {
     }
 
     // get Account by name
-    public int getCpuAccountByName(String appName) {
+    public Double getCpuAccountByName(String appName) {
 
         if (ONExSetting.RANDOM_TEST){
-            return new Random().nextInt();
+            return new Random().nextDouble();
         }
         else {
             return getCPUAccount().get(appName);

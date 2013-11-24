@@ -5,6 +5,11 @@ import ONExProtocol.GlobalTopo;
 import ONExProtocol.Util;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Random;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Fan
@@ -20,20 +25,34 @@ public class TGlobalSharing {
         ONExSetting.getInstance().setNetworkConfig(7888, 9000);
 
         GlobalShare globalShare = new GlobalShare(true);
-
         GlobalTopo topo = new GlobalTopo();
-
-        for (long mac = 1; mac < 100; mac ++){
-            topo.addHost(1L, (short)1, 123, Util.longToMAC(mac));
+        long macStart = 0;
+        while(true){
+            System.out.print("Test Counts: ");
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            String count = null;
+            try {
+                count = br.readLine();
+            } catch (IOException ioe) {
+                System.out.println("IO error trying to read your name!");
+                break;
+            }
+            if (count.equals("")){
+                break;
+            }
+            System.out.println("Generating " + count + " entries");
+            long countL = Long.parseLong(count);
+            for (long mac = macStart; mac < macStart + countL; mac ++){
+                topo.addHost(
+                        new Random(System.currentTimeMillis()).nextLong(),
+                        (short)new Random(System.currentTimeMillis()).nextInt(100),
+                        new Random(System.currentTimeMillis()).nextInt(),
+                        Util.longToMAC(mac));
+            }
+            macStart += countL + 1;
+            Long totalSize = (8 + 2 +4 + 8)*countL;
+            System.out.println("Begin! (total size=" + totalSize + "B)");
+            globalShare.mergeTopologyTest(topo);
         }
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("Begin");
-        globalShare.mergeTopologyTest(topo);
-
     }
 }
