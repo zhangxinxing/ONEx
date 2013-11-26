@@ -2,7 +2,18 @@
 HOME_DIR=`pwd`
 
 LOCAL_IP=`ifconfig en0 | grep inet | grep -v inet6 | awk '{print $2}'`
-while getopts "s:o:r:d:y" optname
+LOCAL_IP='192.168.190.1'
+
+# dir and files
+FLOODLIGHT_ROOT_DIR='/Users/Fan/dev/floodlight'
+ONEX_ROOT_DIR="/Users/Fan/dev/ONEx/ONEx"
+# files
+FLOODLIGHT_PROP_FILE=$FLOODLIGHT_ROOT_DIR"/src/main/resources/floodlightdefault.properties"
+FLOODLIGHT_TEST_SETTING_FILE=$FLOODLIGHT_ROOT_DIR"/src/main/java/ONExProtocol/TestSetting.java"
+FLOODLIGHT_LOG4J_CONFIG_FILE=$FLOODLIGHT_ROOT_DIR"/src/main/resources/log4j.properties"
+
+
+while getopts "s:o:r:d:yt:" optname
 do
     case "$optname" in
     "s")
@@ -18,8 +29,71 @@ do
 	ONEX_DAEMON_PORT=$OPTARG
         ;;
     "y")
-	yes_mode="yes"	
+	yes_mode="yes"
+		;;
+	"t")
+		
+		case $OPTARG in
+	
+	"discard")
+		# discard
+		javal=`grep -n 'isDiscard' $FLOODLIGHT_TEST_SETTING_FILE`
+		javaln=`echo $javal | awk -F : '{ print $1;}'`
+		javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"true;"
+		sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
+	
+		javal=`grep -n 'isStrictLearn' $FLOODLIGHT_TEST_SETTING_FILE`
+		javaln=`echo $javal | awk -F : '{ print $1;}'`
+		javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"true;"
+		sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
+	
+		javal=`grep -n 'threshold' $FLOODLIGHT_TEST_SETTING_FILE`
+		javaln=`echo $javal | awk -F : '{ print $1;}'`
+		javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"2;"
+		sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
+		;;
+	
+	"flood")
+		# flood
+		javal=`grep -n 'isDiscard' $FLOODLIGHT_TEST_SETTING_FILE`
+		javaln=`echo $javal | awk -F : '{ print $1;}'`
+		javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"false;"
+		sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
+	
+		javal=`grep -n 'isStrictLearn' $FLOODLIGHT_TEST_SETTING_FILE`
+		javaln=`echo $javal | awk -F : '{ print $1;}'`
+		javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"true;"
+		sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
+	
+		javal=`grep -n 'threshold' $FLOODLIGHT_TEST_SETTING_FILE`
+		javaln=`echo $javal | awk -F : '{ print $1;}'`
+		javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"2;"
+		sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
+		;;
+	
+	"coop")
+	# coop
+		javal=`grep -n 'isDiscard' $FLOODLIGHT_TEST_SETTING_FILE`
+		javaln=`echo $javal | awk -F : '{ print $1;}'`
+		javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"false;"
+		sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
+	
+		javal=`grep -n 'isStrictLearn' $FLOODLIGHT_TEST_SETTING_FILE`
+		javaln=`echo $javal | awk -F : '{ print $1;}'`
+		javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"false;"
+		sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
+	
+		javal=`grep -n 'threshold' $FLOODLIGHT_TEST_SETTING_FILE`
+		javaln=`echo $javal | awk -F : '{ print $1;}'`
+		javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`"2;"
+		sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_TEST_SETTING_FILE
+		;;
+		
+		*) ;;
+	
+	esac
 	;;
+	
     *)
         echo "Unknown error while processing options"
         ;;
@@ -38,13 +112,7 @@ CONTROLLER_IP=$LOCAL_IP
 DP_PATH='\/tmp\/'$temp
 # COMMON
 
-# dir and files
-FLOODLIGHT_ROOT_DIR='/Users/Fan/dev/floodlight'
-ONEX_ROOT_DIR="/Users/Fan/dev/ONEx/ONEx"
-# files
-FLOODLIGHT_PROP_FILE=$FLOODLIGHT_ROOT_DIR"/src/main/resources/floodlightdefault.properties"
-FLOODLIGHT_TEST_SETTING_FILE=$FLOODLIGHT_ROOT_DIR"/src/main/java/ONExProtocol/TestSetting.java"
-FLOODLIGHT_LOG4J_CONFIG_FILE=$FLOODLIGHT_ROOT_DIR"/src/main/resources/log4j.properties"
+
 
 echo "+openflowport=$OPENFLOW_PORT"
 javal=`grep -n openflowport $FLOODLIGHT_PROP_FILE`
@@ -67,7 +135,6 @@ javal=`grep -n 'dbPath' $FLOODLIGHT_PROP_FILE`
 javaln=`echo $javal | awk -F : '{ print $1;}'`
 javalnew=`echo $javal | cut -d: -f2- | awk -F = '{print $1"="}'`$DP_PATH
 sed -i.bak $javaln's/.*/'"$javalnew"'/' $FLOODLIGHT_PROP_FILE
-echo ""
 
 echo "+controllerIP=$CONTROLLER_IP"
 javal=`grep -n controllerIP $FLOODLIGHT_TEST_SETTING_FILE`
