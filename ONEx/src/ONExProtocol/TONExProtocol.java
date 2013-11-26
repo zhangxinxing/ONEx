@@ -1,5 +1,6 @@
 package ONExProtocol;
 
+import MyDebugger.Dumper;
 import org.apache.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
@@ -24,8 +25,8 @@ public class TONExProtocol {
     public static void main(String[] args){
 
 //        TONExProtocol.ONExSparePI();
-        TONExProtocol.ONExResSparePI_noFlowMod();
-//        TONExProtocol.ONExUploadLocalTopo();
+//        TONExProtocol.ONExResSparePI_noFlowMod();
+        TONExProtocol.ONExUploadLocalTopo();
 //        TONExProtocol.ONExRequestGlobalTopo();
 //        TONExProtocol.ONExReqGlobalFlowMod();
         //TONExProtocol.ONExSCFlowMod();
@@ -102,14 +103,18 @@ public class TONExProtocol {
     public static void ONExUploadLocalTopo(){
 
         ONExPacket msg = ONExProtocolFactory.ONExUploadLocalTopo("/tmp/some.file");
-        log.info(msg);
-        log.info(msg.getFileName());
-        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
-        msg.writeTo(msgBB);
-        msgBB.flip();
-        msg = ONExProtocolFactory.parser(msgBB);
-        log.info(msg);
-        log.info(msg.toString());
+//        log.info(msg);
+//        log.info(msg.getFileName());
+//        ByteBuffer msgBB = ByteBuffer.allocate(msg.getLength());
+//        msg.writeTo(msgBB);
+//        msgBB.flip();
+//        msg = ONExProtocolFactory.parser(msgBB);
+//        log.info(msg);
+//        log.info(msg.toString());
+
+        System.out.println(msg.toString());
+        System.out.println(Dumper.byteArray(msg.toByteBuffer().array()));
+
     }
 
     public static void ONExRequestGlobalTopo(){

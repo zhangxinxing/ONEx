@@ -1,0 +1,21 @@
+SIZE_OF_POOL    50
+PKTGEN          true
+RANDOM_TEST     true
+MULTI_THREAD    false
+TEST_RUN        10
+PACKET_INTERVAL 0
+MAX_WHILE_LOOP  5000
+MAX_QUEUE       50
+
+# hezalcast
+BUSYTABLE_MAP   busyTable
+TOPO_MAP        topoTable
+BUSY_UPDATE_INT 1000
+
+# network
+DAEMON_PORT 7888
+GATEWAY_SERVER_PORT 7999
+
+# Apps
+nAPPs           1
+nameOfApps      app

@@ -42,7 +42,7 @@ public class GlobalShare implements ItemListener, EntryListener{
     private static final String FORESTS = "forest";
     private static final String ID2ONEx = "controllerID";
 
-    private boolean isTest;
+    private boolean isTest = true;
 
 
     public GlobalShare(boolean isTest) {
@@ -66,26 +66,26 @@ public class GlobalShare implements ItemListener, EntryListener{
         hz.getSet(SWITCH_LINKS).addItemListener(this, true);
         hz.getSet(FORESTS).addItemListener(this, true);
 
-        if(!isTest){
-            exec.execute(new Runnable() {
-                @Override
-                public void run() {
-                    while (runningDaemon) {
-                        try {
-                            Thread.sleep(ONExSetting.BUSY_UPDATE_INT);
-                            if (!runningDaemon) {
-                                break;
-                            }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            break;
-                        }
-                        // every 1s
-                        updateBusyTable();
-                    }
-                }
-            });
-        }
+//        if(!isTest){
+//            exec.execute(new Runnable() {
+//                @Override
+//                public void run() {
+//                    while (runningDaemon) {
+//                        try {
+//                            Thread.sleep(ONExSetting.BUSY_UPDATE_INT);
+//                            if (!runningDaemon) {
+//                                break;
+//                            }
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                            break;
+//                        }
+//                        // every 1s
+//                        updateBusyTable();
+//                    }
+//                }
+//            });
+//        }
     }
 
     public void setControllerID(Long ID) {
@@ -202,8 +202,7 @@ public class GlobalShare implements ItemListener, EntryListener{
 
     public void mergeTopologyTest(GlobalTopo topo) {
         // get remote objects
-        Long totalSize = (long)8 + 2 +4 + 8;
-        Long begin = System.currentTimeMillis();
+
         Set<HostEntry> hostEntrySet = hz.getSet(HOST_ENTRIES);
         Set<SwitchLink> switchLinkSet = hz.getSet(SWITCH_LINKS);
         Set<ForestEntry> forestEntrySet = hz.getSet(FORESTS);
@@ -216,13 +215,6 @@ public class GlobalShare implements ItemListener, EntryListener{
 //        switchLinkSet.addAll(topo.getSwitchLinkSet());
 //        forestEntrySet.addAll(topo.getForestEntrySet());
 
-        Long end = System.currentTimeMillis();
-
-        log.info(String.format("Complete Merge: [%d Byte] %d -> %d, during %d",
-                totalSize*topo.getHostEntrySet().size(),
-                begin,
-                end,
-                end-begin));// + topo.toString());
     }
 
 
